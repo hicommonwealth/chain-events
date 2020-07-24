@@ -42,9 +42,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     this._blockNumber = +(await this._api.rpc.chain.getHeader()).number;
 
     // fetch all identities from chain
-    const identities: Array<Option<Registration>> = await this._api.queryMulti(
-      addresses.map((addr) => [ this._api.query.identity.identityOf, addr ])
-    );
+    const identities: Option<Registration>[] = await this._api.query.identity.identityOf.multi(addresses);
 
     // construct events
     const cwEvents: CWEvent<IIdentitySet>[] = _.zip(addresses, identities)
