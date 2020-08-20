@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import {
   Event, ReferendumInfoTo239, AccountId, TreasuryProposal, Balance, PropIndex, Proposal,
   ReferendumIndex, ProposalIndex, VoteThreshold, Hash, BlockNumber, Votes, Extrinsic,
-  ReferendumInfo
+  ReferendumInfo, SessionIndex, ValidatorId, Exposure
 } from '@polkadot/types/interfaces';
 import { ProposalRecord, VoteRecord } from '@edgeware/node-types';
 import { Option, bool, Vec, u32, u64 } from '@polkadot/types';
@@ -18,6 +18,7 @@ import { EventKind, IEventData, isEvent, parseJudgement, IdentityJudgement } fro
  * Once fetched, the function marshalls the event data and the additional information
  * into the interface, and returns a fully-formed event, ready for database storage.
  */
+
 export async function Enrich(
   api: ApiPromise,
   blockNumber: number,
@@ -33,8 +34,26 @@ export async function Enrich(
       /**
        * Staking Events
        */
-      case EventKind.NewSession: {
-        const [ validator ] = event.data as 
+      case EventKind.NewSession: { // @mir-nawaz please review this
+        const [ sessionIndex ] = event.data as unknown as [ SessionIndex ] & Codec
+        const validators = await api.query.session.validators<Vec<ValidatorId>>();
+        const currentEra = await api.query.staking.currentEra();
+        let exposure : Vec<Exposure>
+        // erasStakers(EraIndex, AccountId): Exposure -> api.query.staking.erasStakers
+        if (validators && currentEra.isSome) { // if currentEra isn't empty
+          validators.forEach(async (validator) => {
+            const tmp_exposure = await api.query.staking.erasStakers(currentEra, validator) as unknown as Exposure & Codec;
+            exposure.push(tmp_exposure)
+          })
+        }
+        return {
+          data: {
+            kind,
+            validators,
+            exposure,
+            sessionIndex
+          }
+        }
       }
        /**
        * Staking Events

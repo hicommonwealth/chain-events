@@ -1,7 +1,7 @@
 import {
-  Header, EventRecord, Extrinsic, Event, IdentityJudgement as SubstrateJudgement, Exposure
+  Header, EventRecord, Extrinsic, Event, IdentityJudgement as SubstrateJudgement, Exposure, SessionIndex
 } from '@polkadot/types/interfaces';
-import { IdentificationTuple } from '@polkadot/types/interfaces/session';
+import { ValidatorId } from '@polkadot/types/interfaces';
 import { Vec } from '@polkadot/types';
 
 export const EventChains = [
@@ -139,8 +139,9 @@ interface IEvent {
  */
 export interface INewSession extends IEvent {
   kind: EventKind.NewSession
-  validators: Vec<IdentificationTuple>;
+  validators: Vec<ValidatorId>;
   exposure: Vec<Exposure>; // @mir-nawaz lmk if there is an issue with this
+  sessionIndex: SessionIndex
 }
 
 

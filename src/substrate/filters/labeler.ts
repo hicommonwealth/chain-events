@@ -72,6 +72,18 @@ export const Label: LabelerFilter = (
   const balanceFormatter = (bal) => edgBalanceFormatter(chainId, bal);
   switch (data.kind) {
     /**
+     * Session Events
+     */
+    case EventKind.NewSession: {
+      const { sessionIndex } = data;
+      return {
+        heading: 'New Session',
+        label: `Session ${sessionIndex.toString()} has Begun`,
+        // TODO: get link to validator page
+      };
+    }
+
+    /**
      * Staking Events
      */
     case EventKind.Slash: {
