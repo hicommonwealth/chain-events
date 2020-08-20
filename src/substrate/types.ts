@@ -1,6 +1,8 @@
 import {
-  Header, EventRecord, Extrinsic, Event, IdentityJudgement as SubstrateJudgement
+  Header, EventRecord, Extrinsic, Event, IdentityJudgement as SubstrateJudgement, Exposure
 } from '@polkadot/types/interfaces';
+import { IdentificationTuple } from '@polkadot/types/interfaces/session';
+import { Vec } from '@polkadot/types';
 
 export const EventChains = [
   'edgeware',
@@ -124,11 +126,23 @@ export enum EventKind {
   JudgementGiven = 'identity-judgement-given',
   IdentityCleared = 'identity-cleared',
   IdentityKilled = 'identity-killed',
+
+  NewSession = 'new-session'
 }
 
 interface IEvent {
   kind: EventKind;
 }
+
+/**
+ * Session Event
+ */
+export interface INewSession extends IEvent {
+  kind: EventKind.NewSession
+  validators: Vec<IdentificationTuple>;
+  exposure: Vec<Exposure>; // @mir-nawaz lmk if there is an issue with this
+}
+
 
 /**
  * Staking Events
@@ -478,6 +492,7 @@ export type IEventData =
   | IJudgementGiven
   | IIdentityCleared
   | IIdentityKilled
+  | INewSession
 // eslint-disable-next-line semi-style
 ;
 

@@ -33,6 +33,12 @@ export async function Enrich(
       /**
        * Staking Events
        */
+      case EventKind.NewSession: {
+        const [ validator ] = event.data as 
+      }
+       /**
+       * Staking Events
+       */
       case EventKind.Reward: {
         if (event.data.typeDef[0].type === 'Balance') {
           // edgeware/old event

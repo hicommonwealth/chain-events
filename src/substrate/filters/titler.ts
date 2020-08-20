@@ -9,6 +9,16 @@ import { EventKind } from '../types';
 export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
   switch (kind) {
     /**
+     * Session Events
+     */
+    case EventKind.NewSession: {
+      return {
+        title: 'New Session',
+        description: 'A new session has begun'
+      }
+    }
+
+    /**
      * Staking Events
      */
     case EventKind.Slash: {
