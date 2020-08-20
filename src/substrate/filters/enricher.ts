@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import {
   Event, ReferendumInfoTo239, AccountId, TreasuryProposal, Balance, PropIndex, Proposal,
   ReferendumIndex, ProposalIndex, VoteThreshold, Hash, BlockNumber, Votes, Extrinsic,
-  ReferendumInfo, SessionIndex, ValidatorId, Exposure
+  ReferendumInfo, SessionIndex, ValidatorId, Exposure, EraIndex
 } from '@polkadot/types/interfaces';
 import { ProposalRecord, VoteRecord } from '@edgeware/node-types';
 import { Option, bool, Vec, u32, u64 } from '@polkadot/types';
@@ -37,7 +37,7 @@ export async function Enrich(
       case EventKind.NewSession: { // @mir-nawaz please review this
         const [ sessionIndex ] = event.data as unknown as [ SessionIndex ] & Codec
         const validators = await api.query.session.validators<Vec<ValidatorId>>();
-        const currentEra = await api.query.staking.currentEra();
+        const currentEra = await api.query.staking.currentEra<Option<EraIndex>>();
         let exposure : Vec<Exposure>
         // erasStakers(EraIndex, AccountId): Exposure -> api.query.staking.erasStakers
         if (validators && currentEra.isSome) { // if currentEra isn't empty
@@ -51,7 +51,8 @@ export async function Enrich(
             kind,
             validators,
             exposure,
-            sessionIndex
+            sessionIndex,
+            currentEra: +currentEra
           }
         }
       }

@@ -1,7 +1,6 @@
 import {
-  Header, EventRecord, Extrinsic, Event, IdentityJudgement as SubstrateJudgement, Exposure, SessionIndex
+  Header, EventRecord, Extrinsic, EraIndex, ValidatorId, Event, IdentityJudgement as SubstrateJudgement, Exposure, SessionIndex
 } from '@polkadot/types/interfaces';
-import { ValidatorId } from '@polkadot/types/interfaces';
 import { Vec } from '@polkadot/types';
 
 export const EventChains = [
@@ -142,6 +141,7 @@ export interface INewSession extends IEvent {
   validators: Vec<ValidatorId>;
   exposure: Vec<Exposure>; // @mir-nawaz lmk if there is an issue with this
   sessionIndex: SessionIndex
+  currentEra?: Number
 }
 
 
