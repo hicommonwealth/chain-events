@@ -2,7 +2,7 @@ import chai from 'chai';
 import {
   AccountId, PropIndex, Hash, ReferendumInfoTo239, ReferendumInfo,
   Proposal, TreasuryProposal, Votes, Event, Extrinsic, Registration,
-  RegistrarInfo, ValidatorId, Exposure
+  RegistrarInfo, SessionIndex
 } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 import { DeriveDispatch, DeriveProposalImage } from '@polkadot/api-derive/types';
@@ -18,6 +18,9 @@ const { assert } = chai;
 
 const blockNumber = 10;
 const api = constructFakeApi({
+  validators:async()=>{
+    return await api.createType('Vec<ValidatorId>'); },
+  currentEra:async()=>12,
   bonded: async (stash) => stash !== 'alice-stash'
     ? constructOption()
     : constructOption('alice' as unknown as AccountId),
@@ -779,17 +782,21 @@ describe('Edgeware Event Enricher Filter Tests', () => {
   /** Session Events */
   it('should enrich new-session event', async () => {
     const kind = EventKind.NewSession;
-    const validators = await api.query.session.validators<Vec<ValidatorId>>();
-    const currentEra = await api.query.staking.currentEra();
-    const sessionIndex = await api.query.session.currentIndex();
-    let exposure : Vec<Exposure>
-    if (validators && currentEra.isSome) {
-      validators.forEach(async (validator) => {
-        const tmp_exposure = await api.query.staking.erasStakers(currentEra, validator) as unknown as Exposure & Codec;
-        exposure.push(tmp_exposure)
-      })
-    }
-    const event = constructEvent([ validators, exposure ]);
+    // const validators = await api.query.session.validators<Vec<ValidatorId>>();
+    // const currentEra = await api.query.staking.currentEra();
+    // const sessionIndex = await api.query.session.currentIndex();
+    // let exposure : Vec<Exposure>
+    // if (validators && currentEra.isSome) {
+    //   validators.forEach(async (validator) => {
+    //     const tmp_exposure = await api.query.staking.erasStakers(currentEra, validator) as unknown as Exposure & Codec;
+    //     exposure.push(tmp_exposure)
+    //   })
+    // }
+    const validators = api.createType('Vec<ValidatorId>');
+    const exposure = api.createType('Vec<Exposure>');
+    const sessionIndex = api.createType('SessionIndex');
+    const currentEra = 12;
+    const event = constructEvent([ ]);
     const result = await Enrich(api, blockNumber, kind, event);
     assert.deepEqual(result, {
       blockNumber,
@@ -797,7 +804,8 @@ describe('Edgeware Event Enricher Filter Tests', () => {
         kind,
         validators,
         exposure,
-        sessionIndex
+        sessionIndex,
+        currentEra
       }
     })
   });
