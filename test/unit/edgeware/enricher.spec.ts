@@ -2,8 +2,9 @@ import chai from 'chai';
 import {
   AccountId, PropIndex, Hash, ReferendumInfoTo239, ReferendumInfo,
   Proposal, TreasuryProposal, Votes, Event, Extrinsic, Registration,
-  RegistrarInfo
+  RegistrarInfo, ValidatorId, Exposure
 } from '@polkadot/types/interfaces';
+import { Codec } from '@polkadot/types/types';
 import { DeriveDispatch, DeriveProposalImage } from '@polkadot/api-derive/types';
 import { Vec, bool, Data, TypeRegistry } from '@polkadot/types';
 import { ITuple, TypeDef } from '@polkadot/types/types';
@@ -773,6 +774,32 @@ describe('Edgeware Event Enricher Filter Tests', () => {
         who: 'alice',
       }
     });
+  });
+
+  /** Session Events */
+  it('should enrich new-session event', async () => {
+    const kind = EventKind.NewSession;
+    const validators = await api.query.session.validators<Vec<ValidatorId>>();
+    const currentEra = await api.query.staking.currentEra();
+    const sessionIndex = await api.query.session.currentIndex();
+    let exposure : Vec<Exposure>
+    if (validators && currentEra.isSome) {
+      validators.forEach(async (validator) => {
+        const tmp_exposure = await api.query.staking.erasStakers(currentEra, validator) as unknown as Exposure & Codec;
+        exposure.push(tmp_exposure)
+      })
+    }
+    const event = constructEvent([ validators, exposure ]);
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      data: {
+        kind,
+        validators,
+        exposure,
+        sessionIndex
+      }
+    })
   });
 
   /** other */
