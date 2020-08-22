@@ -4,7 +4,6 @@ import {
   Proposal, TreasuryProposal, Votes, Event, Extrinsic, Registration,
   RegistrarInfo, ValidatorId, Exposure
 } from '@polkadot/types/interfaces';
-import { Codec } from '@polkadot/types/types';
 import { DeriveDispatch, DeriveProposalImage } from '@polkadot/api-derive/types';
 import { Vec, bool, Data, TypeRegistry } from '@polkadot/types';
 import { ITuple, TypeDef } from '@polkadot/types/types';
@@ -782,7 +781,8 @@ describe('Edgeware Event Enricher Filter Tests', () => {
   /** Session Events */
   it('should enrich new-session event', async () => {
     const kind = EventKind.NewSession;
-    let validators : Array<ValidatorId>;
+    let active : Array<ValidatorId>;
+    let waiting : Array<ValidatorId>;
     let exposure : Array<Exposure>;
     const sessionIndex = api.createType('SessionIndex');
     const currentEra = 12;
@@ -792,7 +792,8 @@ describe('Edgeware Event Enricher Filter Tests', () => {
       blockNumber,
       data: {
         kind,
-        validators,
+        active,
+        waiting,
         exposure,
         sessionIndex,
         currentEra

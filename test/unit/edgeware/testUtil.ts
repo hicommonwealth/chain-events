@@ -131,6 +131,9 @@ export function constructFakeApi(
       }
     },
     derive: {
+      staking: {
+        validators: callOverrides['validators'],
+      },
       chain: {
         bestNumber: callOverrides['bestNumber'],
       },
