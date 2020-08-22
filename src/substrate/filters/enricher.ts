@@ -34,13 +34,15 @@ export async function Enrich(
       /**
        * Staking Events
        */
-      case EventKind.NewSession: { // @mir-nawaz please review this
+      case EventKind.NewSession: {
         const [ sessionIndex ] = event.data as unknown as [ SessionIndex ] & Codec
-        const validators = await api.query.session.validators<Vec<ValidatorId>>();
+        const tmp_validators = await api.query.session.validators<Vec<ValidatorId>>();
         const currentEra = await api.query.staking.currentEra<Option<EraIndex>>();
-        let exposure : Vec<Exposure>
+        let exposure : Array<Exposure>
+        let validators : Array<ValidatorId>
         // erasStakers(EraIndex, AccountId): Exposure -> api.query.staking.erasStakers
-        if (validators && currentEra.isSome) { // if currentEra isn't empty
+        if (tmp_validators && currentEra.isSome) { // if currentEra isn't empty
+          validators = tmp_validators.toArray();
           validators.forEach(async (validator) => {
             const tmp_exposure = await api.query.staking.erasStakers(currentEra, validator) as unknown as Exposure & Codec;
             exposure.push(tmp_exposure)

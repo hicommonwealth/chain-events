@@ -14,7 +14,7 @@ export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
     case EventKind.NewSession: {
       return {
         title: 'New Session',
-        description: 'A new session has begun'
+        description: 'A new session begins.'
       }
     }
 

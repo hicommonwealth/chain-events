@@ -78,7 +78,7 @@ export const Label: LabelerFilter = (
       const { sessionIndex } = data;
       return {
         heading: 'New Session',
-        label: `Session ${sessionIndex.toString()} has Begun`,
+        label: `Session ${sessionIndex.toString()} has begun.`,
         // TODO: get link to validator page
       };
     }

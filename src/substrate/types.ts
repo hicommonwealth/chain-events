@@ -1,5 +1,5 @@
 import {
-  Header, EventRecord, Extrinsic, EraIndex, ValidatorId, Event, IdentityJudgement as SubstrateJudgement, Exposure, SessionIndex
+  Header, EventRecord, Extrinsic, ValidatorId, Event, IdentityJudgement as SubstrateJudgement, Exposure, SessionIndex
 } from '@polkadot/types/interfaces';
 import { Vec } from '@polkadot/types';
 
@@ -138,10 +138,10 @@ interface IEvent {
  */
 export interface INewSession extends IEvent {
   kind: EventKind.NewSession
-  validators: Vec<ValidatorId>;
-  exposure: Vec<Exposure>; // @mir-nawaz lmk if there is an issue with this
+  validators: Array<ValidatorId>;
+  exposure: Array<Exposure>;
   sessionIndex: SessionIndex
-  currentEra?: Number
+  currentEra?: number
 }
 
 
