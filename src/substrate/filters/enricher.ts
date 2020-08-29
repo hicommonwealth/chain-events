@@ -38,25 +38,31 @@ export async function Enrich(
         const [ sessionIndex ] = event.data as unknown as [ SessionIndex ] & Codec
         const validators = await api.derive.staking.validators();
         const currentEra = await api.query.staking.currentEra<Option<EraIndex>>();
-        let exposure : Array<Exposure>
         let active : Array<ValidatorId>
         let waiting : Array<ValidatorId>
-        // erasStakers(EraIndex, AccountId): Exposure -> api.query.staking.erasStakers
-        if (validators && currentEra.isSome) { // if currentEra isn't empty
+        // erasStakers(EraIndex, AccountId): Exposure -> api.query.staking.erasStakers // KUSAMA
+        // stakers(AccountId): Exposure -> api.query.staking.stakers // EDGEWARE
+        const stakersCall = (api.query.staking.stakers)
+          ? api.query.staking.stakers
+          : api.query.staking.erasStakers;
+        const stakersCallArgs = (account) => (api.query.staking.stakers)
+        ? account
+        : [+currentEra, account];
+        let activeExposures : {[key: string]: any} = {}
+        if (validators && currentEra) { // if currentEra isn't empty
           active = validators.validators;
           waiting = validators.nextElected;
           active.forEach(async (validator) => {
-            const tmp_exposure = await api.query.staking.erasStakers(currentEra, validator) as unknown as Exposure & Codec;
-            exposure.push(tmp_exposure)
+            const tmp_exposure = await stakersCall(stakersCallArgs(validator)) as unknown as Exposure & Codec;
+            activeExposures[validator.toString()] = tmp_exposure
           })
         }
         return {
           data: {
             kind,
-            active,
-            waiting,
-            exposure,
-            sessionIndex,
+            activeExposures,
+            waiting:waiting?.map((validator) => validator.toString()),
+            sessionIndex: +sessionIndex,
             currentEra: +currentEra
           }
         }

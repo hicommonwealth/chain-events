@@ -137,10 +137,9 @@ interface IEvent {
  */
 export interface INewSession extends IEvent {
   kind: EventKind.NewSession
-  active: Array<_AccountId>
-  waiting: Array<_AccountId>
-  exposure: Array<Exposure>
-  sessionIndex: SessionIndex
+  activeExposures: {[key: string]: any}
+  waiting: Array<AccountId>
+  sessionIndex: number
   currentEra?: number
 }
 
