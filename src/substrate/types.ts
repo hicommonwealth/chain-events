@@ -1,5 +1,5 @@
 import {
-  Header, EventRecord, Extrinsic, Event, IdentityJudgement as SubstrateJudgement
+  Header, EventRecord, Extrinsic, Event, IdentificationTuple, IdentityJudgement as SubstrateJudgement
 } from '@polkadot/types/interfaces';
 
 export const EventChains = [
@@ -23,6 +23,7 @@ export type BalanceString = string;
 export type BigIntString = string;
 export type BlockNumber = number;
 export type AccountId = string;
+export type AuthorityId = string;
 export type RuntimeVersion = number;
 export enum IdentityJudgement {
   Unknown = 'unknown',
@@ -126,10 +127,27 @@ export enum EventKind {
   JudgementGiven = 'identity-judgement-given',
   IdentityCleared = 'identity-cleared',
   IdentityKilled = 'identity-killed',
+
+  HeartbeatReceived = 'heartbeat-received',
+  SomeOffline = 'some-offline'
 }
 
 interface IEvent {
   kind: EventKind;
+}
+
+/**
+ * ImOnline Events
+ */
+export interface IHeartbeatReceived extends IEvent {
+  kind:EventKind.HeartbeatReceived;
+  authorityId: AuthorityId;
+}
+
+export interface ISomeOffline extends IEvent {
+  kind:EventKind.SomeOffline;
+  sessionIndex: number;
+  validators: Array<IdentificationTuple>
 }
 
 /**
@@ -480,6 +498,8 @@ export type IEventData =
   | IJudgementGiven
   | IIdentityCleared
   | IIdentityKilled
+  | IHeartbeatReceived
+  | ISomeOffline
 // eslint-disable-next-line semi-style
 ;
 

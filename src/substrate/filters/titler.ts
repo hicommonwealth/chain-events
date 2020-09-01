@@ -9,6 +9,21 @@ import { EventKind } from '../types';
 export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
   switch (kind) {
     /**
+     * ImOnline Events
+     */
+    case EventKind.HeartbeatReceived: {
+      return {
+        title: 'Heartbeat Received',
+        description: 'A new heartbeat is received .',
+      };
+    }
+    case EventKind.SomeOffline: {
+      return {
+        title: 'Some validators were offline ',
+        description: 'At the end of the session, at least one validator was found to be offline.',
+      };
+    }
+    /**
      * Staking Events
      */
     case EventKind.Slash: {

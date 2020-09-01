@@ -2,7 +2,7 @@ import { ApiPromise } from '@polkadot/api';
 import {
   Event, ReferendumInfoTo239, AccountId, TreasuryProposal, Balance, PropIndex, Proposal,
   ReferendumIndex, ProposalIndex, VoteThreshold, Hash, BlockNumber, Votes, Extrinsic,
-  ReferendumInfo
+  ReferendumInfo, AuthorityId, IdentificationTuple
 } from '@polkadot/types/interfaces';
 import { ProposalRecord, VoteRecord } from '@edgeware/node-types';
 import { Option, bool, Vec, u32, u64 } from '@polkadot/types';
@@ -30,6 +30,29 @@ export async function Enrich(
     excludeAddresses?: string[],
   }> => {
     switch (kind) {
+      /**
+       * ImOnline Events
+       */
+      case EventKind.HeartbeatReceived: {
+        const [ authorityId ] = event.data as unknown as [ AuthorityId ] & Codec
+        return {
+          data: {
+            kind,
+            authorityId: authorityId.toString()
+          }
+        }
+      }
+      case EventKind.SomeOffline: {
+        const [ validators ] = event.data as unknown as [ Vec<IdentificationTuple> ];
+        const sessionIndex = await api.query.session.currentIndex();
+        return {
+          data: {
+            kind,
+            sessionIndex: +sessionIndex -1,
+            validators
+          }
+        }
+      }
       /**
        * Staking Events
        */

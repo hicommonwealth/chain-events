@@ -13,6 +13,12 @@ export function ParseType (
   // TODO: we can unify this with the enricher file: parse out the kind, and then
   //   marshall the rest of the types in the same place. But for now, we can leave as-is.
   switch (section) {
+    case 'imonline':
+      switch (method) {
+        case 'HeartbeatReceived': return EventKind.HeartbeatReceived;
+        case 'SomeOffline': return EventKind.SomeOffline;
+        default: return null;
+      }
     case 'staking':
       switch (method) {
         case 'Slash': return EventKind.Slash;

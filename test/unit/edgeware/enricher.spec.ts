@@ -2,7 +2,7 @@ import chai from 'chai';
 import {
   AccountId, PropIndex, Hash, ReferendumInfoTo239, ReferendumInfo,
   Proposal, TreasuryProposal, Votes, Event, Extrinsic, Registration,
-  RegistrarInfo
+  RegistrarInfo, IdentificationTuple
 } from '@polkadot/types/interfaces';
 import { DeriveDispatch, DeriveProposalImage } from '@polkadot/api-derive/types';
 import { Vec, bool, Data, TypeRegistry } from '@polkadot/types';
@@ -17,6 +17,7 @@ const { assert } = chai;
 
 const blockNumber = 10;
 const api = constructFakeApi({
+  currentIndex:async()=>2,
   bonded: async (stash) => stash !== 'alice-stash'
     ? constructOption()
     : constructOption('alice' as unknown as AccountId),
@@ -153,6 +154,34 @@ const constructBool = (b: boolean): bool => {
 
 /* eslint-disable: dot-notation */
 describe('Edgeware Event Enricher Filter Tests', () => {
+  it('should enrich Heartbeat event', async () => {
+    const kind = EventKind.HeartbeatReceived;
+    const event = constructEvent([ 'EXkCSUQ6Z1hKvGWMNkUDKrTMVHRduQHWc8G6vgo4NccUmhU' ]);
+    const authorityId = 'EXkCSUQ6Z1hKvGWMNkUDKrTMVHRduQHWc8G6vgo4NccUmhU';
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      data: {
+        kind,
+        authorityId
+      }
+    });
+  });
+  it('should enrich SomeOffline event', async () => {
+    const kind = EventKind.SomeOffline;
+    const validators = api.createType('Vec<IdentificationTuple>')
+    const event = constructEvent([ validators ]);
+    const sessionIndex = 2 - 1; // -1 to get previous session
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      data: {
+        kind,
+        sessionIndex,
+        validators
+      }
+    });
+  });
   /** staking events */
   it('should enrich edgeware/old reward event', async () => {
     const kind = EventKind.Reward;

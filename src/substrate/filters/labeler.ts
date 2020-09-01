@@ -77,6 +77,23 @@ export const Label: LabelerFilter = (
   const balanceFormatter = (bal) => edgBalanceFormatter(chainId, bal);
   switch (data.kind) {
     /**
+     * ImOnline Events
+     */
+    case EventKind.HeartbeatReceived: {
+      const { authorityId } = data;
+      return {
+        heading: 'Validator Slashed',
+        label: ` A new heartbeat was received from ${fmtAddr(authorityId)}.`,
+      };
+    }
+    case EventKind.SomeOffline: {
+      const { sessionIndex } = data;
+      return {
+        heading: 'Validator Slashed',
+        label: `At the end of the session: ${sessionIndex}, at least one validator was found to be offline.`,
+      };
+    }
+    /**
      * Staking Events
      */
     case EventKind.Slash: {
