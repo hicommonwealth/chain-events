@@ -126,7 +126,6 @@ export function constructFakeApi(
         registrars: callOverrides['registrars'],
       },
       session: {
-        identityOf,
         currentIndex: callOverrides['currentIndex'],
       }
     },
