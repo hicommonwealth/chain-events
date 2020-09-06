@@ -99,7 +99,9 @@ export function constructFakeApi(
       },
       staking: {
         bonded: callOverrides['bonded'],
-        currentEra:callOverrides['currentEra']
+        currentEra: callOverrides['currentEra'],
+        eraStakers:callOverrides['eraStakers'],
+        stakers:callOverrides['stakers']
       },
       democracy: {
         referendumInfoOf: callOverrides['referendumInfoOf'],
@@ -131,6 +133,9 @@ export function constructFakeApi(
       }
     },
     derive: {
+      staking: {
+        validators: callOverrides['validatorsDerive'],
+      },
       chain: {
         bestNumber: callOverrides['bestNumber'],
       },

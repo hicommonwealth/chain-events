@@ -1,7 +1,6 @@
 import {
-  Header, EventRecord, Extrinsic, ValidatorId, Event, IdentityJudgement as SubstrateJudgement, Exposure, SessionIndex
+  Header, EventRecord, Extrinsic, AccountId as _AccountId, Event, IdentityJudgement as SubstrateJudgement, Exposure, SessionIndex
 } from '@polkadot/types/interfaces';
-import { Vec } from '@polkadot/types';
 
 export const EventChains = [
   'edgeware',
@@ -138,9 +137,9 @@ interface IEvent {
  */
 export interface INewSession extends IEvent {
   kind: EventKind.NewSession
-  validators: Array<ValidatorId>;
-  exposure: Array<Exposure>;
-  sessionIndex: SessionIndex
+  activeExposures: {[key: string]: any}
+  waiting: Array<AccountId>
+  sessionIndex: number
   currentEra?: number
 }
 
