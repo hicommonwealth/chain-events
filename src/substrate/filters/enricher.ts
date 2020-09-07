@@ -8,7 +8,7 @@ import { ProposalRecord, VoteRecord } from '@edgeware/node-types';
 import { Option, bool, Vec, u32, u64 } from '@polkadot/types';
 import { Codec } from '@polkadot/types/types';
 import { CWEvent } from '../../interfaces';
-import { EventKind, IEventData, isEvent, parseJudgement, IdentityJudgement } from '../types';
+import { EventKind, IEventData, isEvent, parseJudgement, IdentityJudgement, IExposure } from '../types';
 
 /**
  * This is an "enricher" function, whose goal is to augment the initial event data
@@ -44,12 +44,29 @@ export async function Enrich(
       }
       case EventKind.SomeOffline: {
         const [ validators ] = event.data as unknown as [ Vec<IdentificationTuple> ];
+        let _validators: Array<[string, IExposure]>= [];
+
+        validators.forEach((validator)=>{
+          let tmpValidator:[string, IExposure] = [ '', { total:"", own:'', others:[] } ];
+
+          tmpValidator[0] = validator[0].toString(); // Assiging the AccountId of validator that was offline to temporary validator
+          tmpValidator[1].total = validator[1].total.toString(); // Assiging the total stake of validator that was offline to temporary validator
+          tmpValidator[1].own = validator[1].own.toString();// Assiging own stake of validator that was offline to temporary validator
+          // Assiging the who and value of validator that was offline to temporary validator
+          validator[1].others.forEach((value, index) => {
+            tmpValidator[1].others.push({who: value.who.toString(), value:value.value.toString()})
+        })
+          _validators.push(tmpValidator); //pushing the temporary validetor to _validator to be returned in result
+        });
+
         const sessionIndex = await api.query.session.currentIndex();
         return {
           data: {
             kind,
-            sessionIndex: +sessionIndex -1,
-            validators
+            /** SomeOffline Event gets fired at the end of a session when any validator was found to be offline, and enricher gets executed after that (where a new session have begun);
+            I intend to indicate that validators were offline in the sessionIndex; To give the actual sessionIndex where validators were offline, I have introduced -1*/
+            sessionIndex: +sessionIndex -1, 
+            validators: _validators
           }
         }
       }

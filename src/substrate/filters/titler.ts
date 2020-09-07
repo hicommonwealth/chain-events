@@ -14,12 +14,12 @@ export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
     case EventKind.HeartbeatReceived: {
       return {
         title: 'Heartbeat Received',
-        description: 'A new heartbeat is received .',
+        description: 'A new heartbeat is received.',
       };
     }
     case EventKind.SomeOffline: {
       return {
-        title: 'Some validators were offline ',
+        title: 'Some Validators Offline',
         description: 'At the end of the session, at least one validator was found to be offline.',
       };
     }

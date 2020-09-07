@@ -135,6 +135,16 @@ export enum EventKind {
 interface IEvent {
   kind: EventKind;
 }
+export interface IExposure {
+  total: BalanceString;
+  own: BalanceString;
+  others: Array<IIndividualExposure>;
+}
+
+interface IIndividualExposure {
+  who: AccountId;
+  value: BalanceString;
+}
 
 /**
  * ImOnline Events
@@ -147,7 +157,7 @@ export interface IHeartbeatReceived extends IEvent {
 export interface ISomeOffline extends IEvent {
   kind:EventKind.SomeOffline;
   sessionIndex: number;
-  validators: Array<IdentificationTuple>
+  validators: Array<[AccountId, IExposure]>
 }
 
 /**

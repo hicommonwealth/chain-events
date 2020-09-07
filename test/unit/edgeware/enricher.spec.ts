@@ -11,7 +11,7 @@ import { stringToHex } from '@polkadot/util';
 import { ProposalRecord, VoteRecord } from '@edgeware/node-types';
 import { Enrich } from '../../../src/substrate/filters/enricher';
 import { constructFakeApi, constructOption, constructIdentityJudgement } from './testUtil';
-import { EventKind, IdentityJudgement } from '../../../src/substrate/types';
+import { EventKind, IdentityJudgement, IExposure } from '../../../src/substrate/types';
 
 const { assert } = chai;
 
@@ -169,7 +169,11 @@ describe('Edgeware Event Enricher Filter Tests', () => {
   });
   it('should enrich SomeOffline event', async () => {
     const kind = EventKind.SomeOffline;
-    const validators = api.createType('Vec<IdentificationTuple>')
+    let validatorExposure: IExposure = { total: '2500', own: '100', others: [{ who: 'QQWESUQ6Z1hKvGWMNkUDKrTMVHRduQHWc8G6vgo4NccUmhU', value: '10' }]};
+    let validator: [string, IExposure] = ['EXkCSUQ6Z1hKvGWMNkUDKrTMVHRduQHWc8G6vgo4NccUmhU', validatorExposure]
+    let validators : Array<[string, IExposure]> = [];
+
+    validators.push(validator);
     const event = constructEvent([ validators ]);
     const sessionIndex = 2 - 1; // -1 to get previous session
     const result = await Enrich(api, blockNumber, kind, event);
