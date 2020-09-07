@@ -82,7 +82,7 @@ export const Label: LabelerFilter = (
     case EventKind.HeartbeatReceived: {
       const { authorityId } = data;
       return {
-        heading: 'Validator Slashed',
+        heading: 'Heartbeat Received',
         label: ` A new heartbeat was received from ${fmtAddr(authorityId)}.`,
       };
     }
@@ -93,6 +93,27 @@ export const Label: LabelerFilter = (
         label: `At the end of the session: ${sessionIndex}, at least one validator was found to be offline.`,
       };
     }
+
+    case EventKind.AllGood: {
+      const { sessionIndex } = data;
+      return {
+        heading: 'All Good',
+        label: `At the end of the session: ${sessionIndex}, no offence was committed.`,
+      };
+    }
+
+    /**
+     * Session Events
+     */
+    case EventKind.NewSession: {
+      const { sessionIndex } = data;
+      return {
+        heading: 'New Session',
+        label: `Session ${sessionIndex.toString()} has begun.`,
+        // TODO: get link to validator page
+      };
+    }
+
     /**
      * Staking Events
      */
