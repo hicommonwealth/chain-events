@@ -1,6 +1,9 @@
 import {
   Header, EventRecord, Extrinsic, Event, IdentityJudgement as SubstrateJudgement
 } from '@polkadot/types/interfaces';
+import { IdentificationTuple } from '@polkadot/types/interfaces/session';
+import { Vec, Option } from '@polkadot/types';
+import { OffenceDetails } from '@polkadot/types/interfaces/offences';
 
 export const EventChains = [
   'edgeware',
@@ -120,6 +123,14 @@ export enum EventKind {
 
   TreasuryRewardMinting = 'treasury-reward-minting',
   TreasuryRewardMintingV2 = 'treasury-reward-minting-v2',
+
+  // offences events
+  Offence = 'offences-offence',
+
+  // imOnline events
+  AllGood = 'im-online-all-good',
+  SomeOffline = 'im-online-some-offline',
+  HeartbeatReceived = 'im-online-hearth-beat-received',
 
   IdentitySet = 'identity-set',
   JudgementGiven = 'identity-judgement-given',
@@ -437,6 +448,35 @@ export interface IIdentityKilled extends IEvent {
   who: AccountId;
 }
 
+/**
+ * Offences Events
+ */
+export interface ISubstrateOffence extends IEvent {
+  kind: EventKind.Offence;
+  offenceKind: string;
+  opaqueTimeSlot: string;
+  applied: boolean;
+  offenders: string[]
+}
+
+/**
+ * imOnline Events
+ */
+export interface ISubstrateAllGood extends IEvent {
+  kind: EventKind.AllGood;
+  sessionIndex: number;
+}
+export interface ISubstrateSomeOffline extends IEvent {
+  kind: EventKind.SomeOffline;
+  sessionIndex: number;
+  validators: Vec<IdentificationTuple>;
+}
+export interface ISubstrateHeartbeatReceived extends IEvent {
+  kind: EventKind.HeartbeatReceived;
+  sessionIndex: number;
+  authorityId: string;
+}
+
 export type IEventData =
   ISlash
   | IReward
@@ -479,6 +519,10 @@ export type IEventData =
   | IJudgementGiven
   | IIdentityCleared
   | IIdentityKilled
+  | ISubstrateOffence
+  | ISubstrateSomeOffline
+  | ISubstrateAllGood
+  | ISubstrateHeartbeatReceived
 // eslint-disable-next-line semi-style
 ;
 

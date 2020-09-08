@@ -117,6 +117,53 @@ export const Label: LabelerFilter = (
     }
 
     /**
+     * Offences Events
+     */
+    case EventKind.Offence: {
+      const { offenceKind, opaqueTimeSlot, applied } = data;
+      return {
+        heading: 'Offence',
+        label: `An offence of type ${offenceKind} is reported and ${applied ? 'applied' : 'queued'} at time ${opaqueTimeSlot}.`,
+        linkUrl: chainId
+          ? `/${chainId}/validators`
+          : null,
+      };
+    }
+
+    /**
+     * ImOnline Events
+     */
+    case EventKind.AllGood: {
+      const { sessionIndex } = data;
+      return {
+        heading: 'Offence',
+        label: `At the end of the session ${sessionIndex}, no offence was committed.`,
+        linkUrl: chainId
+          ? `/${chainId}/validators`
+          : null,
+      };
+    }
+    case EventKind.SomeOffline: {
+      const { sessionIndex, validators } = data;
+      return {
+        heading: 'Offence',
+        label: `At the end of the session ${sessionIndex}, ${validators.length} ${validators.length === 1 ? 'validator was' : 'validators were'} found to be offline.`,
+        linkUrl: chainId
+          ? `/${chainId}/validators`
+          : null,
+      };
+    }
+    case EventKind.HeartbeatReceived: {
+      const { sessionIndex, authorityId } = data;
+      return {
+        heading: 'Offence',
+        label: `A new heartbeat was received from Authority ${authorityId} for session ${sessionIndex}`,
+        linkUrl: chainId
+        ? `/${chainId}/account/${authorityId}`
+        : null
+      };
+    }
+    /**
      * Democracy Events
      */
     case EventKind.VoteDelegated: {

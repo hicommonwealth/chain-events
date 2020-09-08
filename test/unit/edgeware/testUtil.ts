@@ -100,6 +100,9 @@ export function constructFakeApi(
       staking: {
         bonded: callOverrides['bonded'],
       },
+      session: {
+        currentIndex: callOverrides['currentIndex'],
+      },
       democracy: {
         referendumInfoOf: callOverrides['referendumInfoOf'],
         publicProps: callOverrides['publicProps'],
@@ -120,6 +123,12 @@ export function constructFakeApi(
       },
       voting: {
         voteRecords: callOverrides['voteRecords'],
+      },
+      offences: {
+        concurrentReportsIndex: callOverrides['concurrentReportsIndex'],
+        reports: {
+          multi: callOverrides['reports.multi'],
+        }
       },
       identity: {
         identityOf,

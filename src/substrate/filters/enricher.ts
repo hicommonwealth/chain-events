@@ -1,12 +1,17 @@
 import { ApiPromise } from '@polkadot/api';
+import BN from 'bn.js';
 import {
   Event, ReferendumInfoTo239, AccountId, TreasuryProposal, Balance, PropIndex, Proposal,
   ReferendumIndex, ProposalIndex, VoteThreshold, Hash, BlockNumber, Votes, Extrinsic,
   ReferendumInfo
 } from '@polkadot/types/interfaces';
+import { get } from 'lodash';
+import { AuthorityId } from '@polkadot/types/interfaces/consensus';
+import { Kind, OpaqueTimeSlot, OffenceDetails } from '@polkadot/types/interfaces/offences';
 import { ProposalRecord, VoteRecord } from '@edgeware/node-types';
 import { Option, bool, Vec, u32, u64 } from '@polkadot/types';
 import { Codec } from '@polkadot/types/types';
+import { IdentificationTuple } from '@polkadot/types/interfaces/session';
 import { CWEvent } from '../../interfaces';
 import { EventKind, IEventData, isEvent, parseJudgement, IdentityJudgement } from '../types';
 
@@ -571,6 +576,70 @@ export async function Enrich(
           data: {
             kind,
             who: who.toString(),
+          }
+        };
+      }
+
+      /**
+       * Offences Events
+       */
+      case EventKind.Offence: {
+        const [ offenceKind, opaqueTimeSlot, applied ] = event.data as unknown as [ Kind, OpaqueTimeSlot, boolean ];
+        const reportIds = await api.query.offences.concurrentReportsIndex(offenceKind, opaqueTimeSlot);
+        const offenceDetails: Option<OffenceDetails>[] = await api.query.offences.reports
+          .multi(reportIds.map((reportId) => reportId.toString()));
+        const offenders : string[] = offenceDetails.map((offence)=>{
+          return get(offence, 'offender[0]', '').toString();
+        });
+        return {
+          data: {
+            kind,
+            offenceKind: offenceKind.toString(),
+            opaqueTimeSlot: opaqueTimeSlot.toString(),
+            applied: typeof applied === 'undefined' ? true : applied,
+            offenders
+          }
+        };
+      }
+      case EventKind.AllGood: {
+        const index: BN = await api.query.session.currentIndex();
+        // last session index
+        const sessionIndex = index.toNumber() - 1;
+
+        return {
+          data: {
+            kind,
+            sessionIndex
+          }
+        };
+      }
+      case EventKind.HeartbeatReceived: {
+        const [ authorityId ] = event.data as unknown as [ AuthorityId ];
+        const index: BN = await api.query.session.currentIndex();
+        // last session index
+        const sessionIndex = index.toNumber() - 1;
+        console.log('------------------>', authorityId);
+        console.log('------------------>', authorityId.toString());
+        return {
+          data: {
+            kind,
+            sessionIndex,
+            authorityId: authorityId.toString()
+          }
+        };
+      }
+
+      case EventKind.SomeOffline: {
+        const [ validators ] = event.data as unknown as [ Vec<IdentificationTuple> ];
+        const index: BN = await api.query.session.currentIndex();
+        // last session index
+        const sessionIndex = index.toNumber() - 1;
+
+        return {
+          data: {
+            kind,
+            sessionIndex,
+            validators
           }
         };
       }

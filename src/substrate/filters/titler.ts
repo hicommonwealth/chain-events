@@ -37,6 +37,37 @@ export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
     }
 
     /**
+     * Offences Events
+     */
+    case EventKind.Offence: {
+      return {
+        title: 'Offence Reported',
+        description: 'An offence of given type is reported at timeslot.',
+      };
+    }
+
+    /**
+     * ImOnline Events
+     */
+    case EventKind.SomeOffline: {
+      return {
+        title: 'imOnline SomeOffline',
+        description: 'At the end of the session, at least one validator was found to be offline.',
+      };
+    }
+    case EventKind.AllGood: {
+      return {
+        title: 'imOnline AllGood',
+        description: 'At the end of the session, no offence was committed.',
+      };
+    }
+    case EventKind.HeartbeatReceived: {
+      return {
+        title: 'imOnline HeartbeatReceived',
+        description: 'A new heartbeat was received from Authority',
+      };
+    }
+    /**
      * Democracy Events
      */
     case EventKind.VoteDelegated: {
