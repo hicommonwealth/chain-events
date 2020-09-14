@@ -84,28 +84,29 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     // get current blockNumber for synthesizing events
     this._blockNumber = +(await this._api.rpc.chain.getHeader()).number;
 
-    /** democracy proposals */
-    const democracyProposalEvents = await this._fetchDemocracyProposals();
-
-    /** democracy referenda */
-    const democracyReferendaEvents = await this._fetchDemocracyReferenda();
-
-    /** democracy preimages */
-    const proposalHashes = democracyProposalEvents
-      .map((d) => (d.data as IDemocracyStarted).proposalHash);
-    const referendaHashes = democracyReferendaEvents
-      .filter((d) => d.data.kind === EventKind.DemocracyStarted)
-      .map((d) => (d.data as IDemocracyStarted).proposalHash);
-    const democracyPreimageEvents = await this._fetchDemocracyPreimages([ ...proposalHashes, ...referendaHashes ]);
-
-    /** treasury proposals */
-    const treasuryProposalEvents = await this._fetchTreasuryProposals();
-
-    /** collective proposals */
-    const collectiveProposalEvents = await this._fetchCollectiveProposals();
-
-    /** signaling proposals */
-    const signalingProposalEvents = await this._fetchSignalingProposals();
+    const [
+      [ democracyProposalEvents,
+        democracyReferendaEvents,
+        democracyPreimageEvents ],
+      treasuryProposalEvents,
+      collectiveProposalEvents,
+      signalingProposalEvents,
+    ] = await Promise.all([
+      // preimages depend on proposal and referendum events, so fetch those
+      Promise.all([ this._fetchDemocracyProposals(), this._fetchDemocracyReferenda() ])
+        .then((async ([ democracyProposalEvents, democracyReferendaEvents ]) => {
+          const proposalHashes = democracyProposalEvents
+            .map((d) => (d.data as IDemocracyStarted).proposalHash);
+          const referendaHashes = democracyReferendaEvents
+            .filter((d) => d.data.kind === EventKind.DemocracyStarted)
+            .map((d) => (d.data as IDemocracyStarted).proposalHash);
+          const democracyPreimageEvents = await this._fetchDemocracyPreimages([ ...proposalHashes, ...referendaHashes ]);
+          return [ democracyProposalEvents, democracyReferendaEvents, democracyPreimageEvents ];
+        })),
+      this._fetchTreasuryProposals(),
+      this._fetchCollectiveProposals(),
+      this._fetchSignalingProposals(),
+    ]);
 
     log.info('Fetch complete.');
     return [
