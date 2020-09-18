@@ -13,6 +13,7 @@ yarn add @commonwealth/chain-events
 For developing on this project itself, first you must build the project to replicate the npm package structure (using the typescript compiler), and then you can install your local version via `yarn link`:
 
 ```bash
+~/chain-events$ yarn
 ~/chain-events$ yarn build
 ~/chain-events$ yarn link
 ~/chain-events$ cd ~/project-name
