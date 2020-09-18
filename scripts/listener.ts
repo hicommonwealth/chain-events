@@ -20,6 +20,8 @@ const networks = {
 
   'moloch': 'wss://mainnet.infura.io/ws',
   'moloch-local': 'ws://127.0.0.1:9545',
+
+  'marlin': 'wss://mainnet.infura.io/ws',
 };
 
 const contracts = {
