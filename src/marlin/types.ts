@@ -35,3 +35,5 @@ type Balance = string;
 
 
 // export type IEventData = IEachEventKind | IEachEventKind2...
+
+export const EventKinds: EventKind[] = Object.values(EventKind);
