@@ -235,6 +235,9 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
     case MolochTypes.EventKind.Abort: {
       return [ MolochTypes.EntityKind.Proposal, EntityEventKind.Complete ];
     }
+
+    // Marlin Events
+
     default: {
       return null;
     }
