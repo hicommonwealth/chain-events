@@ -5,6 +5,7 @@ import { GovernorAlpha } from './contractTypes/GovernorAlpha';
 import { Timelock } from './contractTypes/Timelock';
 
 // Used to unwrap promises returned by contract functions
+// TODO: What functions do I need to UnPromisify?
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 // export type CompSOMETHING= UnPromisify<ReturnType<Comp['functions'][]>>
 
