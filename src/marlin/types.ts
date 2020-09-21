@@ -28,8 +28,13 @@ export enum EventKind {
   DelegateVotesChanged = 'delegate-votes-changed',
   Transfer = 'transfer',
   // TODO: GovernorAlpha Events
-
+  ProposalExecuted = 'proposal-executed',
+  ProposalCreated = 'proposal-created',
+  ProposalCanceled = 'proposal-canceled',
+  ProposalQueued = 'proposal-queued',
+  VoteCast = 'vote-cast',
   // TODO: Timelock Events
+
 }
 
 interface IEvent {
@@ -69,6 +74,41 @@ export interface ITransfer extends IEvent {
 }
 
 // TODO: GovernorAlpha Event Interfaces
+export interface IProposalCanceled extends IEvent {
+  kind: EventKind.ProposalCanceled,
+  id: number,
+}
+
+export interface IProposalCreated extends IEvent {
+  kind: EventKind.ProposalCreated,
+  id: number,
+  proposer: Address | null,
+  targets: Address[], // in function, encoding string[]
+  values: number[], // BigNumberish[]
+  signatures: Address[], // string[]
+  calldatas: string[], // Arrayish[], TODO: decide on type
+  startBlock: number,
+  endBlock: number,
+  description: string,
+}
+
+export interface IProposalExecuted extends IEvent {
+  kind: EventKind.ProposalExecuted,
+  id: number,
+}
+export interface IProposalQueued extends IEvent {
+  kind: EventKind.ProposalQueued,
+  id: number,
+  eta: number,
+}
+export interface IVoteCast extends IEvent {
+  kind: EventKind.VoteCast,
+  voter: Address,
+  proposalId: number,
+  support: boolean, 
+  votes: Balance, // TODO: or just number?
+}
+
 
 // TODO: Timelock Event Interfaces
 
