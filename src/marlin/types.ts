@@ -34,7 +34,8 @@ export enum EventKind {
   ProposalQueued = 'proposal-queued',
   VoteCast = 'vote-cast',
   // TODO: Timelock Events
-
+  CancelTransaction = 'cancel-transaction',
+  ExecuteTransaction = 'execute-transactions',
 }
 
 interface IEvent {
@@ -113,7 +114,25 @@ export interface IVoteCast extends IEvent {
 
 
 // TODO: Timelock Event Interfaces
+export interface ICancelTransaction extends IEvent {
+  kind: EventKind.CancelTransaction,
+  txHash: [], // Arrayish, TODO: decide type
+  target: Address,
+  value: Balance,// TODO: or just number?
+  signature: string,
+  data: [], // Arrayish, TODO: decide type
+  eta: number,
+}
 
+export interface IExecuteTransaction extends IEvent {
+  kind: EventKind.ExecuteTransaction,
+  txHash: [], // Arrayish, TODO: decide type
+  target: Address,
+  value: Balance,// TODO: or just number?
+  signature: string,
+  data: [], // Arrayish, TODO: decide type
+  eta: number,
+}
 
 export type IEventData =
   IApproval
