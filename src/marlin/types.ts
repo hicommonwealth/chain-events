@@ -135,10 +135,20 @@ export interface IExecuteTransaction extends IEvent {
 }
 
 export type IEventData =
+  // Comp
   IApproval
   | IDelegateChanged
   | IDelegateVotesChanged
   | ITransfer
+  // GovernorAlpha
+  | IProposalCanceled
+  | IProposalCreated
+  | IProposalExecuted
+  | IProposalQueued
+  | IVoteCast
+  // Timelock
+  | ICancelTransaction
+  | IExecuteTransaction
   // eslint-disable-next-line semi-style
 ;
 
