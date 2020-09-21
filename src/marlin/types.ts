@@ -96,11 +96,13 @@ export interface IProposalExecuted extends IEvent {
   kind: EventKind.ProposalExecuted,
   id: number,
 }
+
 export interface IProposalQueued extends IEvent {
   kind: EventKind.ProposalQueued,
   id: number,
   eta: number,
 }
+
 export interface IVoteCast extends IEvent {
   kind: EventKind.VoteCast,
   voter: Address,
