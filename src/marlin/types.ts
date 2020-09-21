@@ -36,6 +36,10 @@ export enum EventKind {
   // TODO: Timelock Events
   CancelTransaction = 'cancel-transaction',
   ExecuteTransaction = 'execute-transactions',
+  NewAdmin = 'new-admin',
+  NewDelay = 'new-delay',
+  NewPendingAdmin = 'new-pending-admin',
+  QueueTransaction = 'queue-transaction',
 }
 
 interface IEvent {
@@ -134,6 +138,31 @@ export interface IExecuteTransaction extends IEvent {
   eta: number,
 }
 
+export interface INewAdmin extends IEvent {
+  kind: EventKind.NewAdmin,
+  newAdmin: Address,
+}
+
+export interface INewDelay extends IEvent {
+  kind: EventKind.ExecuteTransaction,
+  newDelay: number,
+}
+
+export interface INewPendingAdmin extends IEvent {
+  kind: EventKind.ExecuteTransaction,
+  newPendingAdmin: Address,
+}
+
+export interface IQueueTransaction extends IEvent {
+  kind: EventKind.ExecuteTransaction,
+  txHash: [], // Arrayish, TODO: decide type
+  target: Address,
+  value: Balance,// TODO: or just number?
+  signature: string,
+  data: [], // Arrayish, TODO: decide type
+  eta: number,
+}
+
 export type IEventData =
   // Comp
   IApproval
@@ -149,6 +178,10 @@ export type IEventData =
   // Timelock
   | ICancelTransaction
   | IExecuteTransaction
+  | INewAdmin
+  | INewDelay
+  | INewPendingAdmin
+  | IQueueTransaction
   // eslint-disable-next-line semi-style
 ;
 
