@@ -16,9 +16,10 @@ export const EventChains = ['marlin', 'marlin-local'] as const;
 
 export type RawEvent = Event;
 
-export enum EntityKind {
-  Proposal = 'proposal',
-}
+// TODO: is necessary?
+// export enum EntityKind {
+//   Proposal = 'proposal',
+// }
 
 export enum EventKind {
   // Comp Events
@@ -40,15 +41,31 @@ type Balance = string;
 
 // Comp Event Interfaces
 export interface IApproval extends IEvent {
+  kind: EventKind.Approval,
+  owner: Address,
+  spender: Address,
+  amount: Balance,
 }
 
 export interface IDelegateChanged extends IEvent {
+  kind: EventKind.DelegateChanged,
+  delegator: Address,
+  fromDelegate: Address,
+  toDelegate: Address,
 }
 
 export interface IDelegateVotesChanged extends IEvent {
+  kind: EventKind.DelegateVotesChanged,
+  delegate: Address,
+  previousBalance: Balance,
+  newBalance: Balance,
 }
 
 export interface ITransfer extends IEvent {
+  kind: EventKind.Transfer,
+  from: Address,
+  to: Address,
+  amount: Balance,
 }
 
 // TODO: GovernorAlpha Event Interfaces
