@@ -4,13 +4,14 @@
 
 import * as SubstrateTypes from './substrate/types';
 import * as MolochTypes from './moloch/types';
+import * as MarlinTypes from './marlin/types';
 
 // add other events here as union types
-export type IChainEntityKind = SubstrateTypes.EntityKind | MolochTypes.EntityKind;
-export type IChainEventData = SubstrateTypes.IEventData | MolochTypes.IEventData;
-export type IChainEventKind = SubstrateTypes.EventKind | MolochTypes.EventKind;
-export const ChainEventKinds = [...SubstrateTypes.EventKinds, ...MolochTypes.EventKinds];
-export const EventSupportingChains = [...SubstrateTypes.EventChains, ...MolochTypes.EventChains] as const;
+export type IChainEntityKind = SubstrateTypes.EntityKind | MolochTypes.EntityKind | MarlinTypes.EntityKind;
+export type IChainEventData = SubstrateTypes.IEventData | MolochTypes.IEventData | MarlinTypes.IEventData;
+export type IChainEventKind = SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind;
+export const ChainEventKinds = [...SubstrateTypes.EventKinds, ...MolochTypes.EventKinds, ...MarlinTypes.EventKinds];
+export const EventSupportingChains = [...SubstrateTypes.EventChains, ...MolochTypes.EventChains, ...MarlinTypes.EventChains] as const;
 export type EventSupportingChainT = typeof EventSupportingChains[number];
 
 export function chainSupportedBy<T extends readonly string[]>(c: string, eventChains: T): c is T[number] {
@@ -152,6 +153,9 @@ export function entityToFieldName(entity: IChainEntityKind): string | null {
     case MolochTypes.EntityKind.Proposal: {
       return 'proposalIndex';
     }
+    case MarlinTypes.EntityKind.Proposal: {
+      return 'proposalIndex'; // TODO: Check
+    }
     default: {
       // should be exhaustive
       const dummy: never = entity;
@@ -237,6 +241,53 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
     }
 
     // Marlin Events
+    // TODO: Are all these EntityKinds Proposals? or are some Transactions? 
+    // TODO: Check all EntityKinds! Double Check 'em!
+    case MarlinTypes.EventKind.Approval: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
+    }
+    case MarlinTypes.EventKind.CancelTransaction: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
+    }
+    case MarlinTypes.EventKind.DelegateChanged: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Update ];
+    }
+    case MarlinTypes.EventKind.DelegateVotesChanged: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Update ];
+    }
+    case MarlinTypes.EventKind.ExecuteTransaction: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
+    }
+    case MarlinTypes.EventKind.NewAdmin: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Create ]; // TODO: Update? Diff from NewPendingAdmin?
+    }
+    case MarlinTypes.EventKind.NewDelay: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Create ];
+    }
+    case MarlinTypes.EventKind.NewPendingAdmin: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Create ];
+    }
+    case MarlinTypes.EventKind.ProposalCanceled: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
+    }
+    case MarlinTypes.EventKind.ProposalCreated: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Create ];
+    }
+    case MarlinTypes.EventKind.ProposalExecuted: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
+    }
+    case MarlinTypes.EventKind.ProposalQueued: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Create ]; // TODO: Create or Update?
+    }
+    case MarlinTypes.EventKind.QueueTransaction: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Update ]; // TODO: Create or Update?
+    }
+    case MarlinTypes.EventKind.Transfer: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
+    }
+    case MarlinTypes.EventKind.VoteCast: {
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
+    }
 
     default: {
       return null;
