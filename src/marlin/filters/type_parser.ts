@@ -30,7 +30,7 @@ export function ParseType(
     case 'NewPendingAdmin': return EventKind.NewPendingAdmin;
     case 'QueueTransaction': return EventKind.QueueTransaction;
     default: {
-      log.warn(`Unknown Moloch event name: ${name}!`);
+      log.warn(`Unknown Marlin event name: ${name}!`);
       return null;
     }
   }
