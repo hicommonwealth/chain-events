@@ -150,17 +150,17 @@ export interface INewAdmin extends IEvent {
 }
 
 export interface INewDelay extends IEvent {
-  kind: EventKind.ExecuteTransaction,
+  kind: EventKind.NewDelay,
   newDelay: number,
 }
 
 export interface INewPendingAdmin extends IEvent {
-  kind: EventKind.ExecuteTransaction,
+  kind: EventKind.NewPendingAdmin,
   newPendingAdmin: Address,
 }
 
 export interface IQueueTransaction extends IEvent {
-  kind: EventKind.ExecuteTransaction,
+  kind: EventKind.QueueTransaction,
   txHash: string, // Arrayish, @jake suggested strings for hashes
   target: Address,
   value: Balance,// TODO: or just number?
