@@ -26,12 +26,16 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
       this._verbose ? log.info(logStr) : log.trace(logStr);
       cb(event);
     };
-    this._api.addListener('*', this._listener);
+    this._api.comp.addListener('*', this._listener);
+    this._api.governorAlpha.addListener('*', this._listener);
+    this._api.timelock.addListener('*', this._listener);
   }
 
   public unsubscribe(): void {
     if (this._listener) {
-      this._api.removeListener('*', this._listener);
+      this._api.comp.removeListener('*', this._listener);
+      this._api.governorAlpha.removeListener('*', this._listener);
+      this._api.timelock.removeListener('*', this._listener);
       this._listener = null;
     }
   }
