@@ -7,7 +7,7 @@ import { Timelock } from './contractTypes/Timelock';
 // Used to unwrap promises returned by contract functions
 // TODO: What functions do I need to UnPromisify?
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;
-// export type CompSOMETHING= UnPromisify<ReturnType<Comp['functions'][]>>
+export type Proposal = UnPromisify<ReturnType<GovernorAlpha['functions']['proposals']>>
 
 // API is imported contracts classes
 export type Api = Comp | GovernorAlpha | Timelock;
@@ -17,9 +17,9 @@ export const EventChains = ['marlin', 'marlin-local'] as const;
 export type RawEvent = Event;
 
 // TODO: is necessary?
-// export enum EntityKind {
-//   Proposal = 'proposal',
-// }
+export enum EntityKind {
+  Proposal = 'proposal',
+}
 
 export enum EventKind {
   // Comp Events
