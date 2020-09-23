@@ -89,9 +89,9 @@ export interface IProposalCanceled extends IEvent {
 export interface IProposalCreated extends IEvent {
   kind: EventKind.ProposalCreated,
   id: number,
-  proposer: Address,
+  proposer?: Address,
   targets: Address[], // in function, encoding string[]
-  values: number[], // BigNumberish[]
+  values: string[], // BigNumberish[]
   signatures: Address[], // string[]
   calldatas: string[], // Arrayish[], TODO: decide on type
   startBlock: number,
