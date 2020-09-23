@@ -12,9 +12,6 @@ export type Proposal = UnPromisify<ReturnType<GovernorAlpha['functions']['propos
 
 // API is imported contracts classes
 interface IMarlinContracts {
-
-}
-interface IMarlinContracts {
   comp: Comp,
   governorAlpha: GovernorAlpha,
   timelock: Timelock, 
