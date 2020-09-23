@@ -107,7 +107,7 @@ export async function Enrich(
         endBlock,
         description,
       } = rawData.args as any;
-      
+
       return {
         blockNumber,
         excludeAddresses: [ proposer ],
@@ -125,16 +125,130 @@ export async function Enrich(
         },
       };
     }
-    case EventKind.ProposalExecuted: {}
-    case EventKind.ProposalQueued: {}
-    case EventKind.VoteCast: {}
-
-    case EventKind.CancelTransaction: {}
-    case EventKind.ExecuteTransaction: {}
-    case EventKind.NewAdmin: {}
-    case EventKind.NewDelay: {}
-    case EventKind.NewPendingAdmin: {}
-    case EventKind.QueueTransaction: {}
+    case EventKind.ProposalExecuted: {
+      const { id, } = rawData.args as any;
+      return {
+        blockNumber,
+        excludeAddresses: [],
+        data: {
+          kind,
+          id,
+        }
+      }
+    }
+    case EventKind.ProposalQueued: {
+      const { id, eta } = rawData.args as any;
+      return {
+        blockNumber,
+        excludeAddresses: [],
+        data: {
+          kind,
+          id,
+          eta,
+        }
+      }
+    }
+    case EventKind.VoteCast: {
+      const {
+        voter,
+        proposalId,
+        support,
+        votes,
+      } = rawData.args as any;
+      return {
+        blockNumber,
+        excludeAddresses: [ voter, ],
+        data: {
+          kind,
+          voter,
+          proposalId,
+          support,
+          votes,
+        },
+      };
+    }
+    // Timelock events
+    case EventKind.CancelTransaction: {
+      const { txHash, target, value, signature, data, eta } = rawData.args as any;
+      return {
+        blockNumber,
+        excludeAddresses: [],
+        data: {
+          kind,
+          txHash,
+          target,
+          value,
+          signature,
+          data,
+          eta,
+        },
+      };
+    }
+    case EventKind.ExecuteTransaction: {
+      const { txHash, target, value, signature, data, eta } = rawData.args as any;
+      return {
+        blockNumber,
+        excludeAddresses: [],
+        data: {
+          kind,
+          txHash,
+          target,
+          value,
+          signature,
+          data,
+          eta,
+        },
+      };
+    }
+    case EventKind.NewAdmin: {
+      const { newAdmin, } = rawData.args as any;
+      return {
+        blockNumber,
+        excludeAddresses: [ newAdmin, ],
+        data: {
+          kind,
+          newAdmin,
+        },
+      };
+    }
+    case EventKind.NewDelay: {
+      const { newDelay, } = rawData.args as any;
+      return {
+        blockNumber,
+        excludeAddresses: [],
+        data: {
+          kind,
+          newDelay,
+        },
+      };
+    }
+    case EventKind.NewPendingAdmin: {
+      const { newPendingAdmin, } = rawData.args as any;
+      return {
+        blockNumber,
+        excludeAddresses: [],
+        data: {
+          kind,
+          newPendingAdmin,
+        },
+      };
+    }
+    case EventKind.QueueTransaction: {
+      const { txHash, target, value, signature, data, eta, } = rawData.args as any; 
+      return {
+        blockNumber,
+        excludeAddresses: [],
+        data: {
+          kind,
+          txHash,
+          target,
+          value,
+          signature,
+          data,
+          eta,
+        },
+      };
+    }
 
     default: {}
   }
