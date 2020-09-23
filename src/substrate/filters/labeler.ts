@@ -48,6 +48,8 @@ const getDenom = (chain: EventSupportingChainT): string => {
     case 'polkadot-local': return 'tDOT';
     case 'moloch': return 'Shares';
     case 'moloch-local': return 'tShares';
+    case 'marlin': return 'LIN';
+    case 'marlin-local': return 'tLIN';
     default: {
       const _dummy: never = chain;
       throw new Error('invalid chain');
