@@ -1,4 +1,5 @@
 import { Event } from 'ethers';
+import { compact } from 'underscore';
 import { ISubscribeOptions } from '../interfaces';
 import { Comp } from './contractTypes/Comp';
 import { GovernorAlpha } from './contractTypes/GovernorAlpha';
@@ -13,7 +14,13 @@ export type Proposal = UnPromisify<ReturnType<GovernorAlpha['functions']['propos
 interface IMarlinContracts {
 
 }
-export type Api = Comp | GovernorAlpha | Timelock;
+interface IMarlinContracts {
+  comp: Comp,
+  governorAlpha: GovernorAlpha,
+  timelock: Timelock, 
+};
+
+export type Api = IMarlinContracts;
 
 export const EventChains = ['marlin', 'marlin-local'] as const;
 
