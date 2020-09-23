@@ -250,7 +250,9 @@ export async function Enrich(
       };
     }
 
-    default: {}
+    default: {
+      throw new Error('unknown marlin event kind!');
+    }
   }
 
 
