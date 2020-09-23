@@ -10,6 +10,9 @@ type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 export type Proposal = UnPromisify<ReturnType<GovernorAlpha['functions']['proposals']>>
 
 // API is imported contracts classes
+interface IMarlinContracts {
+
+}
 export type Api = Comp | GovernorAlpha | Timelock;
 
 export const EventChains = ['marlin', 'marlin-local'] as const;
@@ -86,7 +89,7 @@ export interface IProposalCanceled extends IEvent {
 export interface IProposalCreated extends IEvent {
   kind: EventKind.ProposalCreated,
   id: number,
-  proposer: Address | null,
+  proposer: Address,
   targets: Address[], // in function, encoding string[]
   values: number[], // BigNumberish[]
   signatures: Address[], // string[]
