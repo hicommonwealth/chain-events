@@ -16,7 +16,6 @@ export const EventChains = ['marlin', 'marlin-local'] as const;
 
 export type RawEvent = Event;
 
-// TODO: is necessary?
 export enum EntityKind {
   Proposal = 'proposal',
 }
