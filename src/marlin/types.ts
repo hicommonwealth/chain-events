@@ -122,21 +122,21 @@ export interface IVoteCast extends IEvent {
 // TODO: Timelock Event Interfaces
 export interface ICancelTransaction extends IEvent {
   kind: EventKind.CancelTransaction,
-  txHash: [], // Arrayish, TODO: decide type
+  txHash: string, // Arrayish, @jake suggested strings for hashes
   target: Address,
   value: Balance,// TODO: or just number?
   signature: string,
-  data: [], // Arrayish, TODO: decide type
+  data: string, // Arrayish
   eta: number,
 }
 
 export interface IExecuteTransaction extends IEvent {
   kind: EventKind.ExecuteTransaction,
-  txHash: [], // Arrayish, TODO: decide type
+  txHash: string, // Arrayish, @jake suggested strings for hashes
   target: Address,
   value: Balance,// TODO: or just number?
   signature: string,
-  data: [], // Arrayish, TODO: decide type
+  data: string, // Arrayish
   eta: number,
 }
 
@@ -157,11 +157,11 @@ export interface INewPendingAdmin extends IEvent {
 
 export interface IQueueTransaction extends IEvent {
   kind: EventKind.ExecuteTransaction,
-  txHash: [], // Arrayish, TODO: decide type
+  txHash: string, // Arrayish, @jake suggested strings for hashes
   target: Address,
   value: Balance,// TODO: or just number?
   signature: string,
-  data: [], // Arrayish, TODO: decide type
+  data: string, // Arrayish, String | ArrayLike<number>
   eta: number,
 }
 
