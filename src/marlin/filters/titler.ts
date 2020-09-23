@@ -11,95 +11,95 @@ export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
     // Comp events
     case EventKind.Approval: {
       return {
-        title: '',
-        description: '',
+        title: 'Comp Approval', // TODO: Fix
+        description: 'An Approval event happened on Comp Contract.', // TODO: Fix
       };
     }
     case EventKind.DelegateChanged: {
       return {
-        title: '',
-        description: '',
+        title: 'Delegate Changed', // TODO: Fix
+        description: 'A delegated has been changed.', // TODO: Fix
       };
     }
     case EventKind.DelegateVotesChanged: {
       return {
-        title: '',
-        description: '',
+        title: 'A Delegate Changed Votes', // TODO: Fix
+        description: 'A delegate changed or added votes.', // TODO: Fix
       };
     }
     case EventKind.Transfer: {
       return {
-        title: '',
-        description: '',
+        title: 'Tranfer Occurred', // TODO: Fix
+        description: 'Transfer event occurred.', // TODO: Fix
       };
     }
     // GovernorAlpha Events
     case EventKind.ProposalCanceled: {
       return {
-        title: '',
-        description: '',
+        title: 'Proposal cancelled',
+        description: 'A proposal has been cancelled.',
       };
     }
     case EventKind.ProposalCreated: {
       return {
-        title: '',
-        description: '',
+        title: 'Proposal created',
+        description: 'A proposal has been created.',
       };
     }
     case EventKind.ProposalExecuted: {
       return {
-        title: '',
-        description: '',
+        title: 'Proposal executed',
+        description: 'A proposal has been executed.',
       };
     }
     case EventKind.ProposalQueued: {
       return {
-        title: '',
-        description: '',
+        title: 'Proposal queued',
+        description: 'A proposal has been added to the queue.',
       };
     }
     case EventKind.VoteCast: {
       return {
-        title: '',
-        description: '',
+        title: 'Vote cast',
+        description: 'A new vote has been cast.',
       };
 
     }
     // Timelock events
     case EventKind.CancelTransaction: {
       return {
-        title: '',
-        description: '',
+        title: 'Cancel transaction',
+        description: 'A transaction has been cancelled.',
       };
     }
     case EventKind.ExecuteTransaction: {
       return {
-        title: '',
-        description: '',
+        title: 'Execute transaction',
+        description: 'A transaction has been executed.',
       };
     }
     case EventKind.NewAdmin: {
       return {
-        title: '',
-        description: '',
+        title: 'New admin',
+        description: 'A new admin has been confirmed.',
       };
     }
     case EventKind.NewDelay: {
       return {
-        title: '',
-        description: '',
+        title: 'New delay',
+        description: 'A new delay has been set.',
       };
     }
     case EventKind.NewPendingAdmin: {
       return {
-        title: '',
-        description: '',
+        title: 'New pending admin',
+        description: 'A new admin is pending confirmation.',
       };
     }
     case EventKind.QueueTransaction: {
       return {
-        title: '',
-        description: '',
+        title: 'Queue transaction',
+        description: 'A transaction has been added to the queue.',
       };
     }
     default: {
