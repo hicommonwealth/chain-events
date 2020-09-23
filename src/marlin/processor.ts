@@ -10,10 +10,8 @@
 // const log = factory.getLogger(formatFilename(__filename));
 
 // export class Processor extends IEventProcessor<Api, RawEvent> {
-//   private _version: 1 | 2;
 
 //   constructor(api: Api, 
-//     // contractVersion: 1 | 2
 //   ) {
 //     super(api);
 //     // this._version = contractVersion;
@@ -27,7 +25,7 @@
 //    * @returns an array of processed events
 //    */
 //   public async process(event: RawEvent): Promise<CWEvent<IEventData>[]> {
-//     const kind = ParseType(this._version, event.event);
+//     const kind = ParseType(event.event);
 //     if (!kind) return [];
 //     try {
 //       const cwEvent = await Enrich(this._version, this._api, event.blockNumber, kind, event);
