@@ -4,7 +4,6 @@ import { EventKind, RawEvent, IEventData, Api } from '../types';
 
 
 export async function Enrich(
-  version: 1 | 2,
   api: Api,
   blockNumber: number,
   kind: EventKind,
