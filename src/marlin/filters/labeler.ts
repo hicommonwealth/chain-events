@@ -27,60 +27,60 @@ export const Label: LabelerFilter = (
     case EventKind.Approval: {
       return {
         heading: 'Approval', // TODO: Better heading
-        label: '',
+        label: `${data.spender} approved ${data.amount} to ${data.owner}.`,
       };
     }
     case EventKind.DelegateChanged: {
       return {
         heading: 'Delegate Changed',
-        label: '',
+        label: `Delegate (${data.fromDelegate}) has changed to delegate (${data.toDelegate}).`,
       };
     }
     case EventKind.DelegateVotesChanged: {
       return {
         heading: 'Delegate Votes Changed',
-        label: '',
+        label: `Delegate (${data.delegate}) changed votes from ${data.previousBalance} to ${data.newBalance}.`,
       };
     }
     case EventKind.Transfer: {
       return {
         heading: 'Transfer Occurred',
-        label: '',
+        label: `Transfer of ${data.amount}LIN from ${data.from} to ${data.to}.`,
       };
     }
     // GovernorAlpha Events
     case EventKind.ProposalCanceled: {
       return {
         heading: 'Proposal Canceled',
-        label: '',
+        label: ``,
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
     case EventKind.ProposalCreated: {
       return {
         heading: 'Proposal Created',
-        label: '',
+        label: ``,
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
     case EventKind.ProposalExecuted: {
       return {
         heading: 'Proposal Executed',
-        label: '',
+        label: ``,
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
     case EventKind.ProposalQueued: {
       return {
         heading: 'Proposal Queued',
-        label: '',
+        label: ``,
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
     case EventKind.VoteCast: {
       return {
         heading: 'Vote Cast',
-        label: '',
+        label: ``,
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.proposalId}` : null,
       };
 
@@ -89,37 +89,37 @@ export const Label: LabelerFilter = (
     case EventKind.CancelTransaction: {
       return {
         heading: 'Transaction Cancelled',
-        label: '',
+        label: ``,
       };
     }
     case EventKind.ExecuteTransaction: {
       return {
         heading: 'Transaction Executed',
-        label: '',
+        label: ``,
       };
     }
     case EventKind.NewAdmin: {
       return {
         heading: 'New Admin',
-        label: '',
+        label: ``,
       };
     }
     case EventKind.NewDelay: {
       return {
         heading: 'New Delay',
-        label: '',
+        label: ``,
       };
     }
     case EventKind.NewPendingAdmin: {
       return {
         heading: 'New Pending Admin',
-        label: '',
+        label: ``,
       };
     }
     case EventKind.QueueTransaction: {
       return {
         heading: 'Transaction Queued',
-        label: '',
+        label: ``,
       };
     }
     default: {
