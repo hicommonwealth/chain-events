@@ -52,74 +52,73 @@ export const Label: LabelerFilter = (
     case EventKind.ProposalCanceled: {
       return {
         heading: 'Proposal Canceled',
-        label: ``,
+        label: `Proposal ${data.id} was cancelled.`,
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
     case EventKind.ProposalCreated: {
       return {
         heading: 'Proposal Created',
-        label: ``,
+        label: `Proposal ${data.id} was created.`, // TODO: There's a lot of data that can be used here
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
     case EventKind.ProposalExecuted: {
       return {
         heading: 'Proposal Executed',
-        label: ``,
+        label: `Proposal ${data.id} was executed.`,
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
     case EventKind.ProposalQueued: {
       return {
         heading: 'Proposal Queued',
-        label: ``,
+        label: `Proposal ${data.id} queued up. ETA: ${data.eta}.`, // TODO: Fix?
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
     case EventKind.VoteCast: {
       return {
         heading: 'Vote Cast',
-        label: ``,
+        label: `Voter (${data.voter}) cast ${data.votes} votes ${data.support ? 'not' : null} in support of proposal ${data.proposalId}.`,
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.proposalId}` : null,
       };
-
     }
     // Timelock events
     case EventKind.CancelTransaction: {
       return {
         heading: 'Transaction Cancelled',
-        label: ``,
+        label: `Transaction ${data.txHash} was cancelled.`,
       };
     }
     case EventKind.ExecuteTransaction: {
       return {
         heading: 'Transaction Executed',
-        label: ``,
+        label: `Transaction ${data.txHash} was executed. ${data.value}LIN was transfered to ${data.target}.`,
       };
     }
     case EventKind.NewAdmin: {
       return {
         heading: 'New Admin',
-        label: ``,
+        label: `New admin: ${data.newAdmin}.`,
       };
     }
     case EventKind.NewDelay: {
       return {
         heading: 'New Delay',
-        label: ``,
+        label: `New delay of ${data.newDelay} length.`,
       };
     }
     case EventKind.NewPendingAdmin: {
       return {
         heading: 'New Pending Admin',
-        label: ``,
+        label: `New pending admin (${data.newPendingAdmin}).`,
       };
     }
     case EventKind.QueueTransaction: {
       return {
         heading: 'Transaction Queued',
-        label: ``,
+        label: `Transaction ${data.txHash} was queued. ETA: Block #${data.eta}.`, // TODO: ETA in blocks? 
       };
     }
     default: {
