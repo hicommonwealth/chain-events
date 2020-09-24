@@ -1,4 +1,5 @@
 import { Event } from 'ethers';
+import { BigNumber, BigNumberish } from 'ethers/utils';
 import { compact } from 'underscore';
 import { ISubscribeOptions } from '../interfaces';
 import { Comp } from './contractTypes/Comp';
@@ -94,7 +95,7 @@ export interface IProposalCreated extends IEvent {
   kind: EventKind.ProposalCreated,
   id: number,
   proposer?: Address,
-  targets: Address[], // in function, encoding string[]
+  targets?: Address[], // string[]
   values: string[], // BigNumberish[]
   signatures: Address[], // string[]
   calldatas: string[], // Arrayish[], TODO: decide on type
