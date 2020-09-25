@@ -28,84 +28,59 @@ export class StorageFetcher extends IStorageFetcher<Api> {
   ): Promise<CWEvent<IEventData>[]> {
     // Only GovernorAlpha events are on Proposals
     const events: CWEvent<IEventData>[] = [ ];
-    // const createdEvent: CWEvent<IEventData> = {
-    //   blockNumber: startBlock,
-    //   data: {
-    //     kind: EventKind.ProposalCreated,
-    //     id: index,
-    //     proposer: proposal.proposer,
-    //     targets: [], // TODO: not on proposal...
-    //     values: [], // TODO: not on proposal...
-    //     signatures: [], //  TODO: not on proposal...
-    //     calldatas: [], //  TODO: not on proposal...
-    //     startBlock: startBlock,
-    //     endBlock: proposal.endBlock.toNumber(),
-    //     description: '', // TODO: not on proposal...
-    //   }
-    // };
-    // events.push(createdEvent);
-    // if (proposal.canceled) {
-    //   // derive block # from abort time
-    //   const maximalAbortTime = Math.min(
-    //     this._currentTimestamp,
-    //     (startTime + (this._abortPeriod * this._periodDuration)) * 1000
-    //   );
-    //   let blockNumber;
-    //   if (maximalAbortTime === this._currentTimestamp) {
-    //     log.info('Still in abort window, using current timestamp.');
-    //     blockNumber = this._currentBlock;
-    //   } else {
-    //     log.info(`Passed abort window, fetching timestamp ${maximalAbortTime}`);
-    //     try {
-    //       const abortBlock = await this._dater.getDate(maximalAbortTime);
-    //       blockNumber = abortBlock.block;
-    //     } catch (e) {
-    //       // fake it if we can't fetch it
-    //       log.error(`Unable to fetch abort block from timestamp ${maximalAbortTime}: ${e.message}.`);
-    //       blockNumber = startBlock + 1;
-    //     }
-    //   }
-
-    //   const abortedEvent: CWEvent<IEventData> = {
-    //     blockNumber,
-    //     data: {
-    //       kind: EventKind.Abort,
-    //       proposalIndex: index,
-    //       applicant: proposal.applicant,
-    //     }
-    //   };
-    //   events.push(abortedEvent);
-    // } 
-      // else if (proposal.processed) {
-    //     // derive block # from process time
-    //     const minimalProcessTime = startTime + ((this._votingPeriod + this._gracePeriod) * this._periodDuration);
-    //     log.info(`Fetching minimum processed block at time ${minimalProcessTime}.`);
-    //     let blockNumber;
-    //     try {
-    //       const processedBlock = await this._dater.getDate(minimalProcessTime * 1000);
-    //       blockNumber = processedBlock.block;
-    //     } catch (e) {
-    //       // fake it if we can't fetch it
-    //       log.error(`Unable to fetch processed block from timestamp ${minimalProcessTime}: ${e.message}.`);
-    //       blockNumber = startBlock + 2;
-    //     }
-
-    //     const processedEvent: CWEvent<IEventData> = {
-    //       blockNumber,
-    //       data: {
-    //         kind: EventKind.ProcessProposal,
-    //         proposalIndex: index,
-    //         applicant: proposal.applicant,
-    //         member: proposal.proposer,
-    //         tokenTribute: proposal.tokenTribute.toString(),
-    //         sharesRequested: proposal.sharesRequested.toString(),
-    //         didPass: proposal.didPass,
-    //         yesVotes: proposal.yesVotes.toString(),
-    //         noVotes: proposal.noVotes.toString(),
-    //       }
-    //     };
-    //     events.push(processedEvent);
-    //   }
+    // All proposals had to have at least been created
+    const createdEvent: CWEvent<IEventData> = {
+      blockNumber: startBlock,
+      data: {
+        kind: EventKind.ProposalCreated,
+        id: index,
+        proposer: proposal.proposer,
+        targets: [], // TODO: not on proposal...
+        values: [], // TODO: not on proposal...
+        signatures: [], //  TODO: not on proposal...
+        calldatas: [], //  TODO: not on proposal...
+        startBlock: startBlock,
+        endBlock: proposal.endBlock.toNumber(),
+        description: '', // TODO: not on proposal...
+      }
+    };
+    events.push(createdEvent);
+    // Some proposals might have been canceled too
+    if (proposal.canceled) {
+      const canceledEvent: CWEvent<IEventData> = {
+        blockNumber: proposal.endBlock.toNumber(),
+        data: {
+          kind: EventKind.ProposalCanceled,
+          id: proposal.id.toNumber(),
+        }
+      };
+      events.push(canceledEvent);
+    } 
+    // ProposalQueued
+    if (await this._api.governorAlpha.state(proposal.id) === 5) { // state 5 is queued TODO: verify
+      const queuedEvent: CWEvent<IEventData> = {
+        blockNumber: proposal.endBlock.toNumber(),
+        data: {
+          kind: EventKind.ProposalQueued,
+          id: proposal.id.toNumber(),
+          eta: proposal.eta.toNumber(),
+        }
+      };
+      events.push(queuedEvent);
+    }
+    // ProposalExecuted
+    if (await this._api.governorAlpha.state(proposal.id) === 7) { // state 7 is executed
+      const proposalExecuted: CWEvent<IEventData> = {
+        blockNumber: proposal.endBlock.toNumber(),
+        data: {
+          kind: EventKind.ProposalExecuted,
+          id: proposal.id.toNumber(),
+        }
+      };
+      events.push(proposalExecuted);
+    }
+    // Vote Cast?
+    // not sure how to get this event! we don't have the transactions?
     return events;
   }
 
@@ -148,8 +123,6 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     }
     log.info(`Fetching Marlin entities for range: ${range.startBlock}-${range.endBlock}.`);
 
-    // const queueLength = +(await this._api.getProposalQueueLength());
-    // maybe use: +(await this._api.governorAlpha.latestProposalIds(args0), but what arg?
     const queueLength = +(await this._api.governorAlpha.proposalCount()); // TODO: Correct function?
     const results: CWEvent<IEventData>[] = [];
 
@@ -157,19 +130,15 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     for (let i = 0; i < queueLength; i++) {
       // work backwards through the queue, starting with the most recent
       const queuePosition = queueLength - i - 1;
-      const proposalIndex = this._version === 1
-        ? queuePosition
-        : +(await (this._api as Marlin2).proposalQueue(queuePosition));
+      const proposal: Proposal = await this._api.governorAlpha.proposals(queuePosition);
 
       // fetch actual proposal
-      const proposal: ProposalV1 | ProposalV2 = this._version === 1
-        ? await this._api.proposalQueue(proposalIndex)
-        : await this._api.proposals(proposalIndex);
-      log.debug(`Fetched Marlin proposal ${proposalIndex} from storage.`);
+      // const proposal: Proposal = await this._api.governorAlpha.proposalQueue(proposalIndex);
+      log.debug(`Fetched Marlin proposal ${proposal.id} from storage.`);
 
       // compute starting time and derive closest block number
-      const startingPeriod = +proposal.startingPeriod;
-      const proposalStartingTime = (startingPeriod * this._periodDuration) + this._summoningTime;
+      const startingPeriod = +proposal.startBlock;
+      const proposalStartingTime = (startingPeriod * this._votingPeriod) + this._currentBlock; // TODO: Is this the right math?
       log.debug(`Fetching block for timestamp ${proposalStartingTime}.`);
       let proposalStartBlock: number;
       try {
@@ -185,18 +154,18 @@ export class StorageFetcher extends IStorageFetcher<Api> {
 
       if (proposalStartBlock >= range.startBlock && proposalStartBlock <= range.endBlock) {
         const events = await this._eventsFromProposal(
-          proposalIndex,
+          proposal.id.toNumber(), // TODO: is id the index? 
           proposal,
           proposalStartingTime,
           proposalStartBlock
         );
         results.push(...events);
 
-        // halt fetch once we find a completed proposal in order to save data
+        // halt fetch once we find a completed/executed proposal in order to save data
         // we may want to run once without this, in order to fetch backlog, or else develop a pagination
         // strategy, but for now our API usage is limited.
-        if (!fetchAllCompleted && events.find((p) => p.data.kind === EventKind.ProcessProposal)) {
-          log.debug(`Proposal ${proposalIndex} is marked processed, halting fetch.`);
+        if (!fetchAllCompleted && events.find((p) => p.data.kind === EventKind.ProposalExecuted)) {
+          log.debug(`Proposal ${proposal.id} is marked as executed, halting fetch.`);
           break;
         }
       } else if (proposalStartBlock < range.startBlock) {

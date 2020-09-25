@@ -115,11 +115,12 @@ export interface IProposalQueued extends IEvent {
   eta: number;
 }
 
+// TODO: Not sure how to get this event from the chain?
 export interface IVoteCast extends IEvent {
   kind: EventKind.VoteCast;
   voter: Address;
   proposalId: number;
-  support: boolean,;
+  support: boolean;
   votes: Balance; // TODO: or just number?
 }
 
