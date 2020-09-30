@@ -119,7 +119,7 @@ export interface IProposalQueued extends IEvent {
 export interface IVoteCast extends IEvent {
   kind: EventKind.VoteCast;
   voter: Address;
-  proposalId: number;
+  id: number;
   support: boolean;
   votes: Balance; // TODO: or just number?
 }
