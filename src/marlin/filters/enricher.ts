@@ -161,7 +161,7 @@ export async function Enrich(
         data: {
           kind,
           voter,
-          proposalId,
+          id: proposalId,
           support,
           votes,
         },

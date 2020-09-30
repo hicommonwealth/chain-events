@@ -80,8 +80,8 @@ export const Label: LabelerFilter = (
     case EventKind.VoteCast: {
       return {
         heading: 'Vote Cast',
-        label: `Voter (${data.voter}) cast ${data.votes} votes ${data.support ? 'not' : null} in support of proposal ${data.proposalId}.`,
-        linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.proposalId}` : null,
+        label: `Voter (${data.voter}) cast ${data.votes} votes ${data.support ? 'not' : null} in support of proposal ${data.id}.`,
+        linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
     // Timelock events
