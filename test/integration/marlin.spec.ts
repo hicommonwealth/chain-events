@@ -86,4 +86,41 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
   return { api, comp, timelock, governorAlpha, addresses, provider, handler, };
 }
 
-// submit proposal?
+const COMP_THRESHOLD = 100000e18;
+
+// submit proposal
+async function submitProposal(
+  provider: providers.Web3Provider,
+  api: Api,
+  member: string,
+  guardian: string,
+  mineBlocks = false,
+): Promise<void> {
+  if (mineBlocks) provider.send('evm_increaseTime', [2]);
+  /** member needs comp threshold to submit a proposal, so
+   *  guardian (who has all comp in our tests) will send them threshold,
+   *  prior to submitting. */
+  await api.comp.transfer(member, COMP_THRESHOLD);
+  if (mineBlocks) provider.send('evm_increaseTime', [2]);
+  await api.comp.approve(api.comp.address, COMP_THRESHOLD); // todo: should this be guardian instead?
+  const appSigner = provider.getSigner(member);
+  const appComp = CompFactory.connect(api.comp.address, appSigner);
+  if (mineBlocks) provider.send('evm_increaseTime', [2]);
+  await appComp.deployed();
+  if (mineBlocks) provider.send('evm_increaseTime', [2]);
+  await appComp.approve(member, COMP_THRESHOLD);
+
+  // TODO: Do you just need COMP or do you need to be delegated as well? (or delegate your own?)
+  const proposerBalance = await api.comp.balanceOf(member);
+  const guardianBalance = await api.comp.balanceOf(guardian);
+  const propserAllowance = await api.comp.allowance(member, api.comp.address);
+  const guardianAllowance = await api.comp.allowance(guardian, api.comp.address);
+  assert.isAtLeast(+proposerBalance, COMP_THRESHOLD);
+  assert.isAtLeast(+guardianBalance, COMP_THRESHOLD);
+  assert.isAtLeast(+propserAllowance, COMP_THRESHOLD);
+  assert.isAtLeast(+guardianAllowance, COMP_THRESHOLD);
+
+  if (mineBlocks) provider.send('evm_increaseTime', [2]);
+  // await api.governorAlpha.propose(['hello'], )
+  // make proposal!
+}
