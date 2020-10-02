@@ -10,6 +10,7 @@ import { Timelock } from './contractTypes/Timelock';
 // TODO: What functions do I need to UnPromisify?
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 export type Proposal = UnPromisify<ReturnType<GovernorAlpha['functions']['proposals']>>
+export type Receipt = UnPromisify<ReturnType<GovernorAlpha['functions']['getReceipt']>>
 
 // API is imported contracts classes
 interface IMarlinContracts {
@@ -26,6 +27,7 @@ export type RawEvent = Event;
 
 export enum EntityKind {
   Proposal = 'proposal',
+  Receipt = 'receipt',
 }
 
 export enum EventKind {
@@ -54,7 +56,7 @@ interface IEvent {
 }
 
 type Address = string;
-type Balance = string;
+type Balance = string; // number???
 
 // Comp Event Interfaces
 export interface IApproval extends IEvent {
