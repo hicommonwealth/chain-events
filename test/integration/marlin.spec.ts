@@ -1,5 +1,5 @@
 import { providers } from 'ethers';
-import chai from 'chai';
+import chai, { expect } from 'chai';
 import { EventEmitter } from 'events';
 import { CompFactory } from '../../eth/types/CompFactory';
 import { Comp } from '../../eth/types/Comp';
@@ -10,6 +10,7 @@ import { Timelock } from '../../eth/types/Timelock';
 import { Api, IEventData, EventKind } from '../../src/marlin/types';
 import { subscribeEvents } from '../../src/marlin/subscribeFunc';
 import { IEventHandler, CWEvent } from '../../src/interfaces';
+import { Provider } from 'ethers/providers';
 
 const { assert } = chai;
 
@@ -19,6 +20,7 @@ function getProvider(): providers.Web3Provider {
     allowUnlimitedContractSize: true,
     gasLimit: 1000000000,
     time: new Date(1000),
+    pnuemonic: 'Alice',
     // logger: console,
   });
   return new providers.Web3Provider(web3Provider);
@@ -72,7 +74,7 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
   const signer = provider.getSigner(member);
   const comp = await deployComp(signer, member);
   const timelock = await deployTimelock(signer, member, 172800);
-  const governorAlpha = await deployGovernorAlpha(signer, timelock, comp, member); // todo: timelock.address, comp.address?
+  const governorAlpha = await deployGovernorAlpha(signer, timelock.address, comp.address, member); // todo: timelock.address, comp.address?
   const api = { comp, governorAlpha, timelock };
   const emitter = new EventEmitter();
   const handler = new MarlinEventHandler(emitter);
@@ -80,7 +82,8 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
     await subscribeEvents({
       chain: 'test', // 'marlin-local'?
       api,
-      handlers: [handler]
+      handlers: [handler],
+      skipCatchup: true,
     })
   }
   return { api, comp, timelock, governorAlpha, addresses, provider, handler, };
@@ -88,12 +91,25 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
 
 const COMP_THRESHOLD = 100000e18;
 
-// submit proposal
+// COMP functions
+async function delegate(
+  provider: providers.Web3Provider,
+  api: Api,
+  member: string,
+  guardian: string,
+  data: any[],
+  mineBlocks = false,
+) {
+ 
+}
+
+// TODO: WIP 
 async function submitProposal(
   provider: providers.Web3Provider,
   api: Api,
   member: string,
   guardian: string,
+  data: any[],
   mineBlocks = false,
 ): Promise<void> {
   if (mineBlocks) provider.send('evm_increaseTime', [2]);
@@ -123,4 +139,54 @@ async function submitProposal(
   if (mineBlocks) provider.send('evm_increaseTime', [2]);
   // await api.governorAlpha.propose(['hello'], )
   // make proposal!
+  return Promise.resolve();
 }
+
+describe('Marlin Event Integration Tests', () => {
+  it('should deploy all three contracts', async () => {
+    const { api, comp, timelock, governorAlpha,
+      addresses, provider, handler, } = await setupSubscription();
+    expect(api).to.not.be.null;
+    expect(comp).to.not.be.null;
+    expect(timelock).to.not.be.null;
+    expect(governorAlpha).to.not.be.null;
+    expect(addresses).to.not.be.null;
+    expect(provider).to.not.be.null;
+    expect(handler).to.not.be.null;
+  /** TODO: NOT GETTING CONTRACT DEPLOYED EVENT EMISSIONS:
+      COMP.SOL should emit EventKind.Transfer
+      GovernorAlpha and Timelock do not emit constructor events. */
+  //   await new Promise((resolve) => {
+  //     console.log('hi');
+  //     handler.emitter.on(
+  //       EventKind.Transfer.toString(),
+  //       (evt: CWEvent<IEventData>) => {
+  //         console.log(evt);
+  //         assert.deepEqual(evt.data, {
+  //           kind: EventKind.Transfer,
+  //           from: addresses[0],
+  //           to: addresses[1],
+  //           amount: COMP_THRESHOLD.toString(),
+  //         });
+  //         resolve();
+  //       }
+  //     )
+  //   })
+  });
+
+  describe('COMP contract function events', () => {
+    it('should transferFrom tokens to an address', async () => {
+      // Transfer & Approval Events
+    });
+    it('initial address should delegate to itself', async () => {
+      // DelegateChanged Event
+    });
+    it('initial address should change delegate to address 2', async () => {
+      // DelegateChanged & Delegate Votes Changed Events
+    });
+  });
+
+  describe('GovernorAlpha contract function events', () => {
+    it('should create a proposal')
+  });
+});
