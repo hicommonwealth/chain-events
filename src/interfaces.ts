@@ -155,6 +155,9 @@ export function entityToFieldName(entity: IChainEntityKind): string | null {
     case MarlinTypes.EntityKind.Proposal: {
       return 'proposalIndex'; // TODO: Check
     }
+    case MarlinTypes.EntityKind.Receipt: {
+      return 'recieptIndex';
+    }
     default: {
       // should be exhaustive
       const dummy: never = entity;
