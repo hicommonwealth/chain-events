@@ -175,18 +175,39 @@ describe('Marlin Event Integration Tests', () => {
   });
 
   describe('COMP contract function events', () => {
-    it('should transferFrom tokens to an address', async () => {
+    it('initial address should transfer tokens to an address', async () => {
       // Transfer & Approval Events
     });
-    it('initial address should delegate to itself', async () => {
-      // DelegateChanged Event
+    it('both addresses should delegate to address 2', async () => {
+      // DelegateChanged Event 2x & Delegate Votes Changed
     });
-    it('initial address should change delegate to address 2', async () => {
+    it('initial address should change delegate to itself', async () => {
       // DelegateChanged & Delegate Votes Changed Events
     });
   });
 
   describe('GovernorAlpha contract function events', () => {
-    it('should create a proposal')
+    it('should create a proposal', async () => {
+      // ProposalCreated Event
+    });
+    it('should cancel a proposal', async () => {
+      // ProposalCanceled Event
+    });
+    it('proposal create and castvote', async () => {
+      // ProposalCreated Event
+      // VoteCast Event
+    });
+    it('should queue a proposal after voting period', async () => {
+      // simulate 3 days passing in blocks, voting grace period
+      // execute queue proposal, emit ProposalQueued Event
+    });
   });
+
+  describe('Timelock contract function events', () => {
+    it('');
+
+    it('should execute governorAlpha execute proposal function', async () => {
+
+    })
+  })
 });
