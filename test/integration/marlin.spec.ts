@@ -13,6 +13,7 @@ import { IEventHandler, CWEvent } from '../../src/interfaces';
 import { Provider } from 'ethers/providers';
 import { compact } from 'underscore';
 import { toHex } from 'web3-utils';
+import { resolve } from 'path';
 
 const { assert } = chai;
 
@@ -219,12 +220,9 @@ describe('Marlin Event Integration Tests', () => {
       const { api, comp, timelock, governorAlpha,
         addresses, provider, handler, } = await setupSubscription();
       const initialBalance = await comp.balanceOf(addresses[0]);
-      const newUser = await comp.balanceOf(addresses[1]);
-      await comp.transfer(addresses[1], 100);
-      const newUserNewBalance = await comp.balanceOf(addresses[1]);
       // delegate
       await comp.delegate(addresses[1]);
-      await new Promise((resolve) => {
+      await Promise.all([
         handler.emitter.on(
           EventKind.DelegateChanged.toString(),
           (evt: CWEvent<IEventData>) => {
@@ -236,32 +234,7 @@ describe('Marlin Event Integration Tests', () => {
             });
             resolve();
           }
-        );
-      });
-    });
-    it('initial address should change delegate to itself', async () => {
-      // DelegateChanged & Delegate Votes Changed Events
-      const { api, comp, timelock, governorAlpha,
-        addresses, provider, handler, } = await setupSubscription();
-      const initialBalance = await comp.balanceOf(addresses[0]);
-      const newUser = await comp.balanceOf(addresses[1]);
-      // delegate
-      await comp.delegate(addresses[1]);
-      await new Promise((resolve) => {
-        handler.emitter.on(
-          EventKind.DelegateChanged.toString(),
-          (evt: CWEvent<IEventData>) => {
-            assert.deepEqual(evt.data, {
-              kind: EventKind.DelegateChanged,
-              delegator: addresses[0],
-              toDelegate: addresses[1],
-              fromDelegate: '0x0000000000000000000000000000000000000000',
-            });
-            resolve();
-          }
-        );
-      });
-      await new Promise((resolve) => {
+        ),
         handler.emitter.on(
           EventKind.DelegateVotesChanged.toString(),
           (evt: CWEvent<IEventData>) => {
@@ -279,47 +252,49 @@ describe('Marlin Event Integration Tests', () => {
             });
             resolve();
           }
-        );
-      });
-
-      // // redelgate
+        ),
+      ])
+    });
+    it('initial address should delegate to itself', async () => {
+      // DelegateChanged & Delegate Votes Changed Events
+      const { api, comp, timelock, governorAlpha,
+        addresses, provider, handler, } = await setupSubscription();
+      const initialBalance = await comp.balanceOf(addresses[0]);
+      const newUser = await comp.balanceOf(addresses[1]);
+      // delegate
       await comp.delegate(addresses[0]);
-      // await new Promise((resolve) => {
-      //   handler.emitter.on(
-      //     EventKind.DelegateChanged.toString(),
-      //     (evt: CWEvent<IEventData>) => {
-      //       console.log(evt);
-      //       assert.deepEqual(evt.data, {
-      //         kind: EventKind.DelegateChanged,
-      //         delegator: addresses[0],
-      //         toDelegate: addresses[0],
-      //         fromDelegate: addresses[1],
-      //       });
-      //       resolve();
-      //     }
-      //   );
-      // });
-      // await new Promise((resolve) => {
-      //   handler.emitter.on(
-      //     EventKind.DelegateVotesChanged.toString(),
-      //     (evt: CWEvent<IEventData>) => {
-      //       console.log(evt);
-      //       const { kind, delegate, previousBalance, newBalance, } = evt.data;
-      //       assert.deepEqual({
-      //         kind,
-      //         delegate,
-      //         previousBalance: previousBalance.toString(),
-      //         newBalance: newBalance.toString(),
-      //       }, {
-      //         kind: EventKind.DelegateVotesChanged,
-      //         delegate: addresses[0],
-      //         previousBalance: '0',
-      //         newBalance: initialBalance.toString(),
-      //       });
-      //       resolve();
-      //     }
-      //   );
-      // });
+      await Promise.all([
+        handler.emitter.on(
+          EventKind.DelegateChanged.toString(),
+          (evt: CWEvent<IEventData>) => {
+            assert.deepEqual(evt.data, {
+              kind: EventKind.DelegateChanged,
+              delegator: addresses[0],
+              toDelegate: addresses[0],
+              fromDelegate: '0x0000000000000000000000000000000000000000',
+            });
+            resolve();
+          }
+        ),
+        handler.emitter.on(
+          EventKind.DelegateVotesChanged.toString(),
+          (evt: CWEvent<IEventData>) => {
+            const { kind, delegate, previousBalance, newBalance, } = evt.data;
+            assert.deepEqual({
+              kind,
+              delegate,
+              previousBalance: previousBalance.toString(),
+              newBalance: newBalance.toString(),
+            }, {
+              kind: EventKind.DelegateVotesChanged,
+              delegate: addresses[0],
+              previousBalance: '0',
+              newBalance: initialBalance.toString(),
+            });
+            resolve();
+          }
+        )
+      ]);
     });
   });
 
