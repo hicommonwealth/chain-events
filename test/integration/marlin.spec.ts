@@ -11,6 +11,7 @@ import { Api, IEventData, EventKind } from '../../src/marlin/types';
 import { subscribeEvents } from '../../src/marlin/subscribeFunc';
 import { IEventHandler, CWEvent } from '../../src/interfaces';
 import { Provider } from 'ethers/providers';
+import { compact } from 'underscore';
 
 const { assert } = chai;
 
@@ -83,7 +84,7 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
       chain: 'test', // 'marlin-local'?
       api,
       handlers: [handler],
-      skipCatchup: true,
+      // skipCatchup: true,
     })
   }
   return { api, comp, timelock, governorAlpha, addresses, provider, handler, };
@@ -156,30 +157,66 @@ describe('Marlin Event Integration Tests', () => {
   /** TODO: NOT GETTING CONTRACT DEPLOYED EVENT EMISSIONS:
       COMP.SOL should emit EventKind.Transfer
       GovernorAlpha and Timelock do not emit constructor events. */
-  //   await new Promise((resolve) => {
-  //     console.log('hi');
-  //     handler.emitter.on(
-  //       EventKind.Transfer.toString(),
-  //       (evt: CWEvent<IEventData>) => {
-  //         console.log(evt);
-  //         assert.deepEqual(evt.data, {
-  //           kind: EventKind.Transfer,
-  //           from: addresses[0],
-  //           to: addresses[1],
-  //           amount: COMP_THRESHOLD.toString(),
-  //         });
-  //         resolve();
-  //       }
-  //     )
-  //   })
+    // await new Promise((resolve) => {
+    //   handler.emitter.on(
+    //     EventKind.Transfer.toString(),
+    //     (evt: CWEvent<IEventData>) => {
+    //       console.log(evt);
+    //       assert.deepEqual(evt.data, {
+    //         kind: EventKind.Transfer,
+    //         from: addresses[0],
+    //         to: addresses[1],
+    //         amount: COMP_THRESHOLD.toString(),
+    //       });
+    //       resolve();
+    //     }
+    //   )
+    // });
   });
 
   describe('COMP contract function events', () => {
-    it('initial address should transfer tokens to an address', async () => {
-      // Transfer & Approval Events
+    it('initial address should have all the tokens ', async () => {
+      // test volume
+      const { api, comp, timelock, governorAlpha,
+        addresses, provider, handler, } = await setupSubscription();
+      const balance = await comp.balanceOf(addresses[0]);
+      expect(balance).to.not.be.equal(0);
     });
-    it('both addresses should delegate to address 2', async () => {
-      // DelegateChanged Event 2x & Delegate Votes Changed
+    it('initial address should transfer tokens to an address', async () => {
+      const { api, comp, timelock, governorAlpha,
+        addresses, provider, handler, } = await setupSubscription();
+      const initialBalance = await comp.balanceOf(addresses[0]);
+      const newUser = await comp.balanceOf(addresses[1]);
+      await comp.transfer(addresses[1], 100);
+      const newUserNewBalance = await comp.balanceOf(addresses[1]);
+      assert.isAtLeast(+newUserNewBalance, 100);
+    });
+    it('initial address should delegate to address 2', async () => {
+      // transfer
+      const { api, comp, timelock, governorAlpha,
+        addresses, provider, handler, } = await setupSubscription();
+      const initialBalance = await comp.balanceOf(addresses[0]);
+      const newUser = await comp.balanceOf(addresses[1]);
+      await comp.transfer(addresses[1], 100);
+      const newUserNewBalance = await comp.balanceOf(addresses[1]);
+      assert.isAtLeast(+newUserNewBalance, 100);
+      // delegate
+      await comp.delegate(addresses[1]);
+      await new Promise((resolve) => {
+        handler.emitter.on(
+          EventKind.DelegateChanged.toString(),
+          (evt: CWEvent<IEventData>) => {
+            console.log(evt);
+            assert.deepEqual(evt.data, {
+              kind: EventKind.DelegateChanged,
+              delegator: addresses[0],
+              toDelegate: addresses[1],
+              fromDelegate: '0x0000000000000000000000000000000000000000',
+            });
+            resolve();
+          }
+        );
+      });
     });
     it('initial address should change delegate to itself', async () => {
       // DelegateChanged & Delegate Votes Changed Events
