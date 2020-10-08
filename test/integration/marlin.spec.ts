@@ -299,6 +299,17 @@ describe('Marlin Event Integration Tests', () => {
   });
 
   describe('GovernorAlpha contract function events', () => {
+    let api, comp, timelock, governorAlpha, addresses, provider, handler;
+    before('it should setupSubscriber', async () => {
+      const setup = await setupSubscription();
+      api = setup.api;
+      comp = setup.comp;
+      timelock = setup.timelock;
+      governorAlpha = setup.governorAlpha;
+      addresses = setup.addresses;
+      provider = setup.provider;
+      handler = setup.handler;
+    });
     it('should create a proposal', async () => {
       // ProposalCreated Event
     });
