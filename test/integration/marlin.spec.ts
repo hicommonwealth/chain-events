@@ -7,7 +7,7 @@ import { GovernorAlphaFactory } from '../../eth/types/GovernorAlphaFactory';
 import { GovernorAlpha } from '../../eth/types/GovernorAlpha';
 import { TimelockFactory } from '../../eth/types/TimelockFactory';
 import { Timelock } from '../../eth/types/Timelock';
-import { Api, IEventData, EventKind } from '../../src/marlin/types';
+import { Api, IEventData, EventKind, IDelegateVotesChanged, ITransfer } from '../../src/marlin/types';
 import { subscribeEvents } from '../../src/marlin/subscribeFunc';
 import { IEventHandler, CWEvent } from '../../src/interfaces';
 import { Provider } from 'ethers/providers';
@@ -146,9 +146,19 @@ async function submitProposal(
 }
 
 describe('Marlin Event Integration Tests', () => {
+  let api, comp, timelock, governorAlpha, addresses, provider, handler;
+
+  before('should setup a new subscription', async () => {
+    const setup = await setupSubscription();
+    api = setup.api;
+    comp = setup.comp;
+    timelock = setup.timelock;
+    governorAlpha = setup.governorAlpha;
+    addresses = setup.addresses;
+    provider = setup.provider;
+    handler = setup.handler;
+  });
   it('should deploy all three contracts', async () => {
-    const { api, comp, timelock, governorAlpha,
-      addresses, provider, handler, } = await setupSubscription();
     expect(api).to.not.be.null;
     expect(comp).to.not.be.null;
     expect(timelock).to.not.be.null;
@@ -179,14 +189,10 @@ describe('Marlin Event Integration Tests', () => {
   describe('COMP contract function events', () => {
     it('initial address should have all the tokens ', async () => {
       // test volume
-      const { api, comp, timelock, governorAlpha,
-        addresses, provider, handler, } = await setupSubscription();
       const balance = await comp.balanceOf(addresses[0]);
       expect(balance).to.not.be.equal(0);
     });
     it('initial address should transfer tokens to an address', async () => {
-      const { api, comp, timelock, governorAlpha,
-        addresses, provider, handler, } = await setupSubscription();
       const initialBalance = await comp.balanceOf(addresses[0]);
       const newUser = await comp.balanceOf(addresses[1]);
       assert.isAtMost(+newUser, 0)
@@ -197,7 +203,7 @@ describe('Marlin Event Integration Tests', () => {
       await new Promise((resolve) => {
         handler.emitter.on(
           EventKind.Transfer.toString(),
-          (evt: CWEvent<IEventData>) => {
+          (evt: CWEvent<ITransfer>) => {
             const { kind, from, to, amount } = evt.data;
             assert.deepEqual({
               kind,
@@ -216,9 +222,6 @@ describe('Marlin Event Integration Tests', () => {
       });
     });
     it('initial address should delegate to address 2', async () => {
-      // transfer
-      const { api, comp, timelock, governorAlpha,
-        addresses, provider, handler, } = await setupSubscription();
       const initialBalance = await comp.balanceOf(addresses[0]);
       // delegate
       await comp.delegate(addresses[1]);
@@ -237,7 +240,7 @@ describe('Marlin Event Integration Tests', () => {
         ),
         handler.emitter.on(
           EventKind.DelegateVotesChanged.toString(),
-          (evt: CWEvent<IEventData>) => {
+          (evt: CWEvent<IDelegateVotesChanged>) => {
             const { kind, delegate, previousBalance, newBalance, } = evt.data;
             assert.deepEqual({
               kind,
@@ -257,8 +260,6 @@ describe('Marlin Event Integration Tests', () => {
     });
     it('initial address should delegate to itself', async () => {
       // DelegateChanged & Delegate Votes Changed Events
-      const { api, comp, timelock, governorAlpha,
-        addresses, provider, handler, } = await setupSubscription();
       const initialBalance = await comp.balanceOf(addresses[0]);
       const newUser = await comp.balanceOf(addresses[1]);
       // delegate
@@ -278,7 +279,7 @@ describe('Marlin Event Integration Tests', () => {
         ),
         handler.emitter.on(
           EventKind.DelegateVotesChanged.toString(),
-          (evt: CWEvent<IEventData>) => {
+          (evt: CWEvent<IDelegateVotesChanged>) => {
             const { kind, delegate, previousBalance, newBalance, } = evt.data;
             assert.deepEqual({
               kind,
@@ -300,7 +301,7 @@ describe('Marlin Event Integration Tests', () => {
 
   describe('GovernorAlpha contract function events', () => {
     let api, comp, timelock, governorAlpha, addresses, provider, handler;
-    before('it should setupSubscriber', async () => {
+    before('it should setupSubscriber and delegate', async () => {
       const setup = await setupSubscription();
       api = setup.api;
       comp = setup.comp;
@@ -309,6 +310,40 @@ describe('Marlin Event Integration Tests', () => {
       addresses = setup.addresses;
       provider = setup.provider;
       handler = setup.handler;
+      const initialBalance = await comp.balanceOf(addresses[0]);
+      await comp.delegate(addresses[0]);
+      await Promise.all([
+        handler.emitter.on(
+          EventKind.DelegateChanged.toString(),
+          (evt: CWEvent<IEventData>) => {
+            assert.deepEqual(evt.data, {
+              kind: EventKind.DelegateChanged,
+              delegator: addresses[0],
+              toDelegate: addresses[0],
+              fromDelegate: '0x0000000000000000000000000000000000000000',
+            });
+            resolve();
+          }
+        ),
+        handler.emitter.on(
+          EventKind.DelegateVotesChanged.toString(),
+          (evt: CWEvent<IDelegateVotesChanged>) => {
+            const { kind, delegate, previousBalance, newBalance } = evt.data;
+            assert.deepEqual({
+              kind,
+              delegate,
+              previousBalance: previousBalance.toString(),
+              newBalance: newBalance.toString(),
+            }, {
+              kind: EventKind.DelegateVotesChanged,
+              delegate: addresses[0],
+              previousBalance: '0',
+              newBalance: initialBalance.toString(),
+            });
+            resolve();
+          }
+        )
+      ]);
     });
     it('should create a proposal', async () => {
       // ProposalCreated Event
