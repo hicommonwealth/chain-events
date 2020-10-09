@@ -12,7 +12,7 @@ import { subscribeEvents } from '../../src/marlin/subscribeFunc';
 import { IEventHandler, CWEvent } from '../../src/interfaces';
 import { Provider } from 'ethers/providers';
 import { compact } from 'underscore';
-import { bytesToHex, hexToBytes, toHex } from 'web3-utils';
+import { bytesToHex, hexToBytes, hexToNumber, toHex } from 'web3-utils';
 import { resolve } from 'path';
 
 const { assert } = chai;
@@ -78,6 +78,8 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
   const comp = await deployComp(signer, member);
   const timelock = await deployTimelock(signer, member, 172800);
   const governorAlpha = await deployGovernorAlpha(signer, timelock.address, comp.address, member); // todo: timelock.address, comp.address?
+  // TODO: Fix this somehow, need to make governorAlpha admin of timelock... :le-penseur:
+  //const newAdmin = await timelock.setPendingAdmin(governorAlpha.address);
   const api = { comp, governorAlpha, timelock };
   const emitter = new EventEmitter();
   const handler = new MarlinEventHandler(emitter);
@@ -93,18 +95,6 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
 }
 
 const COMP_THRESHOLD = 100000e18;
-
-// COMP functions
-async function delegate(
-  provider: providers.Web3Provider,
-  api: Api,
-  member: string,
-  guardian: string,
-  data: any[],
-  mineBlocks = false,
-) {
- 
-}
 
 describe('Marlin Event Integration Tests', () => {
   let api, comp, timelock, governorAlpha, addresses, provider, handler;
@@ -262,6 +252,7 @@ describe('Marlin Event Integration Tests', () => {
 
   describe('GovernorAlpha contract function events', () => {
     let api, comp, timelock, governorAlpha, addresses, provider, handler;
+    let proposal;
     before('it should setupSubscriber and delegate', async () => {
       const setup = await setupSubscription();
       api = setup.api;
@@ -277,7 +268,6 @@ describe('Marlin Event Integration Tests', () => {
         handler.emitter.on(
           EventKind.DelegateChanged.toString(),
           (evt: CWEvent<IEventData>) => {
-            console.log(evt);
             assert.deepEqual(evt.data, {
               kind: EventKind.DelegateChanged,
               delegator: addresses[0],
@@ -290,7 +280,6 @@ describe('Marlin Event Integration Tests', () => {
         handler.emitter.on(
           EventKind.DelegateVotesChanged.toString(),
           (evt: CWEvent<IDelegateVotesChanged>) => {
-            console.log(evt);
             const { kind, delegate, previousBalance, newBalance } = evt.data;
             assert.deepEqual({
               kind,
@@ -320,11 +309,14 @@ describe('Marlin Event Integration Tests', () => {
       const calldatas = [ // todo: check if string[] is sufficient for bytes[]
         '0x000000000000000000000000C11B1268C1A384E55C48C2391D8D480264A3A7F40000000000000000000000000000000000000000000000000853A0D2313C0000',
       ];
-      const proposal = await governorAlpha.propose(targets, values, signatures, calldatas, 'test description');
-      console.log(proposal);
+      proposal = await governorAlpha.propose(targets, values, signatures, calldatas, 'test description');
     });
-    it('should cancel a proposal', async () => {
+    it.skip('should cancel a proposal', async () => {
       // ProposalCanceled Event
+      // let{ api, comp, timelock, governorAlpha, addresses, provider, handler }= await setupSubscription();
+      const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
+      const admin = await timelock.admin();
+      const cancelled = await governorAlpha.cancel(hexToNumber(activeProposals));
     });
     it('proposal create and castvote', async () => {
       // ProposalCreated Event
