@@ -12,7 +12,7 @@ import { subscribeEvents } from '../../src/marlin/subscribeFunc';
 import { IEventHandler, CWEvent } from '../../src/interfaces';
 import { Provider } from 'ethers/providers';
 import { compact } from 'underscore';
-import { toHex } from 'web3-utils';
+import { bytesToHex, hexToBytes, toHex } from 'web3-utils';
 import { resolve } from 'path';
 
 const { assert } = chai;
@@ -104,45 +104,6 @@ async function delegate(
   mineBlocks = false,
 ) {
  
-}
-
-// TODO: WIP 
-async function submitProposal(
-  provider: providers.Web3Provider,
-  api: Api,
-  member: string,
-  guardian: string,
-  data: any[],
-  mineBlocks = false,
-): Promise<void> {
-  if (mineBlocks) provider.send('evm_increaseTime', [2]);
-  /** member needs comp threshold to submit a proposal, so
-   *  guardian (who has all comp in our tests) will send them threshold,
-   *  prior to submitting. */
-  await api.comp.transfer(member, COMP_THRESHOLD);
-  if (mineBlocks) provider.send('evm_increaseTime', [2]);
-  await api.comp.approve(api.comp.address, COMP_THRESHOLD); // todo: should this be guardian instead?
-  const appSigner = provider.getSigner(member);
-  const appComp = CompFactory.connect(api.comp.address, appSigner);
-  if (mineBlocks) provider.send('evm_increaseTime', [2]);
-  await appComp.deployed();
-  if (mineBlocks) provider.send('evm_increaseTime', [2]);
-  await appComp.approve(member, COMP_THRESHOLD);
-
-  // TODO: Do you just need COMP or do you need to be delegated as well? (or delegate your own?)
-  const proposerBalance = await api.comp.balanceOf(member);
-  const guardianBalance = await api.comp.balanceOf(guardian);
-  const propserAllowance = await api.comp.allowance(member, api.comp.address);
-  const guardianAllowance = await api.comp.allowance(guardian, api.comp.address);
-  assert.isAtLeast(+proposerBalance, COMP_THRESHOLD);
-  assert.isAtLeast(+guardianBalance, COMP_THRESHOLD);
-  assert.isAtLeast(+propserAllowance, COMP_THRESHOLD);
-  assert.isAtLeast(+guardianAllowance, COMP_THRESHOLD);
-
-  if (mineBlocks) provider.send('evm_increaseTime', [2]);
-  // await api.governorAlpha.propose(['hello'], )
-  // make proposal!
-  return Promise.resolve();
 }
 
 describe('Marlin Event Integration Tests', () => {
@@ -347,6 +308,19 @@ describe('Marlin Event Integration Tests', () => {
     });
     it('should create a proposal', async () => {
       // ProposalCreated Event
+      const {api, comp, timelock, governorAlpha, addresses, provider, handler} = await setupSubscription();
+      const targets = [
+        '0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
+      ];
+      const values = [0,]; // todo: check if they're strings
+      const signatures = [
+        '_setCollateralFactor(address,uint256)'
+      ];
+      const calldatas = [ // todo: check if string[] is sufficient for bytes[]
+        '000000000000000000000000C11B1268C1A384E55C48C2391D8D480264A3A7F40000000000000000000000000000000000000000000000000853A0D2313C0000',
+      ];
+      const proposal = await governorAlpha.propose(targets, values, signatures, calldatas, 'test description');
+      console.log(proposal);
     });
     it('should cancel a proposal', async () => {
       // ProposalCanceled Event
