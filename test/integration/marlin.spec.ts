@@ -311,16 +311,21 @@ describe('Marlin Event Integration Tests', () => {
       ];
       proposal = await governorAlpha.propose(targets, values, signatures, calldatas, 'test description');
     });
+    it('proposal castvote', async () => {
+      // let{ api, comp, timelock, governorAlpha, addresses, provider, handler }= await setupSubscription();
+      // ProposalCreated Event
+      // VoteCast Event
+      const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
+      const vote = await governorAlpha.castVote(activeProposals, true, );
+      console.log('vote', vote);
+
+    });
     it.skip('should cancel a proposal', async () => {
       // ProposalCanceled Event
       // let{ api, comp, timelock, governorAlpha, addresses, provider, handler }= await setupSubscription();
       const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
       const admin = await timelock.admin();
       const cancelled = await governorAlpha.cancel(hexToNumber(activeProposals));
-    });
-    it('proposal create and castvote', async () => {
-      // ProposalCreated Event
-      // VoteCast Event
     });
     it('should queue a proposal after voting period', async () => {
       // simulate 3 days passing in blocks, voting grace period
