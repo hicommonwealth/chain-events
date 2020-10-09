@@ -277,6 +277,7 @@ describe('Marlin Event Integration Tests', () => {
         handler.emitter.on(
           EventKind.DelegateChanged.toString(),
           (evt: CWEvent<IEventData>) => {
+            console.log(evt);
             assert.deepEqual(evt.data, {
               kind: EventKind.DelegateChanged,
               delegator: addresses[0],
@@ -289,6 +290,7 @@ describe('Marlin Event Integration Tests', () => {
         handler.emitter.on(
           EventKind.DelegateVotesChanged.toString(),
           (evt: CWEvent<IDelegateVotesChanged>) => {
+            console.log(evt);
             const { kind, delegate, previousBalance, newBalance } = evt.data;
             assert.deepEqual({
               kind,
@@ -308,7 +310,6 @@ describe('Marlin Event Integration Tests', () => {
     });
     it('should create a proposal', async () => {
       // ProposalCreated Event
-      const {api, comp, timelock, governorAlpha, addresses, provider, handler} = await setupSubscription();
       const targets = [
         '0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b',
       ];
@@ -317,7 +318,7 @@ describe('Marlin Event Integration Tests', () => {
         '_setCollateralFactor(address,uint256)'
       ];
       const calldatas = [ // todo: check if string[] is sufficient for bytes[]
-        '000000000000000000000000C11B1268C1A384E55C48C2391D8D480264A3A7F40000000000000000000000000000000000000000000000000853A0D2313C0000',
+        '0x000000000000000000000000C11B1268C1A384E55C48C2391D8D480264A3A7F40000000000000000000000000000000000000000000000000853A0D2313C0000',
       ];
       const proposal = await governorAlpha.propose(targets, values, signatures, calldatas, 'test description');
       console.log(proposal);
