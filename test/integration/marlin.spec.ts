@@ -7,7 +7,7 @@ import { GovernorAlphaFactory } from '../../eth/types/GovernorAlphaFactory';
 import { GovernorAlpha } from '../../eth/types/GovernorAlpha';
 import { TimelockFactory } from '../../eth/types/TimelockFactory';
 import { Timelock } from '../../eth/types/Timelock';
-import { Api, IEventData, EventKind, IDelegateVotesChanged, ITransfer } from '../../src/marlin/types';
+import { Api, IEventData, EventKind, IDelegateVotesChanged, ITransfer, IProposalCreated } from '../../src/marlin/types';
 import { subscribeEvents } from '../../src/marlin/subscribeFunc';
 import { IEventHandler, CWEvent } from '../../src/interfaces';
 import { Provider } from 'ethers/providers';
@@ -251,17 +251,8 @@ describe('Marlin Event Integration Tests', () => {
   });
 
   describe('GovernorAlpha contract function events', () => {
-    let api, comp, timelock, governorAlpha, addresses, provider, handler;
     let proposal;
     before('it should setupSubscriber and delegate', async () => {
-      const setup = await setupSubscription();
-      api = setup.api;
-      comp = setup.comp;
-      timelock = setup.timelock;
-      governorAlpha = setup.governorAlpha;
-      addresses = setup.addresses;
-      provider = setup.provider;
-      handler = setup.handler;
       const initialBalance = await comp.balanceOf(addresses[0]);
       await comp.delegate(addresses[0]);
       await Promise.all([
@@ -310,12 +301,38 @@ describe('Marlin Event Integration Tests', () => {
         '0x000000000000000000000000C11B1268C1A384E55C48C2391D8D480264A3A7F40000000000000000000000000000000000000000000000000853A0D2313C0000',
       ];
       proposal = await governorAlpha.propose(targets, values, signatures, calldatas, 'test description');
+      await new Promise((resolve) => {
+        handler.emitter.on(
+          EventKind.ProposalCreated.toString(),
+          (evt: CWEvent<IProposalCreated>) => {
+            console.log(evt);
+            const {kind, proposer, description } = evt.data;
+            assert.deepEqual({
+              kind,
+              proposer,
+              description,
+            }, {
+              kind: EventKind.ProposalCreated,
+              proposer: addresses[0],
+              description: 'test description',
+            });
+            resolve();
+          }
+        )
+      })
     });
     it('proposal castvote', async () => {
       // let{ api, comp, timelock, governorAlpha, addresses, provider, handler }= await setupSubscription();
       // ProposalCreated Event
       // VoteCast Event
       const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
+      console.log('state',await governorAlpha.state(activeProposals));
+      provider.send('evm_increaseTime', [100000000]);
+      console.log('state',await governorAlpha.state(activeProposals));
+      provider.send('evm_increaseTime', [100000000]);
+      console.log('state',await governorAlpha.state(activeProposals));
+      provider.send('evm_increaseTime', [100000000]);
+      console.log('state',await governorAlpha.state(activeProposals));
       const vote = await governorAlpha.castVote(activeProposals, true, );
       console.log('vote', vote);
 
