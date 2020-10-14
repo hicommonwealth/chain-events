@@ -7,7 +7,7 @@ import { GovernorAlphaFactory } from '../../eth/types/GovernorAlphaFactory';
 import { GovernorAlpha } from '../../eth/types/GovernorAlpha';
 import { TimelockFactory } from '../../eth/types/TimelockFactory';
 import { Timelock } from '../../eth/types/Timelock';
-import { Api, IEventData, EventKind, IDelegateVotesChanged, ITransfer, IProposalCreated } from '../../src/marlin/types';
+import { Api, IEventData, EventKind, IDelegateVotesChanged, ITransfer, IProposalCreated, IProposalCanceled, ICancelTransaction, IProposalQueued, IProposalExecuted, IQueueTransaction, IExecuteTransaction } from '../../src/marlin/types';
 import { subscribeEvents } from '../../src/marlin/subscribeFunc';
 import { IEventHandler, CWEvent } from '../../src/interfaces';
 import { Provider } from 'ethers/providers';
@@ -117,24 +117,6 @@ describe('Marlin Event Integration Tests', () => {
     expect(addresses).to.not.be.null;
     expect(provider).to.not.be.null;
     expect(handler).to.not.be.null;
-  /** TODO: NOT GETTING CONTRACT DEPLOYED EVENT EMISSIONS:
-      COMP.SOL should emit EventKind.Transfer
-      GovernorAlpha and Timelock do not emit constructor events. */
-    // await new Promise((resolve) => {
-    //   handler.emitter.on(
-    //     EventKind.Transfer.toString(),
-    //     (evt: CWEvent<IEventData>) => {
-    //       console.log(evt);
-    //       assert.deepEqual(evt.data, {
-    //         kind: EventKind.Transfer,
-    //         from: addresses[0],
-    //         to: addresses[1],
-    //         amount: COMP_THRESHOLD.toString(),
-    //       });
-    //       resolve();
-    //     }
-    //   )
-    // });
   });
 
   describe('COMP contract function events', () => {
@@ -305,7 +287,6 @@ describe('Marlin Event Integration Tests', () => {
         handler.emitter.on(
           EventKind.ProposalCreated.toString(),
           (evt: CWEvent<IProposalCreated>) => {
-            console.log(evt);
             const {kind, proposer, description } = evt.data;
             assert.deepEqual({
               kind,
@@ -319,42 +300,81 @@ describe('Marlin Event Integration Tests', () => {
             resolve();
           }
         )
-      })
+      });
     });
     it('proposal castvote', async () => {
-      // let{ api, comp, timelock, governorAlpha, addresses, provider, handler }= await setupSubscription();
       // ProposalCreated Event
       // VoteCast Event
       const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
-      console.log('state',await governorAlpha.state(activeProposals));
-      provider.send('evm_increaseTime', [100000000]);
-      console.log('state',await governorAlpha.state(activeProposals));
-      provider.send('evm_increaseTime', [100000000]);
-      console.log('state',await governorAlpha.state(activeProposals));
-      provider.send('evm_increaseTime', [100000000]);
-      console.log('state',await governorAlpha.state(activeProposals));
+      console.log('state:', await governorAlpha.state(activeProposals));
+      provider.send('evm_increaseTime', [1]);
+      console.log('state:', await governorAlpha.state(activeProposals));
       const vote = await governorAlpha.castVote(activeProposals, true, );
-      console.log('vote', vote);
+    });
 
-    });
-    it.skip('should cancel a proposal', async () => {
-      // ProposalCanceled Event
-      // let{ api, comp, timelock, governorAlpha, addresses, provider, handler }= await setupSubscription();
+    it('should succeed, be queued and executed', async () => {
       const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
-      const admin = await timelock.admin();
-      const cancelled = await governorAlpha.cancel(hexToNumber(activeProposals));
-    });
-    it('should queue a proposal after voting period', async () => {
-      // simulate 3 days passing in blocks, voting grace period
-      // execute queue proposal, emit ProposalQueued Event
+      provider.send('evm_increaseTime', [19500]); // 3 x 6500 (blocks/day)
+      const state = await governorAlpha.state(activeProposals)
+      expect(state).to.be.equal(4); // 4 is 'Succeeded'
+      await governorAlpha.queue(activeProposals);
+      await Promise.all([
+        handler.emitter.on(
+          EventKind.ProposalQueued.toString(),
+          (evt: CWEvent<IProposalQueued>) => {
+            const {kind, id, eta } = evt.data;
+            assert.deepEqual({
+              kind,
+              id,
+            }, {
+              kind: EventKind.ProposalQueued,
+              id: activeProposals,
+            });
+            resolve();
+          }
+        ),
+        handler.emitter.on(
+          EventKind.QueueTransaction.toString(),
+          (evt: CWEvent<IQueueTransaction>) => {
+            const {kind, } = evt.data;
+            assert.deepEqual({
+              kind,
+            }, {
+              kind: EventKind.QueueTransaction,
+            });
+            resolve();
+          }
+        ),
+      ]);
+      await governorAlpha.execute(activeProposals);
+      await Promise.all([
+        handler.emitter.on(
+          EventKind.ProposalExecuted.toString(),
+          (evt: CWEvent<IProposalExecuted>) => {
+            const {kind, id } = evt.data;
+            assert.deepEqual({
+              kind,
+              id,
+            }, {
+              kind: EventKind.ProposalExecuted,
+              id: activeProposals,
+            });
+            resolve();
+          }
+        ),
+        handler.emitter.on(
+          EventKind.ExecuteTransaction.toString(),
+          (evt: CWEvent<IExecuteTransaction>) => {
+            const {kind, } = evt.data;
+            assert.deepEqual({
+              kind,
+            }, {
+              kind: EventKind.ExecuteTransaction,
+            });
+            resolve();
+          }
+        ),
+      ]);
     });
   });
-
-  describe('Timelock contract function events', () => {
-    it('');
-
-    it('should execute governorAlpha execute proposal function', async () => {
-
-    })
-  })
 });
