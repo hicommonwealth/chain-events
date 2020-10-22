@@ -36,13 +36,13 @@ export enum EventKind {
   DelegateChanged = 'delegate-changed',
   DelegateVotesChanged = 'delegate-votes-changed',
   Transfer = 'transfer',
-  // TODO: GovernorAlpha Events
+  // GovernorAlpha Events
   ProposalExecuted = 'proposal-executed',
   ProposalCreated = 'proposal-created',
   ProposalCanceled = 'proposal-canceled',
   ProposalQueued = 'proposal-queued',
   VoteCast = 'vote-cast',
-  // TODO: Timelock Events
+  // Timelock Events
   CancelTransaction = 'cancel-transaction',
   ExecuteTransaction = 'execute-transactions',
   NewAdmin = 'new-admin',
