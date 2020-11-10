@@ -2,7 +2,7 @@ import * as yargs from 'yargs';
 
 import { Mainnet, Beresheet, dev } from '@edgeware/node-types';
 import {
-  chainSupportedBy, IEventHandler, CWEvent, SubstrateEvents, MolochEvents, EventSupportingChains
+  chainSupportedBy, IEventHandler, CWEvent, SubstrateEvents, MolochEvents, MarlinEvents, EventSupportingChains
 } from '../dist/index';
 
 const networks = {
@@ -32,6 +32,7 @@ const specs = {
 const contracts = {
   'moloch': '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
+  // marlin + marlin-local
 };
 
 const argv = yargs.options({
@@ -63,6 +64,9 @@ const argv = yargs.options({
   if (!chainSupportedBy(data.network, MolochEvents.Types.EventChains) && data.contractAddress) {
     throw new Error('cannot pass contract address on non-moloch network');
   }
+  if (!chainSupportedBy(data.network, MarlinEvents.Types.EventChains) && data.contractAddress) {
+    throw new Error('cannor pass contract address on non-marlin network');
+  }
   return true;
 }).argv;
 
@@ -92,7 +96,7 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
       verbose: true,
     });
   });
-} else if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
+} else if (chainSupportedBy(network, MolochEvents.Types.EventChains)) {
   const contractVersion = 1;
   if (!contract) throw new Error(`no contract address for ${network}`);
   MolochEvents.createApi(url, contractVersion, contract).then((api) => {
@@ -104,5 +108,17 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
       skipCatchup,
       verbose: true,
     });
+  })
+} else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
+  // if (!contract) throw new Error(`no contract address for ${network}`);
+  const contracts = { comp: '', governorAlpha: '', timelock: ''}; // TODO
+  MarlinEvents.createApi(url, contracts).then((api) => {
+    MarlinEvents.subscribeEvents({
+      chain: network,
+      api,
+      handlers: [ new StandaloneEventHandler() ],
+      skipCatchup,
+      verbose: true,
+    })
   })
 }
