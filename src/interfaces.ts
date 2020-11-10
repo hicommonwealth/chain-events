@@ -243,8 +243,6 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
     }
 
     // Marlin Events
-    // TODO: Are all these EntityKinds Proposals? or are some Transactions? 
-    // TODO: Check all EntityKinds! Double Check 'em!
     case MarlinTypes.EventKind.Approval: {
       return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
     }
@@ -261,7 +259,7 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
       return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
     }
     case MarlinTypes.EventKind.NewAdmin: {
-      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Create ]; // TODO: Update? Diff from NewPendingAdmin?
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Create ];
     }
     case MarlinTypes.EventKind.NewDelay: {
       return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Create ];
@@ -279,10 +277,10 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
       return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
     }
     case MarlinTypes.EventKind.ProposalQueued: {
-      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Create ]; // TODO: Create or Update?
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Update ];
     }
     case MarlinTypes.EventKind.QueueTransaction: {
-      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Update ]; // TODO: Create or Update?
+      return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Update ];
     }
     case MarlinTypes.EventKind.Transfer: {
       return [ MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete ];
