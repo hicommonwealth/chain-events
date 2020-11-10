@@ -16,12 +16,6 @@ export const Label: LabelerFilter = (
   chainId: string,
   data: IEventData,
 ): IEventLabel => {
-  // Moloch Example
-  // case EventKind.Approval: return {
-  //   heading: 'Proposal Submitted',
-  //   label: `Member ${fmtAddr(data.member)} submitted proposal with index ${data.proposalIndex}.`,
-  //   // linkUrl: chainId ? `/${chainId}/proposal/molochproposal/${data.proposalIndex}` : null,
-  // };
   switch (data.kind) {
     // Comp events
     case EventKind.Approval: {
