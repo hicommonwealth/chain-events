@@ -44,7 +44,7 @@ Options:
   -n, --network          chain to listen on
           [required] [choices: "edgeware", "edgeware-local", "edgeware-testnet",
      "kusama", "kusama-local", "polkadot", "polkadot-local", "kulupu", "moloch",
-                                          "moloch-local", 'marlin', 'marlin-local']
+                                       "moloch-local", 'marlin', 'marlin-local']
   -s, --spec             edgeware spec to use
                                 [choices: "dev", "beresheet", "mainnet", "none"]
   -u, --url              node url                                       [string]
