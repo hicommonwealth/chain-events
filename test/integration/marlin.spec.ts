@@ -85,7 +85,7 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
   const handler = new MarlinEventHandler(emitter);
   if (subscribe) {
     await subscribeEvents({
-      chain: 'test', // 'marlin-local'?
+      chain: 'marlin-local',
       api,
       handlers: [handler],
       // skipCatchup: true,
