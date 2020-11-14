@@ -97,10 +97,10 @@ export interface IProposalCreated extends IEvent {
   kind: EventKind.ProposalCreated;
   id: number;
   proposer?: Address;
-  targets?: Address[]; // string[]
-  values: string[]; // BigNumberish[]
-  signatures: Address[]; // string[]
-  calldatas: string[]; // Arrayish[], TODO: decide on type
+  targets?: Address[];
+  values: string[];
+  signatures: Address[];
+  calldatas: string[];
   startBlock: number;
   endBlock: number;
   description: string;
@@ -123,28 +123,28 @@ export interface IVoteCast extends IEvent {
   voter: Address;
   id: number;
   support: boolean;
-  votes: Balance; // TODO: or just number?
+  votes: Balance;
 }
 
 
 // TODO: Timelock Event Interfaces
 export interface ICancelTransaction extends IEvent {
   kind: EventKind.CancelTransaction;
-  txHash: string; // Arrayish, @jake suggested strings for hashes
+  txHash: string;
   target: Address;
-  value: Balance;// TODO: or just number?
+  value: Balance;
   signature: string;
-  data: string; // Arrayish
+  data: string;
   eta: number;
 }
 
 export interface IExecuteTransaction extends IEvent {
   kind: EventKind.ExecuteTransaction;
-  txHash: string; // Arrayish, @jake suggested strings for hashes
+  txHash: string;
   target: Address;
-  value: Balance;// TODO: or just number?
+  value: Balance;
   signature: string;
-  data: string; // Arrayish
+  data: string;
   eta: number;
 }
 
@@ -165,11 +165,11 @@ export interface INewPendingAdmin extends IEvent {
 
 export interface IQueueTransaction extends IEvent {
   kind: EventKind.QueueTransaction;
-  txHash: string; // Arrayish, @jake suggested strings for hashes
+  txHash: string;
   target: Address;
-  value: Balance;// TODO: or just number?
+  value: Balance;
   signature: string;
-  data: string; // Arrayish, String | ArrayLike<number>
+  data: string;
   eta: number;
 }
 
