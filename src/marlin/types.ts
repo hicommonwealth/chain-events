@@ -7,7 +7,6 @@ import { GovernorAlpha } from './contractTypes/GovernorAlpha';
 import { Timelock } from './contractTypes/Timelock';
 
 // Used to unwrap promises returned by contract functions
-// TODO: What functions do I need to UnPromisify?
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 export type Proposal = UnPromisify<ReturnType<GovernorAlpha['functions']['proposals']>>
 export type Receipt = UnPromisify<ReturnType<GovernorAlpha['functions']['getReceipt']>>
@@ -87,7 +86,7 @@ export interface ITransfer extends IEvent {
   amount: Balance;
 }
 
-// TODO: GovernorAlpha Event Interfaces
+// GovernorAlpha Event Interfaces
 export interface IProposalCanceled extends IEvent {
   kind: EventKind.ProposalCanceled;
   id: number;
@@ -117,7 +116,6 @@ export interface IProposalQueued extends IEvent {
   eta: number;
 }
 
-// TODO: Not sure how to get this event from the chain?
 export interface IVoteCast extends IEvent {
   kind: EventKind.VoteCast;
   voter: Address;
@@ -127,7 +125,7 @@ export interface IVoteCast extends IEvent {
 }
 
 
-// TODO: Timelock Event Interfaces
+// Timelock Event Interfaces
 export interface ICancelTransaction extends IEvent {
   kind: EventKind.CancelTransaction;
   txHash: string;
