@@ -11,26 +11,26 @@ export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
     // Comp events
     case EventKind.Approval: {
       return {
-        title: 'Comp Approval', // TODO: Fix
-        description: 'An Approval event happened on Comp Contract.', // TODO: Fix
+        title: 'Comp Approval',
+        description: 'An Approval event occurred on Comp Contract.',
       };
     }
     case EventKind.DelegateChanged: {
       return {
-        title: 'Delegate Changed', // TODO: Fix
-        description: 'A delegated has been changed.', // TODO: Fix
+        title: 'Delegate Changed',
+        description: 'A delegated has been changed.',
       };
     }
     case EventKind.DelegateVotesChanged: {
       return {
-        title: 'A Delegate Changed Votes', // TODO: Fix
-        description: 'A delegate changed or added votes.', // TODO: Fix
+        title: 'A Delegate Changed Votes',
+        description: 'A delegate changed or added votes.',
       };
     }
     case EventKind.Transfer: {
       return {
-        title: 'Tranfer Occurred', // TODO: Fix
-        description: 'Transfer event occurred.', // TODO: Fix
+        title: 'Tranfer Occurred',
+        description: 'Transfer event occurred.',
       };
     }
     // GovernorAlpha Events
