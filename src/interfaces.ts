@@ -153,7 +153,7 @@ export function entityToFieldName(entity: IChainEntityKind): string | null {
       return 'proposalIndex';
     }
     case MarlinTypes.EntityKind.Proposal: {
-      return 'proposalIndex'; // TODO: Check
+      return 'proposalIndex';
     }
     case MarlinTypes.EntityKind.Receipt: {
       return 'recieptIndex';
