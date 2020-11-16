@@ -20,7 +20,7 @@ export const Label: LabelerFilter = (
     // Comp events
     case EventKind.Approval: {
       return {
-        heading: 'Approval', // TODO: Better heading
+        heading: 'Approval',
         label: `${data.spender} approved ${data.amount} to ${data.owner}.`,
       };
     }
@@ -53,7 +53,7 @@ export const Label: LabelerFilter = (
     case EventKind.ProposalCreated: {
       return {
         heading: 'Proposal Created',
-        label: `Proposal ${data.id} was created.`, // TODO: There's a lot of data that can be used here
+        label: `Proposal ${data.id} was created.`,
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
@@ -67,7 +67,7 @@ export const Label: LabelerFilter = (
     case EventKind.ProposalQueued: {
       return {
         heading: 'Proposal Queued',
-        label: `Proposal ${data.id} queued up. ETA: ${data.eta}.`, // TODO: Fix?
+        label: `Proposal ${data.id} queued up. ETA: Block ${data.eta}.`,
         linkUrl: chainId ? `/${chainId}/proposal/marlinproposal/${data.id}` : null,
       };
     }
@@ -112,7 +112,7 @@ export const Label: LabelerFilter = (
     case EventKind.QueueTransaction: {
       return {
         heading: 'Transaction Queued',
-        label: `Transaction ${data.txHash} was queued. ETA: Block #${data.eta}.`, // TODO: ETA in blocks? 
+        label: `Transaction ${data.txHash} was queued. ETA: Block #${data.eta}.`,
       };
     }
     default: {
