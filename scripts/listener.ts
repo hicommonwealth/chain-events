@@ -115,7 +115,7 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
   })
 } else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
   // if (!contract) throw new Error(`no contract address for ${network}`);
-  const contracts = { comp: '', governorAlpha: '', timelock: ''}; // TODO
+  const contracts = { comp: '', governorAlpha: '', timelock: ''}; // TODO: Add addresses here
   MarlinEvents.createApi(url, contracts).then((api) => {
     MarlinEvents.subscribeEvents({
       chain: network,
