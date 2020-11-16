@@ -57,7 +57,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       events.push(canceledEvent);
     } 
     // ProposalQueued
-    if (await this._api.governorAlpha.state(proposal.id) === 5) { // state 5 is queued TODO: verify
+    if (await this._api.governorAlpha.state(proposal.id) === 5) { // state 5 is queued
       const queuedEvent: CWEvent<IEventData> = {
         blockNumber: proposal.endBlock.toNumber(),
         data: {
@@ -79,7 +79,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       };
       events.push(proposalExecuted);
     }
-    // Vote Cast?
+    // TODO: Vote Cast?
     // not sure how to get this event! we don't have the transactions?
     return events;
   }
@@ -123,7 +123,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     }
     log.info(`Fetching Marlin entities for range: ${range.startBlock}-${range.endBlock}.`);
 
-    const queueLength = +(await this._api.governorAlpha.proposalCount()); // TODO: Correct function?
+    const queueLength = +(await this._api.governorAlpha.proposalCount());
     const results: CWEvent<IEventData>[] = [];
 
     /* eslint-disable no-await-in-loop */
@@ -138,7 +138,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
 
       // compute starting time and derive closest block number
       const startingPeriod = +proposal.startBlock;
-      const proposalStartingTime = (startingPeriod * this._votingPeriod) + this._currentBlock; // TODO: Is this the right math?
+      const proposalStartingTime = (startingPeriod * this._votingPeriod) + this._currentBlock;
       log.debug(`Fetching block for timestamp ${proposalStartingTime}.`);
       let proposalStartBlock: number;
       try {
@@ -154,7 +154,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
 
       if (proposalStartBlock >= range.startBlock && proposalStartBlock <= range.endBlock) {
         const events = await this._eventsFromProposal(
-          proposal.id.toNumber(), // TODO: is id the index? 
+          proposal.id.toNumber(),
           proposal,
           proposalStartingTime,
           proposalStartBlock
