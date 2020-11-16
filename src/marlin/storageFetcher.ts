@@ -14,7 +14,6 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     super(_api);
   }
 
-  private _timelock: number; // TODO: Necessary? Type number or string?!?!?
   private _votingPeriod: number; // The duration of voting on a proposal, in blocks
   private _votingDelay: number; // The delay before voting on a proposal may take place, once proposed
   private _currentBlock: number;
@@ -94,7 +93,6 @@ export class StorageFetcher extends IStorageFetcher<Api> {
    */
   public async fetch(range?: IDisconnectedRange, fetchAllCompleted = false): Promise<CWEvent<IEventData>[]> {
     // we need to fetch a few constants to convert voting periods into blocks
-    this._timelock = +(await this._api.governorAlpha.timelock()); // Necessary?
     this._votingDelay = +(await this._api.governorAlpha.votingDelay());
     this._votingPeriod = +(await this._api.governorAlpha.votingPeriod())
     this._currentBlock = +(await this._api.governorAlpha.provider.getBlockNumber());
