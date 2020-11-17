@@ -113,8 +113,10 @@ describe('Marlin Event Enricher Filter Tests', () => {
       }
     });
   });
+
   // GovernorAlpha Events
-  it('should enrich submit proposal event', async () => {
+  // ProposalCreated
+  it('should enrich ProposalCreated event', async () => {
     const kind = EventKind.ProposalCreated;
     const event = constructEvent({
       id: 1,
@@ -145,5 +147,104 @@ describe('Marlin Event Enricher Filter Tests', () => {
       }
     });
   });
+
+  // ProposalCanceled
+  it('should enrich ProposalCanceled event', async () => {
+    const kind = EventKind.ProposalCanceled;
+    const event = constructEvent({
+      id: 1,
+    });
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [],
+      data: {
+        kind,
+        id: 1,
+      }
+    });
+  });
+
+  // ProposalExecuted
+  it('should enrich ProposalExecuted event', async () => {
+    const kind = EventKind.ProposalExecuted;
+    const event = constructEvent({
+      id: 1,
+    });
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [],
+      data: {
+        kind,
+        id: 1,
+      }
+    });
+  });
+
+  // ProposalQueued
+  it('should enrich ProposalQueued event', async () => {
+    const kind = EventKind.ProposalQueued;
+    const eta = 123;
+    const event = constructEvent({
+      id: 1,
+      eta,
+    });
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [],
+      data: {
+        kind,
+        id: 1,
+        eta,
+      }
+    });
+  });
+
+  // VoteCast
+  it('should enrich VoteCast event', async () => {
+    const kind = EventKind.VoteCast;
+    const voter = 'i voted!';
+    const id = 123;
+    const support = false;
+    const votes = '525600'
+    const event = constructEvent({
+      proposalId: id,
+      voter,
+      support,
+      votes,
+    });
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [ voter ],
+      data: {
+        kind,
+        id,
+        voter,
+        support,
+        votes,
+      }
+    });
+  });
+
+  // Timelock Events
+  // CancelTransaction
+
+
+  // ExecuteTransaction
+
+
+  // New Admin
+
+
+  // NewDelay
+
+
+  // NewPendingAdmin
+
+
+  // QueueTransaction
 
 });
