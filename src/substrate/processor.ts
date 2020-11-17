@@ -60,9 +60,9 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
       const extrinsicEvents = block.events.filter((event) =>
         event.phase && event.phase.isApplyExtrinsic && +event.phase.asApplyExtrinsic === index
       );
-      if (extrinsicEvents.length < 1) return false;
-      const data = extrinsicEvents[0].event;
-      return data.method === "ExtrinsicSuccess";
+      // if the extrinsic involves any "success" events, then we keep it -- it may involve more than
+      // that, though, as the result will list *all* events generated as a result of the extrinsic
+      return extrinsicEvents.findIndex((e) => e.event.method === "ExtrinsicSuccess") !== -1;
     });
     const processedExtrinsics = await Promise.all(successfulExtrinsics.map((extrinsic) => applyFilters(extrinsic)));
     return [...events, ...processedExtrinsics].filter((e) => !!e); // remove null / unwanted events

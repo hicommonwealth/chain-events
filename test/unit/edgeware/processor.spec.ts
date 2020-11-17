@@ -54,6 +54,10 @@ describe('Edgeware Event Processor Tests', () => {
         section: 'democracy',
         method: 'Started',
         data: [ '5', 'Supermajorityapproval' ],
+        phase: {
+          isApplyExtrinsic: true,
+          asApplyExtrinsic: 0,
+        }
       },
       {
         section: 'system',
