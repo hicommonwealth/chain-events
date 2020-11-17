@@ -40,12 +40,79 @@ describe('Marlin Event Enricher Filter Tests', () => {
       }
     });
   });
-  // DelegateChanged
 
+  // DelegateChanged
+  it('should enrich delegateChanged event', async () => {
+    const kind = EventKind.DelegateChanged;
+    const fromDelegate = 'previousAddress';
+    const toDelegate = 'toAddress';
+    const delegator = 'fromAddress';
+    const event = constructEvent({
+      delegator,
+      toDelegate,
+      fromDelegate,
+    });
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [ delegator, ],
+      data: {
+        kind,
+        delegator,
+        toDelegate,
+        fromDelegate,
+      }
+    });
+  });
   // DelegateVotesChanged
+  it('should enrich DelegateVotesChanged event', async () => {
+    const kind = EventKind.DelegateVotesChanged;
+    const delegate = 'me';
+    const previousBalance = '123';
+    const newBalance = '234';
+    // const delegate = 'him',
+    const event = constructEvent({
+      delegate,
+      previousBalance,
+      newBalance,
+    });
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [ delegate, ],
+      data: {
+        kind,
+        delegate,
+        previousBalance,
+        newBalance,
+      }
+    });
+  });
 
   // Transfer
-
+ it('should enrich Transfer event', async () => {
+    const kind = EventKind.Transfer;
+    const from = 'me';
+    const to = 'them';
+    const amount = '234';
+    // const delegate = 'him',
+    const event = constructEvent({
+      from,
+      to,
+      amount,
+    });
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [ from, ],
+      data: {
+        kind,
+        from,
+        to,
+        amount,
+      }
+    });
+  });
   // GovernorAlpha Events
   it('should enrich submit proposal event', async () => {
     const kind = EventKind.ProposalCreated;
