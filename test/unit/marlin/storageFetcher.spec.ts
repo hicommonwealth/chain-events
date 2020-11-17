@@ -58,29 +58,4 @@ describe('Marlin Storage Fetcher Tests', () => {
     const fetched = await fetcher.fetch();
     assert.deepEqual(fetched, []);
   });
-
-  xit('should fetch an active governorAlpha proposal from storage', async () => {
-  });
-
-  xit('should fetch an aborted governorAlpha proposal from storage', async () => {
-  });
-
-  xit('should fetch a processed governorAlpha proposal from storage', async () => {
-  });
-
-  xit('should accept a range parameter with/without endBlock', async () => {
-  });
-
-  xit('should terminate fetch on completed due to argument', async () => {
-  });
-
-  xit('should throw error on api error', (done) => {
-    const api = {} as any;
-    const fetcher = new StorageFetcher(api, makeDater());
-    fetcher.fetch().then(() => {
-      done('should throw on api error');
-    }).catch((err) => {
-      done();
-    });
-  });
 });
