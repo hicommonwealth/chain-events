@@ -74,7 +74,7 @@ describe('Marlin Storage Fetcher Tests', () => {
   xit('should terminate fetch on completed due to argument', async () => {
   });
 
-  it('should throw error on api error', (done) => {
+  xit('should throw error on api error', (done) => {
     const api = {} as any;
     const fetcher = new StorageFetcher(api, makeDater());
     fetcher.fetch().then(() => {
@@ -83,6 +83,4 @@ describe('Marlin Storage Fetcher Tests', () => {
       done();
     });
   });
-
-  // TODO: dater fail tests
 });
