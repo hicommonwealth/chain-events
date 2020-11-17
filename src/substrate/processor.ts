@@ -53,7 +53,18 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
     };
 
     const events = await Promise.all(block.events.map(({ event }) => applyFilters(event)));
-    const extrinsics = await Promise.all(block.extrinsics.map((extrinsic) => applyFilters(extrinsic)));
-    return [...events, ...extrinsics].filter((e) => !!e); // remove null / unwanted events
+
+    // remove unsuccessful extrinsics, only keep extrinsics that map to ExtrinsicSuccess events
+    // cf: https://polkadot.js.org/docs/api/cookbook/blocks#how-do-i-map-extrinsics-to-their-events
+    const successfulExtrinsics = block.extrinsics.filter((_extrinsic, index) => {
+      const extrinsicEvents = block.events.filter((event) =>
+        event.phase && event.phase.isApplyExtrinsic && +event.phase.asApplyExtrinsic === index
+      );
+      if (extrinsicEvents.length < 1) return false;
+      const data = extrinsicEvents[0].event;
+      return data.method === "ExtrinsicSuccess";
+    });
+    const processedExtrinsics = await Promise.all(successfulExtrinsics.map((extrinsic) => applyFilters(extrinsic)));
+    return [...events, ...processedExtrinsics].filter((e) => !!e); // remove null / unwanted events
   }
 }

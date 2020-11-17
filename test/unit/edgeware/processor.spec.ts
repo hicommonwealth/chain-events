@@ -11,6 +11,10 @@ interface IFakeEvent {
   section: string;
   method: string;
   data: any;
+  phase?: {
+    isApplyExtrinsic: boolean,
+    asApplyExtrinsic: number,
+  }
 }
 
 const constructFakeBlock = (blockNumber: number, events: IFakeEvent[], extrinsics = []) => {
@@ -20,7 +24,11 @@ const constructFakeBlock = (blockNumber: number, events: IFakeEvent[], extrinsic
       number: blockNumber,
     } as unknown as Header,
     events: events.map(
-      (event) => ({ event } as unknown as EventRecord)
+      (event) => {
+        const phase = Object.assign({}, event.phase);
+        delete event.phase;
+        return ({ event, phase } as unknown as EventRecord);
+      }
     ),
     versionNumber: 10,
     versionName: 'edgeware',
@@ -47,6 +55,15 @@ describe('Edgeware Event Processor Tests', () => {
         method: 'Started',
         data: [ '5', 'Supermajorityapproval' ],
       },
+      {
+        section: 'system',
+        method: 'ExtrinsicSuccess',
+        data: [],
+        phase: {
+          isApplyExtrinsic: true,
+          asApplyExtrinsic: 0,
+        }
+      }
     ];
 
     const fakeExtrinsics = [
@@ -63,7 +80,7 @@ describe('Edgeware Event Processor Tests', () => {
 
     const fakeBlocks = [
       constructFakeBlock(1, fakeEvents.slice(0, 2)),
-      constructFakeBlock(2, fakeEvents.slice(2, 3), fakeExtrinsics),
+      constructFakeBlock(2, fakeEvents.slice(2, 4), fakeExtrinsics),
     ];
 
     const api = constructFakeApi({
@@ -175,6 +192,17 @@ describe('Edgeware Event Processor Tests', () => {
 
   it('should fail gracefully to find an extrinsic', (done) => {
     // setup fake data
+    const fakeEvents: IFakeEvent[] = [
+      {
+        section: 'system',
+        method: 'ExtrinsicSuccess',
+        data: [],
+        phase: {
+          isApplyExtrinsic: true,
+          asApplyExtrinsic: 0,
+        },
+      }
+    ];
     const fakeExtrinsics = [
       {
         method: {
@@ -187,7 +215,7 @@ describe('Edgeware Event Processor Tests', () => {
       }
     ];
 
-    const block = constructFakeBlock(1, [], fakeExtrinsics);
+    const block = constructFakeBlock(1, fakeEvents, fakeExtrinsics);
     const api = constructFakeApi({});
 
     // run test
@@ -250,6 +278,78 @@ describe('Edgeware Event Processor Tests', () => {
     ];
 
     const block = constructFakeBlock(1, fakeEvents);
+    const api = constructFakeApi({ });
+
+    const processor = new Processor(api);
+    processor.process(block).then((results) => {
+      try {
+        assert.equal(processor.lastBlockNumber, 1);
+        assert.deepEqual(results, []);
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+
+  it('should ignore failed extrinsics', (done) => {
+    // setup fake data
+    const fakeEvents: IFakeEvent[] = [
+      {
+        section: 'system',
+        method: 'ExtrinsicFailed',
+        data: [],
+        phase: {
+          isApplyExtrinsic: true,
+          asApplyExtrinsic: 0,
+        }
+      }
+    ];
+
+    const fakeExtrinsics = [
+      {
+        method: {
+          sectionName: 'elections',
+          methodName: 'submitCandidacy',
+          args: [],
+        },
+        signer: 'Alice',
+        data: new Uint8Array(),
+      }
+    ];
+
+    const block = constructFakeBlock(1, fakeEvents, fakeExtrinsics);
+    const api = constructFakeApi({ });
+
+    const processor = new Processor(api);
+    processor.process(block).then((results) => {
+      try {
+        assert.equal(processor.lastBlockNumber, 1);
+        assert.deepEqual(results, []);
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+
+  it('should ignore extrinsics with no success or failed events', (done) => {
+    // setup fake data
+    const fakeEvents: IFakeEvent[] = [ ];
+
+    const fakeExtrinsics = [
+      {
+        method: {
+          sectionName: 'elections',
+          methodName: 'submitCandidacy',
+          args: [],
+        },
+        signer: 'Alice',
+        data: new Uint8Array(),
+      }
+    ];
+
+    const block = constructFakeBlock(1, fakeEvents, fakeExtrinsics);
     const api = constructFakeApi({ });
 
     const processor = new Processor(api);
