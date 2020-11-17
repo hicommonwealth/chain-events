@@ -1,6 +1,6 @@
 {
   "name": "@commonwealth/chain-events",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "description": "Listen to various chains for events.",
   "license": "GPL-3.0",
   "files": [
@@ -16,7 +16,8 @@
     "test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts ./test/unit/**/*.spec.ts",
     "listen": "ts-node -T ./scripts/listener.ts",
     "scrape": "ts-node -T ./scripts/scraper.ts",
-    "ganache": "ganache-cli -m \"Alice\" -p 9545 -l 800000000 --allowUnlimitedContractSize"
+    "ganache": "ganache-cli -m \"Alice\" -p 9545 -l 800000000 --allowUnlimitedContractSize",
+    "batch-poll": "ts-node -T ./scripts/batchPoller.ts"
   },
   "engines": {
     "node": "12.3.1"
