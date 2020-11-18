@@ -306,15 +306,15 @@ describe('Marlin Event Integration Tests', () => {
       // ProposalCreated Event
       // VoteCast Event
       const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
-      console.log('state:', await governorAlpha.state(activeProposals));
-      provider.send('evm_increaseTime', [1]);
-      console.log('state:', await governorAlpha.state(activeProposals));
-      const vote = await governorAlpha.castVote(activeProposals, true, );
+      await provider.send('evm_increaseTime', [1]);
+      await provider.send('evm_mine', []);
+      const vote = await governorAlpha.castVote(activeProposals, true);
+      assert.notEqual(vote, null);
     });
 
     it('should succeed, be queued and executed', async () => {
       const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
-      provider.send('evm_increaseTime', [19500]); // 3 x 6500 (blocks/day)
+      await provider.send('evm_increaseTime', [19500]); // 3 x 6500 (blocks/day)
       const state = await governorAlpha.state(activeProposals)
       expect(state).to.be.equal(4); // 4 is 'Succeeded'
       await governorAlpha.queue(activeProposals);
