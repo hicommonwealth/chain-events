@@ -34,11 +34,11 @@ describe('Marlin Event Subscriber Tests', () => {
     event.blockNumber = 10;
     const cb = (receivedEvent: RawEvent) => {
       assert.deepEqual(event, receivedEvent);
-      done();
     };
     subscriber.subscribe(cb).then(() => {
       marlinApi.comp.emit('*', event);
-    })
+    });
+    done();
   });
 
   it('should no-op on unnecessary unsubscribe', (done) => {
