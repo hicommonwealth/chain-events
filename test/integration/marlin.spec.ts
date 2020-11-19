@@ -312,11 +312,18 @@ describe('Marlin Event Integration Tests', () => {
       assert.notEqual(vote, null);
     });
 
-    it('should succeed, be queued and executed', async () => {
+    it('should succeed upon 3 days simulation (should take awhile, lag)', async (done) => {
       const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
       await provider.send('evm_increaseTime', [19500]); // 3 x 6500 (blocks/day)
+      for (let i=0; i < 19500; i++) {
+        await provider.send('evm_mine', []);
+      }
       const state = await governorAlpha.state(activeProposals)
       expect(state).to.be.equal(4); // 4 is 'Succeeded'
+    }).timeout(1000000);;
+
+    it('should be queued and executed', async (done) => {
+      const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
       await governorAlpha.queue(activeProposals);
       await Promise.all([
         handler.emitter.on(
@@ -375,6 +382,7 @@ describe('Marlin Event Integration Tests', () => {
           }
         ),
       ]);
+      done();
     });
   });
 });
