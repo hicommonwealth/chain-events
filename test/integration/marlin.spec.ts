@@ -78,9 +78,9 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
   const comp = await deployComp(signer, member);
   const timelock = await deployTimelock(signer, member, 172800);
   const governorAlpha = await deployGovernorAlpha(signer, timelock.address, comp.address, member);
-  // await timelock.setPendingAdmin(governorAlpha.address, );
-  // console.log('timelock admin address: ', await timelock.admin());
-  // console.log('governorAlpha Address:', governorAlpha.address);
+  await timelock.setPendingAdmin(governorAlpha.address, );
+  console.log('timelock admin address: ', await timelock.admin());
+  console.log('governorAlpha Address:', governorAlpha.address);
   // TODO: Fix this somehow, need to make governorAlpha admin of timelock... :le-penseur:
   const api = { comp, governorAlpha, timelock };
   const emitter = new EventEmitter();
@@ -314,7 +314,7 @@ describe('Marlin Event Integration Tests', () => {
       assert.notEqual(vote, null);
     });
 
-    it('should succeed upon 3 days simulation (should take awhile, lag)', async (done) => {
+    xit('should succeed upon 3 days simulation (should take awhile, lag)', async (done) => {
       const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
       await provider.send('evm_increaseTime', [19500]); // 3 x 6500 (blocks/day)
       for (let i=0; i < 19500; i++) {
@@ -324,7 +324,7 @@ describe('Marlin Event Integration Tests', () => {
       expect(state).to.be.equal(4); // 4 is 'Succeeded'
     }).timeout(1000000);;
 
-    it('should be queued and executed', async (done) => {
+    xit('should be queued and executed', async (done) => {
       const activeProposals = await governorAlpha.latestProposalIds(addresses[0]);
       await governorAlpha.queue(activeProposals);
       await Promise.all([
