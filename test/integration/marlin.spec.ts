@@ -78,9 +78,9 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
   const comp = await deployComp(signer, member);
   const timelock = await deployTimelock(signer, member, 172800);
   const governorAlpha = await deployGovernorAlpha(signer, timelock.address, comp.address, member);
-  await timelock.setPendingAdmin(governorAlpha.address, );
-  console.log('timelock admin address: ', await timelock.admin());
-  console.log('governorAlpha Address:', governorAlpha.address);
+  // await timelock.setPendingAdmin(governorAlpha.address, { from: timelock.address});
+  // console.log('timelock admin address: ', await timelock.admin());
+  // console.log('governorAlpha Address:', governorAlpha.address);
   // TODO: Fix this somehow, need to make governorAlpha admin of timelock... :le-penseur:
   const api = { comp, governorAlpha, timelock };
   const emitter = new EventEmitter();
