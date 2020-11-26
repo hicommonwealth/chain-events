@@ -78,8 +78,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       };
       events.push(proposalExecuted);
     }
-    // TODO: Vote Cast?
-    // not sure how to get this event! we don't have the transactions?
+    // Vote Cast events are unfetchable
     return events;
   }
 

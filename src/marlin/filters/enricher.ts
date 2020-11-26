@@ -20,7 +20,7 @@ export async function Enrich(
 
       return {
         blockNumber,
-        excludeAddresses: [ owner, spender ], // who shouldn't receive notification?
+        excludeAddresses: [ owner, ],
         data: {
           kind,
           owner,

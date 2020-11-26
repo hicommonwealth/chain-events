@@ -32,7 +32,6 @@ const specs = {
 const contracts = {
   'moloch': '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
-  // marlin + marlin-local
 };
 
 const argv = yargs.options({
@@ -114,8 +113,11 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     });
   })
 } else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
-  // if (!contract) throw new Error(`no contract address for ${network}`);
-  const contracts = { comp: '', governorAlpha: '', timelock: ''}; // TODO: Add addresses here
+  const contracts = {
+    comp: '0xEa2923b099b4B588FdFAD47201d747e3b9599A5f',
+    governorAlpha: '0xeDAA76873524f6A203De2Fa792AD97E459Fca6Ff',
+    timelock: '0x7d89D52c464051FcCbe35918cf966e2135a17c43'
+  };
   MarlinEvents.createApi(url, contracts).then((api) => {
     MarlinEvents.subscribeEvents({
       chain: network,
