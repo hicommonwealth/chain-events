@@ -77,7 +77,10 @@ export interface ISubscribeOptions<Api> {
   verbose?: boolean;
 }
 
-export type SubscribeFunc<Api, RawEvent, Options extends ISubscribeOptions<Api>> = (options: Options) => Promise<IEventSubscriber<Api, RawEvent>>;
+
+export type SubscribeFunc<
+  Api, RawEvent, Options extends ISubscribeOptions<Api>
+  > = (options: Options) => Promise<IEventSubscriber<Api, RawEvent>>;
 
 export interface IDisconnectedRange {
   startBlock: number;
