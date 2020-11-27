@@ -47,8 +47,11 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
     const blockNumbers = [ ...Array(range.endBlock - range.startBlock).keys()]
       .map((i) => range.startBlock + i);
     log.debug(`Fetching hashes for blocks: ${JSON.stringify(blockNumbers)}`);
-    const hashes: Hash[] = await this._api.query.system.blockHash.multi(blockNumbers);
 
+    // the hashes are pruned when using api.system.query
+    const hashes = await Promise.all(
+        blockNumbers.map( async  (number)=> (await this._api.rpc.chain.getBlockHash(number))))
+    
     // remove all-0 block hashes -- those blocks have been pruned & we cannot fetch their data
     const nonZeroHashes = hashes.filter((hash) => !hash.isEmpty);
     log.info(`${nonZeroHashes.length} active and ${hashes.length - nonZeroHashes.length} pruned hashes fetched!`);

@@ -72,13 +72,12 @@ export interface ISubscribeOptions<Api> {
   api: Api;
   handlers: IEventHandler<IChainEventData>[];
   skipCatchup?: boolean;
+  archival?: boolean;
   discoverReconnectRange?: () => Promise<IDisconnectedRange>;
   verbose?: boolean;
 }
 
-export type SubscribeFunc<
-  Api, RawEvent, Options extends ISubscribeOptions<Api>
-> = (options: Options) => Promise<IEventSubscriber<Api, RawEvent>>;
+export type SubscribeFunc<Api, RawEvent, Options extends ISubscribeOptions<Api>> = (options: Options) => Promise<IEventSubscriber<Api, RawEvent>>;
 
 export interface IDisconnectedRange {
   startBlock: number;

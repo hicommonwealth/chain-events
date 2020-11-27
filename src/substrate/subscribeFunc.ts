@@ -49,7 +49,7 @@ export async function createApi(
  * @returns An active block subscriber.
  */
 export const subscribeEvents: SubscribeFunc<ApiPromise, Block, ISubscribeOptions<ApiPromise>> = async (options) => {
-  const { chain, api, handlers, skipCatchup, discoverReconnectRange, verbose } = options;
+  const { chain, api, handlers, skipCatchup, archival, discoverReconnectRange, verbose } = options;
   // helper function that sends an event through event handlers
   const handleEventFn = async (event: CWEvent<IEventData>) => {
     let prevResult = null;
@@ -87,7 +87,6 @@ export const subscribeEvents: SubscribeFunc<ApiPromise, Block, ISubscribeOptions
     // grab the cached block immediately to avoid a new block appearing before the
     // server can do its thing...
     const lastBlockNumber = processor.lastBlockNumber;
-
     // determine how large of a reconnect we dealt with
     let offlineRange: IDisconnectedRange;
 
@@ -104,24 +103,37 @@ export const subscribeEvents: SubscribeFunc<ApiPromise, Block, ISubscribeOptions
         && (!offlineRange || !offlineRange.startBlock || offlineRange.startBlock < lastBlockNumber)) {
       offlineRange = { startBlock: lastBlockNumber };
     }
+    // if running in archival mode and can't determine the offlineRange then start from Block 0
+    if(archival && (!offlineRange || !offlineRange.startBlock)){
+      offlineRange = {startBlock: 0}
+    }
 
     // if we can't figure out when the last block we saw was, do nothing
     // (i.e. don't try and fetch all events from block 0 onward)
-    if (!offlineRange || !offlineRange.startBlock) {
-      log.warn('Unable to determine offline time range.');
-      return;
-    }
+    // if (!offlineRange || !offlineRange.startBlock) {
+    //   log.warn('Unable to determine offline time range.');
+    //   return;
+    // }
 
-    // poll the missed blocks for events
-    try {
-      const blocks = await poller.poll(offlineRange);
-      await Promise.all(blocks.map(processBlockFn));
-    } catch (e) {
-      log.error(`Block polling failed after disconnect at block ${offlineRange.startBlock}`);
+    // if running in archival mode then fetch blocks from the chain in batches 
+    // from starting block to the head of the node
+    if(archival){
+      const CHUNK_SIZE = 500;
+      const header = await api.rpc.chain.getHeader();
+      offlineRange['endBlock'] =  +header.number;
+      for (let block = offlineRange.startBlock + CHUNK_SIZE; block <= offlineRange.endBlock; block += CHUNK_SIZE) {
+        // poll the missed blocks for events
+        try {
+        const blocks = await poller.poll({startBlock: block - CHUNK_SIZE, endBlock: Math.min(block, offlineRange.endBlock)}, CHUNK_SIZE);
+        await Promise.all(blocks.map(processBlockFn));
+        } catch (e) {
+          log.error(`Block polling failed after disconnect at block ${offlineRange.startBlock}`);
+        }
+      }
     }
   };
 
-  if (!skipCatchup) {
+  if (!skipCatchup || archival) {
     await pollMissedBlocksFn();
   } else {
     log.info('Skipping event catchup on startup!');
