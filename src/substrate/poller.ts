@@ -48,7 +48,9 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
       .map((i) => range.startBlock + i);
     log.debug(`Fetching hashes for blocks: ${JSON.stringify(blockNumbers)}`);
 
-    // the hashes are pruned when using api.system.query
+    // the hashes are pruned when using api.query.system.blockHash.multi
+    // therefore fetching hashes from chain. the downside is that for every
+    // single hash a separate request is made
     const hashes = await Promise.all(
         blockNumbers.map( async  (number)=> (await this._api.rpc.chain.getBlockHash(number))))
     
