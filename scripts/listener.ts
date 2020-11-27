@@ -79,7 +79,7 @@ const skipCatchup = false;
 
 console.log(`Connecting to ${network} on url ${url}...`)
 if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
-  SubstrateEvents.createApi(url, spec).then(async (api) => {
+  SubstrateEvents.createApi(url, Mainnet).then(async (api) => {
     const fetcher = new SubstrateEvents.StorageFetcher(api);
     try {
       await fetcher.fetch();

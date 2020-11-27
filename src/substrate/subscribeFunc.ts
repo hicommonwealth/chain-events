@@ -16,9 +16,7 @@ const log = factory.getLogger(formatFilename(__filename));
  * @param url websocket endpoing to connect to, including ws[s]:// and port
  * @returns a promise resolving to an ApiPromise once the connection has been established
  */
-export async function createApi(
-  url: string, typeOverrides: RegisteredTypes = {},
-): Promise<ApiPromise> {
+export async function createApi(url: string, typeOverrides: RegisteredTypes = {},): Promise<ApiPromise> {
   // construct provider
   const provider = new WsProvider(url);
   let unsubscribe: () => void;
@@ -100,13 +98,26 @@ export const subscribeEvents: SubscribeFunc<ApiPromise, Block, ISubscribeOptions
     // compare with default range algorithm: take last cached block in processor
     // if it exists, and is more recent than the provided algorithm
     // (note that on first run, we wont have a cached block/this wont do anything)
-    if (lastBlockNumber
-        && (!offlineRange || !offlineRange.startBlock || offlineRange.startBlock < lastBlockNumber)) {
+    if (lastBlockNumber && (!offlineRange || !offlineRange.startBlock || offlineRange.startBlock < lastBlockNumber)) {
       offlineRange = { startBlock: lastBlockNumber };
+    }
+    offlineRange = { startBlock: 0 };
+    const CHUNK_SIZE = 1000;
+    const header = await api.rpc.chain.getHeader();
+    let range: IDisconnectedRange;
+    range = { startBlock: 1, endBlock: +header.number};
+    for (let block = range.startBlock + CHUNK_SIZE; block <= range.endBlock; block += CHUNK_SIZE) {
+      try {
+      const blocks = await poller.poll({startBlock: block - CHUNK_SIZE, endBlock: Math.min(block, range.endBlock)}, CHUNK_SIZE);
+      await Promise.all(blocks.map(processBlockFn));
+      } catch (e) {
+        log.error(`Block polling failed after disconnect at block ${offlineRange.startBlock}`);
+      }
     }
 
     // if we can't figure out when the last block we saw was, do nothing
     // (i.e. don't try and fetch all events from block 0 onward)
+    /*
     if (!offlineRange || !offlineRange.startBlock) {
       log.warn('Unable to determine offline time range.');
       return;
@@ -118,7 +129,7 @@ export const subscribeEvents: SubscribeFunc<ApiPromise, Block, ISubscribeOptions
       await Promise.all(blocks.map(processBlockFn));
     } catch (e) {
       log.error(`Block polling failed after disconnect at block ${offlineRange.startBlock}`);
-    }
+    }*/
   };
 
   if (!skipCatchup) {

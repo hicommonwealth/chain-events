@@ -8,7 +8,7 @@ import { IEventPoller, IDisconnectedRange } from '../interfaces';
 import { Block } from './types';
 
 import { factory, formatFilename } from '../logging';
-const log = factory.getLogger(formatFilename(__filename));
+// const log = factory.getLogger(formatFilename(__filename));
 
 export class Poller extends IEventPoller<ApiPromise, Block> {
   /**
@@ -23,14 +23,17 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
     if (!range.endBlock) {
       const header = await this._api.rpc.chain.getHeader();
       range.endBlock = +header.number;
-      log.info(`Discovered endBlock: ${range.endBlock}`);
+      // log.info(`Discovered endBlock: ${range.endBlock}`);
+      console.log(`Discovered endBlock: ${range.endBlock}`);
     }
     if ((range.endBlock - range.startBlock) <= 0) {
-      log.error(`End of range (${range.endBlock}) <= start (${range.startBlock})! No blocks to fetch.`);
+      // log.error(`End of range (${range.endBlock}) <= start (${range.startBlock})! No blocks to fetch.`);
+      console.log(`End of range (${range.endBlock}) <= start (${range.startBlock})! No blocks to fetch.`);
+
       return;
     }
     if ((range.endBlock - range.startBlock) > maxRange) {
-      log.info(`Attempting to poll ${range.endBlock - range.startBlock} blocks, reducing query size to ${maxRange}.`);
+      // log.info(`Attempting to poll ${range.endBlock - range.startBlock} blocks, reducing query size to ${maxRange}.`);
       range.startBlock = range.endBlock - maxRange;
     }
 
@@ -46,22 +49,33 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
     // fetch blocks from start to end
     const blockNumbers = [ ...Array(range.endBlock - range.startBlock).keys()]
       .map((i) => range.startBlock + i);
-    log.debug(`Fetching hashes for blocks: ${JSON.stringify(blockNumbers)}`);
-    const hashes: Hash[] = await this._api.query.system.blockHash.multi(blockNumbers);
+    // log.debug(`Fetching hashes for blocks: ${JSON.stringify(blockNumbers)}`);
+    console.log(`Fetching hashes for blocks: ${JSON.stringify(blockNumbers)}`);
+
+
+    // const hashes: Hash[] = await this._api.query.system.blockHash.multi(blockNumbers);
+    const hashes = await Promise.all(
+      blockNumbers.map( async  (number)=> (await this._api.rpc.chain.getBlockHash(number))))
 
     // remove all-0 block hashes -- those blocks have been pruned & we cannot fetch their data
     const nonZeroHashes = hashes.filter((hash) => !hash.isEmpty);
-    log.info(`${nonZeroHashes.length} active and ${hashes.length - nonZeroHashes.length} pruned hashes fetched!`);
-    log.debug('Fetching headers and events...');
+    // log.info(`${nonZeroHashes.length} active and ${hashes.length - nonZeroHashes.length} pruned hashes fetched!`);
+    console.log(`${nonZeroHashes.length} active and ${hashes.length - nonZeroHashes.length} pruned hashes fetched!`);
+    
+    // log.debug('Fetching headers and events...');
+    console.log('Fetching headers and events...');
     const blocks: Block[] = await Promise.all(nonZeroHashes.map(async (hash) => {
       const header = await this._api.rpc.chain.getHeader(hash);
       const events = await this._api.query.system.events.at(hash);
       const signedBlock = await this._api.rpc.chain.getBlock(hash);
       const extrinsics = signedBlock.block.extrinsics;
-      log.trace(`Fetched Block for ${versionName}:${versionNumber}: ${+header.number}`);
+   //log.trace(`Fetched Block for ${versionName}:${versionNumber}: ${+header.number}`);
+      console.log(`Fetched Block for ${versionName}:${versionNumber}: ${+header.number}`);
+
       return { header, events, extrinsics, versionNumber, versionName };
     }));
-    log.info('Finished polling past blocks!');
+    //log.info('Finished polling past blocks!');
+    console.log('Finished polling past blocks!');
 
     return blocks;
   }
