@@ -4,7 +4,6 @@ import { Mainnet, Beresheet, dev } from '@edgeware/node-types';
 import {
   chainSupportedBy, IEventHandler, CWEvent, SubstrateEvents, MolochEvents, EventSupportingChains
 } from '../dist/index';
-import { symlinkSync } from 'fs';
 
 const networks = {
   'edgeware': 'ws://mainnet1.edgewa.re:9944',
