@@ -3,6 +3,7 @@ import { Hash, EventRecord, Header, RuntimeVersion } from '@polkadot/types/inter
 
 import { constructFakeApi } from './testUtil';
 import { Poller } from '../../../src/substrate/poller';
+import { number } from 'yargs';
 
 const { assert } = chai;
 
@@ -44,18 +45,15 @@ const getMockApi = () => {
     'events.at': (hash: Hash) => {
       return events[hash as unknown as number] || [];
     },
-    'blockHash.multi': (blockNumbers: number[]) => {
-      return blockNumbers.map((n) => {
-        // fake a few values to test the size reduction actually works
-        if (n === 2600 || n === 2400) {
-          return hashes[5];
-        }
-        if (n >= 100 && n <= 110) {
-          return hashes[n - 100];
-        } else {
-          return new IMockHash(0);
-        }
-      });
+    getBlockHash: (blockNumber: number) => {
+      if (blockNumber === 2600 || blockNumber === 2400) {
+        return hashes[5];
+      }
+      if (blockNumber >= 100 && blockNumber <= 110) {
+        return hashes[blockNumber - 100];
+      } else {
+        return new IMockHash(0);
+      }
     },
     getBlock: (hash) => {
       return {
@@ -78,7 +76,6 @@ describe('Edgeware Event Poller Tests', () => {
   it('should return block data', async () => {
     // setup mock data
     const api = getMockApi();
-
     // setup test class
     const poller = new Poller(api);
 
