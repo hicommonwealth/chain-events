@@ -31,7 +31,7 @@ describe('Marlin Event Enricher Filter Tests', () => {
     const result = await Enrich(api, blockNumber, kind, event);
     assert.deepEqual(result, {
       blockNumber,
-      excludeAddresses: [ owner, spender ],
+      excludeAddresses: [ owner, ],
       data: {
         kind,
         owner,
