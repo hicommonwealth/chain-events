@@ -58,4 +58,7 @@ describe('Marlin Storage Fetcher Tests', () => {
     const fetched = await fetcher.fetch();
     assert.deepEqual(fetched, []);
   });
+  it('should handle an event from the contract', async () => {
+    
+  });
 });
