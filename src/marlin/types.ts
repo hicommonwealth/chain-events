@@ -26,7 +26,6 @@ export type RawEvent = Event;
 
 export enum EntityKind {
   Proposal = 'proposal',
-  Receipt = 'receipt',
 }
 
 export enum EventKind {
