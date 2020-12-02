@@ -87,10 +87,11 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
     const blocks = [];
     for (let block = range.startBlock; block < range.endBlock; block = Math.min(block + batchSize, range.endBlock)) {
       try {
-        blocks.push(...await this.poll({startBlock: block, endBlock: Math.min(block + batchSize, range.endBlock)}, batchSize));
+        let currentBlocks = await this.poll({startBlock: block, endBlock: Math.min(block + batchSize, range.endBlock)}, batchSize); 
         if(processBlockFn){
-          await Promise.all(blocks.map(processBlockFn));
+          await Promise.all(currentBlocks.map(processBlockFn));
         }
+        blocks.push(...currentBlocks);
       } catch (e) {
         log.error(`Block polling failed after disconnect at block ${range.startBlock}`);
         return;
