@@ -73,30 +73,32 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
 
   /**
    * Connects to chain, fetches blocks specified in given range in provided batch size,
-   * prcoesses the blocks if a handler is provided else returns the blocks for 
-   * further processing
+   * prcoesses the blocks if a handler is provided and returns the count 
+   * of blocks fetched
    * @param range IDisconnectedRange having startBlock and optional endBlock
    * @param batchSize size of the batch in which blocks are to be fetched from chain
    * @param processBlockFn an optional function to process the blocks
    */
-  public async archive(range: IDisconnectedRange, batchSize: number = 500, processBlockFn: (block: Block) => any = null): Promise<Block[]> {
+  public async archive( range: IDisconnectedRange, batchSize: number = 500, processBlockFn: (block: Block) => any = null): number{
+    let blocksFetched = 0
+
     if(!range.endBlock){
       const header = await this._api.rpc.chain.getHeader();
       range.endBlock =  +header.number;
     }
-    const blocks = [];
+
     for (let block = range.startBlock; block < range.endBlock; block = Math.min(block + batchSize, range.endBlock)) {
       try {
-        let currentBlocks = await this.poll({startBlock: block, endBlock: Math.min(block + batchSize, range.endBlock)}, batchSize); 
+        const blocks = await this.poll({startBlock: block, endBlock: Math.min(block + batchSize, range.endBlock)}, batchSize); 
         if(processBlockFn){
-          await Promise.all(currentBlocks.map(processBlockFn));
+          await Promise.all(blocks.map(processBlockFn));
         }
-        blocks.push(...currentBlocks);
+        blocksFetched += blocks.length;
       } catch (e) {
         log.error(`Block polling failed after disconnect at block ${range.startBlock}`);
         return;
       }
     }
-    return blocks;
+    return blocksFetched;
   }
 }

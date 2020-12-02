@@ -164,7 +164,7 @@ describe('Edgeware Event Poller Tests', () => {
     assert.equal(blocks[0].versionName, 'edgeware');
   });
 
-  it('should return all blocks with non-zeroed hashes', async () => {
+  it('should return count of all blocks with non-zeroed hashes', async () => {
     // setup mock data
     const api = getMockApi();
 
@@ -172,13 +172,9 @@ describe('Edgeware Event Poller Tests', () => {
     const poller = new Poller(api);
 
     // run test
-    const blocks = await poller.archive({ startBlock: 0});
-    assert.lengthOf(blocks, 4);
-    assert.equal(+blocks[0].header.number, 105);
-    assert.deepEqual(blocks[0].events, []);
-    assert.equal(blocks[0].versionNumber, 10);
-    assert.equal(blocks[0].versionName, 'edgeware');
-
+    const returnBlocks = true;
+    const blocksFetched = await poller.archive({ startBlock: 0});
+    assert.equal(blocksFetched, 4);
   });
 
 });
