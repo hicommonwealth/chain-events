@@ -8,8 +8,6 @@ import { IEventPoller, IDisconnectedRange } from '../interfaces';
 import { Block } from './types';
 
 import { factory, formatFilename } from '../logging';
-import { Func } from 'mocha';
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 const log = factory.getLogger(formatFilename(__filename));
 
 export class Poller extends IEventPoller<ApiPromise, Block> {
