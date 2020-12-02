@@ -24,6 +24,9 @@ const makeApi = (proposals: Proposal[]) => {
     provider: {
       getBlock: async (n: number) => ({ timestamp: n * 1000 }),
       getBlockNumber: async () => 200,
+    },
+    state: async (n: number) => {
+      return 1;
     }
   } as unknown as GovernorAlpha;
   const timelock = {
@@ -70,13 +73,25 @@ describe('Marlin Storage Fetcher Tests', () => {
       againstVotes: new BigNumber(0),
       canceled: false,
       executed: false,
-      description: 'hello world',
+      description: '',
     } as unknown as Proposal]
     const api = makeApi(proposals);
     const fetcher = new StorageFetcher(api, makeDater());
-    console.log(await api.governorAlpha.proposalCount());
     const fetched = await fetcher.fetch();
-    console.log('fetched:', fetched);
-    assert.deepEqual(fetched, []);
+    assert.deepEqual(fetched, [{
+      blockNumber: 200,
+      data: {
+        id: 1,
+        kind: 'proposal-created',
+        proposer: '',
+        startBlock: 200,
+        endBlock: 3*172,
+        signatures: [],
+        calldatas: [],
+        values: [],
+        targets: [],
+        description: '',
+      }
+    }]);
   });
 });
