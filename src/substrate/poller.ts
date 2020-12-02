@@ -71,6 +71,14 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
     return blocks;
   }
 
+  /**
+   * Connects to chain, fetches blocks specified in given range in provided batch size,
+   * prcoesses the blocks if a handler is provided else returns the blocks for 
+   * further processing
+   * @param range IDisconnectedRange having startBlock and optional endBlock
+   * @param batchSize size of the batch in which blocks are to be fetched from chain
+   * @param processBlockFn an optional function to process the blocks
+   */
   public async archive(range: IDisconnectedRange, batchSize: number = 500, processBlockFn: (block: Block) => any = null): Promise<Block[]> {
     if(!range.endBlock){
       const header = await this._api.rpc.chain.getHeader();
