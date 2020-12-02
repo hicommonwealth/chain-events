@@ -62,7 +62,7 @@ describe('Marlin Storage Fetcher Tests', () => {
     const fetched = await fetcher.fetch();
     assert.deepEqual(fetched, []);
   });
-  it('should handle an event from the contract', async () => {
+  it('should handle a creation event from the contract', async () => {
     const proposals: Proposal[] = [{
       id: new BigNumber(1),
       proposer: '',
