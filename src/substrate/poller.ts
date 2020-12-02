@@ -8,6 +8,8 @@ import { IEventPoller, IDisconnectedRange } from '../interfaces';
 import { Block } from './types';
 
 import { factory, formatFilename } from '../logging';
+import { Func } from 'mocha';
+import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from 'constants';
 const log = factory.getLogger(formatFilename(__filename));
 
 export class Poller extends IEventPoller<ApiPromise, Block> {
@@ -52,7 +54,7 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
     // therefore fetching hashes from chain. the downside is that for every
     // single hash a separate request is made
     const hashes = await Promise.all(
-        blockNumbers.map( async  (number)=> (await this._api.rpc.chain.getBlockHash(number))))
+        blockNumbers.map( (number)=> (this._api.rpc.chain.getBlockHash(number))))
     
     // remove all-0 block hashes -- those blocks have been pruned & we cannot fetch their data
     const nonZeroHashes = hashes.filter((hash) => !hash.isEmpty);
@@ -68,6 +70,26 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
     }));
     log.info('Finished polling past blocks!');
 
+    return blocks;
+  }
+
+  public async archive(range: IDisconnectedRange, batchSize: number = 500, processBlockFn: (block: Block) => any = null): Promise<Block[]> {
+    if(!range.endBlock){
+      const header = await this._api.rpc.chain.getHeader();
+      range.endBlock =  +header.number;
+    }
+    const blocks = [];
+    for (let block = range.startBlock; block < range.endBlock; block = Math.min(block + batchSize, range.endBlock)) {
+      try {
+        blocks.push(...await this.poll({startBlock: block, endBlock: Math.min(block + batchSize, range.endBlock)}, batchSize));
+        if(processBlockFn){
+          await Promise.all(blocks.map(processBlockFn));
+        }
+      } catch (e) {
+        log.error(`Block polling failed after disconnect at block ${range.startBlock}`);
+        return;
+      }
+    }
     return blocks;
   }
 }

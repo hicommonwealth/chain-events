@@ -103,32 +103,33 @@ export const subscribeEvents: SubscribeFunc<ApiPromise, Block, ISubscribeOptions
         && (!offlineRange || !offlineRange.startBlock || offlineRange.startBlock < lastBlockNumber)) {
       offlineRange = { startBlock: lastBlockNumber };
     }
-    // if running in archival mode and can't determine the offlineRange then start from Block 0
-    if(archival && (!offlineRange || !offlineRange.startBlock)){
-      offlineRange = {startBlock: 0}
-    }
 
-    // if we can't figure out when the last block we saw was, do nothing
+    // if we can't figure out when the last block we saw was,
+    // and we are not running in archival mode, do nothing
     // (i.e. don't try and fetch all events from block 0 onward)
-    // if (!offlineRange || !offlineRange.startBlock) {
-    //   log.warn('Unable to determine offline time range.');
-    //   return;
-    // }
-
-    // if running in archival mode then fetch blocks from the chain in batches 
-    // from starting block to the head of the node
+    if(!offlineRange || !offlineRange.startBlock){
+      if(archival){
+        offlineRange = {startBlock: 0}
+      }
+      else{
+        log.warn('Unable to determine offline time range.');
+        return;
+      }
+    }
+    
+    // if running in archival mode then run poller.archive with 
+    // batch_size 500 
     if(archival){
-      const CHUNK_SIZE = 500;
-      const header = await api.rpc.chain.getHeader();
-      offlineRange['endBlock'] =  +header.number;
-      for (let block = offlineRange.startBlock + CHUNK_SIZE; block <= offlineRange.endBlock; block += CHUNK_SIZE) {
-        // poll the missed blocks for events
-        try {
-        const blocks = await poller.poll({startBlock: block - CHUNK_SIZE, endBlock: Math.min(block, offlineRange.endBlock)}, CHUNK_SIZE);
+      log.info(`Executing in archival mode, polling blocks starting from: ${offlineRange.startBlock}`);
+      await poller.archive(offlineRange,500,processBlockFn);
+    }
+    // else just run poller normally
+    else {
+      try {
+        const blocks = await poller.poll(offlineRange);
         await Promise.all(blocks.map(processBlockFn));
-        } catch (e) {
-          log.error(`Block polling failed after disconnect at block ${offlineRange.startBlock}`);
-        }
+      } catch (e) {
+        log.error(`Block polling failed after disconnect at block ${offlineRange.startBlock}`);
       }
     }
   };
