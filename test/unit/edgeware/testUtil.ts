@@ -94,6 +94,9 @@ export function constructFakeApi(
   const identityOf = function (...args) { return callOverrides['identityOf'](...args); };
   identityOf.multi = callOverrides['identityOfMulti'];
 
+  const proposals = function (...args) { return callOverrides['treasuryProposals'](...args); };
+  proposals.multi = callOverrides['treasuryProposalsMulti'];
+
   return {
     createType: (name, value) => value,
     queryMulti: (queries) => {
@@ -144,16 +147,12 @@ export function constructFakeApi(
         electionRounds: callOverrides['electionRounds'],
       },
       treasury: {
-        proposals: {
-          get: callOverrides['treasuryProposals'],
-          multi: callOverrides['treasuryProposalsMulti'],
-        },
+        proposals,
         approvals: callOverrides['treasuryApprovals'],
         proposalCount: callOverrides['treasuryProposalCount'],
       },
       council: {
         voting: {
-          get: callOverrides['voting'],
           multi: callOverrides['votingMulti'],
         },
         proposals: callOverrides['collectiveProposals'],
