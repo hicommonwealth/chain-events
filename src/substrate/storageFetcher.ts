@@ -222,16 +222,16 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     log.info('Migrating treasury proposals...');
     const approvals = await this._api.query.treasury.approvals();
     const nProposals = await this._api.query.treasury.proposalCount();
-    const proposalIds: ProposalIndex[] = [];
+    const proposalIds: number[] = [];
 
     for (let i = 0; i < +nProposals; i++) {
       if (!approvals.some((id) => +id === i)) {
-        proposalIds.push(this._api.registry.createType('ProposalIndex', i));
+        proposalIds.push(i);
       }
     }
     const proposals = await this._api.query.treasury.proposals.multi<Option<TreasuryProposal>>(proposalIds);
     const proposedEvents = proposalIds.map((id, index) => {
-      if (!proposals[index].isSome) return null;
+      if (!proposals[index] || !proposals[index].isSome) return null;
       const { proposer, value, beneficiary, bond } = proposals[index].unwrap();
       return {
         kind: EventKind.TreasuryProposed,

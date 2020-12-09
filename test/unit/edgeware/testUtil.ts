@@ -144,10 +144,19 @@ export function constructFakeApi(
         electionRounds: callOverrides['electionRounds'],
       },
       treasury: {
-        proposals: callOverrides['treasuryProposals'],
+        proposals: {
+          get: callOverrides['treasuryProposals'],
+          multi: callOverrides['treasuryProposalsMulti'],
+        },
+        approvals: callOverrides['treasuryApprovals'],
+        proposalCount: callOverrides['treasuryProposalCount'],
       },
       council: {
-        voting: callOverrides['voting'],
+        voting: {
+          get: callOverrides['voting'],
+          multi: callOverrides['votingMulti'],
+        },
+        proposals: callOverrides['collectiveProposals'],
         proposalOf: callOverrides['collectiveProposalOf'],
       },
       signaling: {
