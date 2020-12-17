@@ -384,13 +384,13 @@ export interface ITreasuryBountyProposed extends IEvent {
 export interface ITreasuryBountyAwarded extends IEvent {
   kind: EventKind.TreasuryBountyAwarded,
   bountyIndex: number,
-  // fill
+  // TODO: fill
 }
 
 export interface ITreasuryBountyRejected extends IEvent {
   kind: EventKind.TreasuryBountyRejected,
   bountyIndex: number,
-  // fill
+  // TODO: fill
 }
 
 /**
