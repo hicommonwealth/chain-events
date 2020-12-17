@@ -578,6 +578,9 @@ export type IEventData =
   | ITreasuryProposed
   | ITreasuryAwarded
   | ITreasuryRejected
+  | ITreasuryBountyProposed
+  | ITreasuryBountyAwarded
+  | ITreasuryBountyRejected
   | IElectionNewTerm
   | IElectionEmptyTerm
   | ICandidacySubmitted
