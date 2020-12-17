@@ -372,16 +372,19 @@ export interface ITreasuryRejected extends IEvent {
 
 export interface ITreasuryBountyProposed extends IEvent {
   kind: EventKind.TreasuryBountyProposed,
+  bountyIndex: number,
   // fill
 }
 
 export interface ITreasuryBountyAwarded extends IEvent {
   kind: EventKind.TreasuryBountyAwarded,
+  bountyIndex: number,
   // fill
 }
 
 export interface ITreasuryBountyRejected extends IEvent {
   kind: EventKind.TreasuryBountyRejected,
+  bountyIndex: number,
   // fill
 }
 
