@@ -114,6 +114,10 @@ export enum EventKind {
   TreasuryBountyProposed = 'treasury-bounty-proposed',
   TreasuryBountyAwarded = 'treasury-bounty-awarded',
   TreasuryBountyRejected = 'treasury-bounty-rejected',
+  TreasuryBountyBecameActive = 'treasury-bounty-became-active',
+  TreasuryBountyClaimed = 'treasury-bounty-claimed',
+  TreasuryBountyCanceled = 'treasury-bounty-canceled',
+  TreasuryBountyExtended = 'treasury-bounty-extended',
 
   ElectionNewTerm = 'election-new-term',
   ElectionEmptyTerm = 'election-empty-term',
@@ -371,6 +375,7 @@ export interface ITreasuryRejected extends IEvent {
 }
 
 export interface ITreasuryBountyProposed extends IEvent {
+  // New bounty proposal. [index]
   kind: EventKind.TreasuryBountyProposed,
   bountyIndex: number,
   proposer: AccountId,
@@ -382,15 +387,43 @@ export interface ITreasuryBountyProposed extends IEvent {
 }
 
 export interface ITreasuryBountyAwarded extends IEvent {
+  // A bounty is awarded to a beneficiary. [index, beneficiary]
   kind: EventKind.TreasuryBountyAwarded,
   bountyIndex: number,
-  // TODO: fill
+  beneficiary: AccountId,
 }
 
 export interface ITreasuryBountyRejected extends IEvent {
+  // A bounty proposal was rejected; funds were slashed. [index, bond]
   kind: EventKind.TreasuryBountyRejected,
   bountyIndex: number,
-  // TODO: fill
+  bond: BalanceString,
+}
+
+export interface ITreasuryBountyBecameActive extends IEvent {
+  // A bounty proposal is funded and became active. [index]
+  kind: EventKind.TreasuryBountyBecameActive,
+  bountyIndex: number,
+}
+
+export interface ITreasuryBountyClaimed extends IEvent {
+  // A bounty is claimed by beneficiary. [index, payout, beneficiary]
+  kind: EventKind.TreasuryBountyClaimed,
+  bountyIndex: number,
+  payout: BalanceString,
+  beneficiary: AccountId,
+}
+
+export interface ITreasuryBountyCanceled extends IEvent {
+  // A bounty is cancelled. [index]
+  kind: EventKind.TreasuryBountyCanceled,
+  bountyIndex: number,
+}
+
+export interface ITreasuryBountyExtended extends IEvent {
+  // A bounty expiry is extended. [index]
+  kind: EventKind.TreasuryBountyExtended,
+  bountyIndex: number,
 }
 
 /**
