@@ -348,7 +348,7 @@ export const Label: LabelerFilter = (
       };
     }
     case EventKind.TreasuryBountyProposed: {
-      const { bountyIndex, proposer, value } = data;
+      const { bountyIndex, } = data;
       return {
         heading: 'Treasury Bounty Proposed',
         label: `Treasury bounty ${bountyIndex} was proposed.`,
@@ -357,22 +357,53 @@ export const Label: LabelerFilter = (
       };
     }
     case EventKind.TreasuryBountyAwarded: {
-      const { bountyIndex, } = data;
+      const { bountyIndex, beneficiary } = data;
       return {
         heading: 'Treasury Bounty Awarded',
-        label: `Treasury bounty ${bountyIndex} was awarded.`,
+        label: `Treasury bounty ${bountyIndex} was awarded to ${beneficiary}.`,
         linkUrl: chainId ? `/${chainId}/proposal/treasurybounty/${bountyIndex}` : null,
       };
     }
     case EventKind.TreasuryBountyRejected: {
-      const { bountyIndex,} = data;
+      const { bountyIndex, bond} = data;
       return {
         heading: 'Treasury Bounty Rejected',
-        label: `Treasury bounty ${bountyIndex} was proposed.`,
+        label: `Treasury bounty ${bountyIndex} with bond ${bond} was rejected.`,
         linkUrl: chainId ? `/${chainId}/proposal/treasurybounty/${bountyIndex}` : null,
       };
     }
-    // TODO: If, more events, don't forget to add them
+    case EventKind.TreasuryBountyBecameActive: {
+      const { bountyIndex,} = data;
+      return {
+        heading: 'Treasury Bounty Became Active',
+        label: `Treasury bounty ${bountyIndex} became active.`,
+        linkUrl: chainId ? `/${chainId}/proposal/treasurybounty/${bountyIndex}` : null,
+      };
+    }
+    case EventKind.TreasuryBountyClaimed: {
+      const { bountyIndex, payout, beneficiary} = data;
+      return {
+        heading: 'Treasury Bounty Claimed',
+        label: `${beneficiary} claimed Treasury Bounty ${bountyIndex}, worth ${payout}.`,
+        linkUrl: chainId ? `/${chainId}/proposal/treasurybounty/${bountyIndex}` : null,
+      };
+    }
+    case EventKind.TreasuryBountyCanceled: {
+      const { bountyIndex,} = data;
+      return {
+        heading: 'Treasury Bounty Canceled',
+        label: `Treasury bounty ${bountyIndex} was canceled.`,
+        linkUrl: chainId ? `/${chainId}/proposal/treasurybounty/${bountyIndex}` : null,
+      };
+    }
+    case EventKind.TreasuryBountyExtended: {
+      const { bountyIndex,} = data;
+      return {
+        heading: 'Treasury Bounty Expiry Extended',
+        label: `Treasury bounty ${bountyIndex} expiry was extended.`,
+        linkUrl: chainId ? `/${chainId}/proposal/treasurybounty/${bountyIndex}` : null,
+      };
+    }
 
     /**
      * Elections Events
