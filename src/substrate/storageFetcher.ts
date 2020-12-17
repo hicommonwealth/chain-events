@@ -10,7 +10,7 @@ import { ApiPromise } from '@polkadot/api';
 import { Option, Vec } from '@polkadot/types';
 import {
   BalanceOf, AccountId, Hash, BlockNumber, Registration,
-  ProposalIndex, TreasuryProposal, Proposal, Votes
+  ProposalIndex, TreasuryProposal, Proposal, Votes, Bounty
 } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 import { DeriveProposalImage } from '@polkadot/api-derive/types';
@@ -231,6 +231,34 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     }
     const proposals = await this._api.query.treasury.proposals.multi<Option<TreasuryProposal>>(proposalIds);
     const proposedEvents = proposalIds.map((id, index) => {
+      if (!proposals[index] || !proposals[index].isSome) return null;
+      const { proposer, value, beneficiary, bond } = proposals[index].unwrap();
+      return {
+        kind: EventKind.TreasuryProposed,
+        proposalIndex: +id,
+        proposer: proposer.toString(),
+        value: value.toString(),
+        beneficiary: beneficiary.toString(),
+        bond: bond.toString(),
+      } as ITreasuryProposed;
+    }).filter((e) => !!e);
+    log.info(`Found ${proposedEvents.length} treasury proposals!`);
+    return proposedEvents.map((data) => ({ blockNumber, data }));
+  }
+
+  public async fetchTreasuryBounties(blockNumber: number): Promise<CWEvent<ITreasuryProposed>[]> {
+    log.info('Migrating treasury bounties...');
+    const approvals = await this._api.query.treasury.bountyApprovals();
+    const nBounties = await this._api.query.treasury.bountyCount();
+    const bountyIds: number[] = [];
+
+    for (let i = 0; i < +nBounties; i++) {
+      if (!approvals.some((id) => +id === i)) {
+        bountyIds.push(i);
+      }
+    }
+    const bounties = await this._api.query.treasury.bounties.multi<Option<TreasuryBounty>>(bountyIds);
+    const proposedEvents = bountyIds.map((id, index) => {
       if (!proposals[index] || !proposals[index].isSome) return null;
       const { proposer, value, beneficiary, bond } = proposals[index].unwrap();
       return {
