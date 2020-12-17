@@ -3,7 +3,7 @@ import {
   Event, ReferendumInfoTo239, AccountId, TreasuryProposal, Balance, PropIndex, Proposal,
   ReferendumIndex, ProposalIndex, VoteThreshold, Hash, BlockNumber, Votes, Extrinsic,
   ReferendumInfo, SessionIndex, ValidatorId, Exposure, EraIndex, AuthorityId, IdentificationTuple,
-  EraRewardPoints, AccountVote
+  EraRewardPoints, AccountVote, Bounty,
 } from '@polkadot/types/interfaces';
 import { DeriveStakingElected } from '@polkadot/api-derive/types';
 import BN from 'bn.js';
