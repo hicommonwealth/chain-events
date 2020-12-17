@@ -72,6 +72,7 @@ export enum EntityKind {
   TreasuryProposal = 'treasury-proposal',
   CollectiveProposal = 'collective-proposal',
   SignalingProposal = 'signaling-proposal',
+  Bounty = 'bounty',
 }
 
 // Each kind of event we handle
@@ -109,6 +110,10 @@ export enum EventKind {
   TreasuryProposed = 'treasury-proposed',
   TreasuryAwarded = 'treasury-awarded',
   TreasuryRejected = 'treasury-rejected',
+
+  TreasuryBountyProposed = 'treasury-bounty-proposed',
+  TreasuryBountyAwarded = 'treasury-bounty-awarded',
+  TreasuryBountyRejected = 'treasury-bounty-rejected',
 
   ElectionNewTerm = 'election-new-term',
   ElectionEmptyTerm = 'election-empty-term',
