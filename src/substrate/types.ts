@@ -33,6 +33,32 @@ export enum IdentityJudgement {
   LowQuality = 'low-quality',
   Erroneous = 'erroneous',
 }
+export interface BountyStatus {
+  isProposed: boolean,
+  isApproved: boolean,
+  isFunded: boolean,
+  isCuratorProposed: boolean,
+  asCuratorProposed: BountyStatusCuratorProposed,
+  isActive: boolean,
+  asActive: BountyStatusActive,
+  isPendingPayout: boolean,
+  asPendingPayount: BountyStatusPendingPayout,
+}
+
+export interface BountyStatusCuratorProposed {
+  curator: AccountId,
+}
+
+export interface BountyStatusActive {
+  curator: AccountId,
+  updateDue: BlockNumber,
+}
+
+export interface BountyStatusPendingPayout {
+  curator: AccountId,
+  beneficiary: AccountId,
+  unlockAt: BlockNumber,
+}
 
 export function parseJudgement(j: SubstrateJudgement): IdentityJudgement {
   if (j.isFeePaid) return IdentityJudgement.FeePaid;
@@ -374,6 +400,7 @@ export interface ITreasuryRejected extends IEvent {
   // cannot fetch other data because proposal data disappears on rejection
 }
 
+
 export interface ITreasuryBountyProposed extends IEvent {
   // New bounty proposal. [index]
   kind: EventKind.TreasuryBountyProposed,
@@ -383,7 +410,7 @@ export interface ITreasuryBountyProposed extends IEvent {
   fee: BalanceString,
   curatorDeposit: BalanceString,
   bond: BalanceString,
-  // status?: string,
+  status?: BountyStatus, // TODO: set as BountyStatus ENUM
 }
 
 export interface ITreasuryBountyAwarded extends IEvent {

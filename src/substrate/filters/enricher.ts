@@ -3,7 +3,7 @@ import {
   Event, ReferendumInfoTo239, AccountId, TreasuryProposal, Balance, PropIndex, Proposal,
   ReferendumIndex, ProposalIndex, VoteThreshold, Hash, BlockNumber, Votes, Extrinsic,
   ReferendumInfo, SessionIndex, ValidatorId, Exposure, EraIndex, AuthorityId, IdentificationTuple,
-  EraRewardPoints, AccountVote, Bounty,
+  EraRewardPoints, AccountVote, Bounty, BountyIndex,
 } from '@polkadot/types/interfaces';
 import { DeriveStakingElected } from '@polkadot/api-derive/types';
 import BN from 'bn.js';
@@ -455,7 +455,109 @@ export async function Enrich(
         };
       }
 
-      // TODO: Add new Bounty events HERE
+      case EventKind.TreasuryBountyProposed: {
+        const [ bountyIndex ] = event.data as unknown as [ BountyIndex ] & Codec;
+        const bountyOpt = await api.query.treasury.bounties<Option<Bounty>>(bountyIndex);
+        if (!bountyOpt.isSome) {
+          throw new Error(`could not fetch treasury proposal index ${+bountyIndex}`);
+        }
+        const bounty = bountyOpt.unwrap();
+        return {
+          data: {
+            kind,
+            bountyIndex: +bountyIndex,
+            proposer: bounty.proposer.toString(),
+            value: bounty.value.toString(),
+            fee: bounty.fee.toString(),
+            curatorDeposit: bounty.curatorDeposit.toString(),
+            bond: bounty.bond.toString(),
+            status: {
+              isProposed: bounty.status.isProposed,
+              isApproved: bounty.status.isApproved,
+              isFunded: bounty.status.isFunded,
+              isCuratorProposed: bounty.status.isCuratorProposed,
+              asCuratorProposed: {
+                curator: bounty.status.asCuratorProposed.curator.toString(),
+              },
+              isActive: bounty.status.isActive,
+              asActive: {
+                curator: bounty.status.asActive.curator.toString(),
+                updateDue: +bounty.status.asActive.updateDue,
+              },
+              isPendingPayout: bounty.status.isPendingPayout,
+              asPendingPayount: {
+                curator: bounty.status.asPendingPayout.curator.toString(),
+                beneficiary: bounty.status.asPendingPayout.curator.toString(),
+                unlockAt: +bounty.status.asPendingPayout.unlockAt,
+              }
+            },
+          }
+        };
+      }
+
+      case EventKind.TreasuryBountyAwarded: {
+        const [ bountyIndex, beneficiary ] = event.data as unknown as [ BountyIndex, AccountId ] & Codec;
+        return {
+          data: {
+            kind,
+            bountyIndex: +bountyIndex,
+            beneficiary: beneficiary.toString(),
+          }
+        };
+      }
+
+      case EventKind.TreasuryBountyRejected: {
+        const [ bountyIndex, bond ] = event.data as unknown as [ BountyIndex, Balance ] & Codec;
+        return {
+          data: {
+            kind,
+            bountyIndex: +bountyIndex,
+            bond: bond.toString(),
+          }
+        };
+      }
+
+      case EventKind.TreasuryBountyExtended: {
+        const [ bountyIndex ] = event.data as unknown as [ BountyIndex ] & Codec;
+        return {
+          data: {
+            kind,
+            bountyIndex: +bountyIndex,
+          }
+        };
+      }
+
+      case EventKind.TreasuryBountyClaimed: {
+        const [ bountyIndex, payout, beneficiary ] = event.data as unknown as [ BountyIndex, Balance, AccountId  ] & Codec;
+        return {
+          data: {
+            kind,
+            bountyIndex: +bountyIndex,
+            payout: payout.toString(),
+            beneficiary: beneficiary.toString(),
+          }
+        };
+      }
+
+      case EventKind.TreasuryBountyCanceled: {
+        const [ bountyIndex ] = event.data as unknown as [ BountyIndex ] & Codec;
+        return {
+          data: {
+            kind,
+            bountyIndex: +bountyIndex,
+          }
+        };
+      }
+
+      case EventKind.TreasuryBountyBecameActive: {
+        const [ bountyIndex ] = event.data as unknown as [ BountyIndex ] & Codec;
+        return {
+          data: {
+            kind,
+            bountyIndex: +bountyIndex,
+          }
+        };
+      }
 
       /**
        * Elections Events
