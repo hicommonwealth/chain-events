@@ -347,6 +347,32 @@ export const Label: LabelerFilter = (
         linkUrl: chainId ? `/${chainId}/proposal/treasuryproposal/${proposalIndex}` : null,
       };
     }
+    case EventKind.TreasuryBountyProposed: {
+      const { bountyIndex, proposer, value } = data;
+      return {
+        heading: 'Treasury Bounty Proposed',
+        label: `Treasury bounty ${bountyIndex} was proposed.`,
+        // TODO: should the slug be /bounty/treasurybounty????????
+        linkUrl: chainId ? `/${chainId}/proposal/treasurybounty/${bountyIndex}` : null,
+      };
+    }
+    case EventKind.TreasuryBountyAwarded: {
+      const { bountyIndex, } = data;
+      return {
+        heading: 'Treasury Bounty Awarded',
+        label: `Treasury bounty ${bountyIndex} was awarded.`,
+        linkUrl: chainId ? `/${chainId}/proposal/treasurybounty/${bountyIndex}` : null,
+      };
+    }
+    case EventKind.TreasuryBountyRejected: {
+      const { bountyIndex,} = data;
+      return {
+        heading: 'Treasury Bounty Rejected',
+        label: `Treasury bounty ${bountyIndex} was proposed.`,
+        linkUrl: chainId ? `/${chainId}/proposal/treasurybounty/${bountyIndex}` : null,
+      };
+    }
+    // TODO: If, more events, don't forget to add them
 
     /**
      * Elections Events
