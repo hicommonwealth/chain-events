@@ -221,7 +221,30 @@ export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
         description: 'A treasury bounty is rejected.',
       };
     }
-    // TODO: If, more events, don't forget to add them
+    case EventKind.TreasuryBountyBecameActive: {
+      return {
+        title: 'Treasury Bounty Became Active',
+        description: 'A treasury bounty became active.',
+      };
+    }
+    case EventKind.TreasuryBountyClaimed: {
+      return {
+        title: 'Treasury Bounty Claimed',
+        description: 'A treasury bounty is claimed.',
+      };
+    }
+    case EventKind.TreasuryBountyCanceled: {
+      return {
+        title: 'Treasury Bounty Canceled',
+        description: 'A treasury bounty is canceled.',
+      };
+    }
+    case EventKind.TreasuryBountyExtended: {
+      return {
+        title: 'Treasury Bounty Expiry Extended',
+        description: 'A treasury bounty\'s expiry is extended.',
+      };
+    }
 
     /**
      * Elections Events
