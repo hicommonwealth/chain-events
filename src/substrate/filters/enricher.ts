@@ -455,6 +455,8 @@ export async function Enrich(
         };
       }
 
+      // TODO: Add new Bounty events HERE
+
       /**
        * Elections Events
        */
