@@ -373,7 +373,12 @@ export interface ITreasuryRejected extends IEvent {
 export interface ITreasuryBountyProposed extends IEvent {
   kind: EventKind.TreasuryBountyProposed,
   bountyIndex: number,
-  // fill
+  proposer: AccountId,
+  value: BalanceString,
+  fee: BalanceString,
+  curatorDeposit: BalanceString,
+  bond: BalanceString,
+  // status?: string,
 }
 
 export interface ITreasuryBountyAwarded extends IEvent {
