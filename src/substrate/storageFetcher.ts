@@ -262,16 +262,17 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     const bounties = await this._api.query.treasury.bounties.multi<Option<Bounty>>(bountyIds);
     const proposedEvents = bountyIds.map((id, index) => {
       if (!bounties[index] || !bounties[index].isSome) return null;
-      const { proposer, value, beneficiary, bond } = bounties[index].unwrap();
+      const { proposer, value, fee, curatorDeposit, bond, } = bounties[index].unwrap();
       return {
-        kind: EventKind.TreasuryBountyProposed, // EventKind.TreasuryBountyProposed
-        proposalIndex: +id,
+        kind: EventKind.TreasuryBountyProposed,
+        bountyIndex: +id,
         proposer: proposer.toString(),
         value: value.toString(),
-        beneficiary: beneficiary.toString(),
+        fee: fee.toString(),
+        curatorDeposit: curatorDeposit.toString(),
         bond: bond.toString(),
-      } as ITreasuryProposed;
-    }).filter((e) => !!e);
+    } as ITreasuryBountyProposed;
+  }).filter((e) => !!e);
     log.info(`Found ${proposedEvents.length} treasury bounties!`);
     return proposedEvents.map((data) => ({ blockNumber, data }));
   }
