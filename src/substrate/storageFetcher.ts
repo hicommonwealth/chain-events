@@ -10,7 +10,8 @@ import { ApiPromise } from '@polkadot/api';
 import { Option, Vec } from '@polkadot/types';
 import {
   BalanceOf, AccountId, Hash, BlockNumber, Registration,
-  ProposalIndex, TreasuryProposal, Proposal, Votes, Bounty
+  ProposalIndex, TreasuryProposal, Proposal, Votes,
+  Bounty, BountyIndex,
 } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 import { DeriveProposalImage } from '@polkadot/api-derive/types';
@@ -25,6 +26,7 @@ import {
   IDemocracyPassed,
   IPreimageNoted,
   ITreasuryProposed,
+  ITreasuryBountyProposed,
   ICollectiveProposed,
   ICollectiveVoted,
   ISignalingNewProposal,
@@ -246,7 +248,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     return proposedEvents.map((data) => ({ blockNumber, data }));
   }
 
-  public async fetchTreasuryBounties(blockNumber: number): Promise<CWEvent<ITreasuryProposed>[]> {
+  public async fetchTreasuryBounties(blockNumber: number): Promise<CWEvent<ITreasuryBountyProposed>[]> {
     log.info('Migrating treasury bounties...');
     const approvals = await this._api.query.treasury.bountyApprovals();
     const nBounties = await this._api.query.treasury.bountyCount();
@@ -257,12 +259,12 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         bountyIds.push(i);
       }
     }
-    const bounties = await this._api.query.treasury.bounties.multi<Option<TreasuryBounty>>(bountyIds);
+    const bounties = await this._api.query.treasury.bounties.multi<Option<Bounty>>(bountyIds);
     const proposedEvents = bountyIds.map((id, index) => {
-      if (!proposals[index] || !proposals[index].isSome) return null;
-      const { proposer, value, beneficiary, bond } = proposals[index].unwrap();
+      if (!bounties[index] || !bounties[index].isSome) return null;
+      const { proposer, value, beneficiary, bond } = bounties[index].unwrap();
       return {
-        kind: EventKind.TreasuryProposed,
+        kind: EventKind.TreasuryBountyProposed, // EventKind.TreasuryBountyProposed
         proposalIndex: +id,
         proposer: proposer.toString(),
         value: value.toString(),
@@ -270,7 +272,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         bond: bond.toString(),
       } as ITreasuryProposed;
     }).filter((e) => !!e);
-    log.info(`Found ${proposedEvents.length} treasury proposals!`);
+    log.info(`Found ${proposedEvents.length} treasury bounties!`);
     return proposedEvents.map((data) => ({ blockNumber, data }));
   }
 
