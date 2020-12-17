@@ -216,6 +216,8 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
       return [ SubstrateTypes.EntityKind.CollectiveProposal, EntityEventKind.Complete ];
     }
 
+    // TODO: SUBSTRATE BOUNTY EVENTS HERE
+
     // Signaling Events
     case SubstrateTypes.EventKind.SignalingNewProposal: {
       return [ SubstrateTypes.EntityKind.SignalingProposal, EntityEventKind.Create ];
