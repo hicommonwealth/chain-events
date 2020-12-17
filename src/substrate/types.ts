@@ -370,6 +370,21 @@ export interface ITreasuryRejected extends IEvent {
   // cannot fetch other data because proposal data disappears on rejection
 }
 
+export interface ITreasuryBountyProposed extends IEvent {
+  kind: EventKind.TreasuryBountyProposed,
+  // fill
+}
+
+export interface ITreasuryBountyAwarded extends IEvent {
+  kind: EventKind.TreasuryBountyAwarded,
+  // fill
+}
+
+export interface ITreasuryBountyRejected extends IEvent {
+  kind: EventKind.TreasuryBountyRejected,
+  // fill
+}
+
 /**
  * Elections Events
  */
