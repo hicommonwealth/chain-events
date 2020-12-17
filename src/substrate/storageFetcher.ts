@@ -103,6 +103,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
 
     /** treasury proposals */
     const treasuryProposalEvents = await this.fetchTreasuryProposals(blockNumber);
+    const treasuryBountyEvents = await this.fetchTreasuryBounties(blockNumber);
 
     /** collective proposals */
     let technicalCommitteeProposalEvents = [];
@@ -120,6 +121,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       ...democracyReferendaEvents,
       ...democracyPreimageEvents,
       ...treasuryProposalEvents,
+      ...treasuryBountyEvents,
       ...technicalCommitteeProposalEvents,
       ...councilProposalEvents,
       ...signalingProposalEvents,
