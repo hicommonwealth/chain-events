@@ -446,7 +446,7 @@ export async function Enrich(
       }
 
       case EventKind.TreasuryRejected: {
-        const [ proposalIndex, slashedBond ] = event.data as unknown as [ ProposalIndex, Balance ] & Codec;
+        const [ proposalIndex, ] = event.data as unknown as [ ProposalIndex, ] & Codec;
         return {
           data: {
             kind,
