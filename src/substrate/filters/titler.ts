@@ -203,6 +203,25 @@ export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
         description: 'A treasury spend is rejected.',
       };
     }
+    case EventKind.TreasuryBountyProposed: {
+      return {
+        title: 'Treasury Bounty Proposed',
+        description: 'A treasury bounty is proposed.',
+      };
+    }
+    case EventKind.TreasuryBountyAwarded: {
+      return {
+        title: 'Treasury Bounty Awarded',
+        description: 'A treasury bounty is awarded.',
+      };
+    }
+    case EventKind.TreasuryBountyRejected: {
+      return {
+        title: 'Treasury Bounty Rejected',
+        description: 'A treasury bounty is rejected.',
+      };
+    }
+    // TODO: If, more events, don't forget to add them
 
     /**
      * Elections Events
