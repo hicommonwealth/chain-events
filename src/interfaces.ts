@@ -146,6 +146,9 @@ export function entityToFieldName(entity: IChainEntityKind): string | null {
     case SubstrateTypes.EntityKind.TreasuryProposal: {
       return 'proposalIndex';
     }
+    case SubstrateTypes.EntityKind.Bounty: {
+      return 'bountyIndex';
+    }
     case SubstrateTypes.EntityKind.CollectiveProposal: {
       return 'proposalHash';
     }
@@ -215,6 +218,7 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
     case SubstrateTypes.EventKind.CollectiveExecuted: {
       return [ SubstrateTypes.EntityKind.CollectiveProposal, EntityEventKind.Complete ];
     }
+
 
     // TODO: SUBSTRATE BOUNTY EVENTS HERE
 
