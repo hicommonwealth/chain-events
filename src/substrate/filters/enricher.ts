@@ -485,7 +485,7 @@ export async function Enrich(
                 updateDue: +bounty.status.asActive.updateDue,
               },
               isPendingPayout: bounty.status.isPendingPayout,
-              asPendingPayount: {
+              asPendingPayout: {
                 curator: bounty.status.asPendingPayout.curator.toString(),
                 beneficiary: bounty.status.asPendingPayout.curator.toString(),
                 unlockAt: +bounty.status.asPendingPayout.unlockAt,

@@ -118,6 +118,11 @@ const api = constructFakeApi({
     } as unknown as TreasuryProposal)
   ] : [], // should not see anything else
 
+  // bounty proposals
+  bountyApprovals: async () => [ '0', '1', '2' ],
+  bountyCount: async () => '3',
+  
+
   // collective proposals
   collectiveProposals: async () => [ 'council-hash2', 'council-hash' ],
   votingMulti: async () => [

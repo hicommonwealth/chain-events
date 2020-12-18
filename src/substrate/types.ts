@@ -42,7 +42,7 @@ export interface BountyStatus {
   isActive: boolean,
   asActive: BountyStatusActive,
   isPendingPayout: boolean,
-  asPendingPayount: BountyStatusPendingPayout,
+  asPendingPayout: BountyStatusPendingPayout,
 }
 
 export interface BountyStatusCuratorProposed {

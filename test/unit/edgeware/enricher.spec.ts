@@ -1111,6 +1111,46 @@ describe('Edgeware Event Enricher Filter Tests', () => {
     });
   });
 
+  /** bounty events */
+  it('should enrich bounty-proposed event', async () => {
+    const kind = EventKind.TreasuryBountyProposed;
+    const event = constructEvent([ '1', 100 ]);
+    const result = await Enrich(api, blockNumber, kind, event);
+    console.log(result);
+    assert.deepEqual(result, {
+      blockNumber,
+      data: {
+        kind,
+        bountyIndex: 1,
+        bond: "1000",
+        curatorDeposit: "1000",
+        fee: "1000",
+        proposer: "alice",
+        value: "1000",
+        status: {
+          asActive: {
+            curator: "alice",
+            updateDue: 12345678
+          },
+          asCuratorProposed: {
+            curator: "alice",
+          },
+          asPendingPayout: {
+            beneficiary: "alice",
+            curator: "alice",
+            unlockAt: 123456789
+          },
+          isActive: false,
+          isApproved: true,
+          isCuratorProposed: true,
+          isFunded: true,
+          isPendingPayout: false,
+          isProposed: true,
+        },
+      },
+    });
+  });
+
   /** elections events */
   it('should enrich election-new-term event', async () => {
     const kind = EventKind.ElectionNewTerm;
