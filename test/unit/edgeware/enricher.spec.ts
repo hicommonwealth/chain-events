@@ -1116,7 +1116,6 @@ describe('Edgeware Event Enricher Filter Tests', () => {
     const kind = EventKind.TreasuryBountyProposed;
     const event = constructEvent([ '1', 100 ]);
     const result = await Enrich(api, blockNumber, kind, event);
-    console.log(result);
     assert.deepEqual(result, {
       blockNumber,
       data: {
@@ -1147,6 +1146,91 @@ describe('Edgeware Event Enricher Filter Tests', () => {
           isPendingPayout: false,
           isProposed: true,
         },
+      },
+    });
+  });
+
+  it('should enrich bounty-awarded event', async () => {
+    const kind = EventKind.TreasuryBountyAwarded;
+    const event = constructEvent([ '1', 100 ]);
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      data: {
+        kind,
+        bountyIndex: 1,
+        beneficiary: '100',
+      },
+    });
+  });
+
+  it('should enrich bounty-rejected event', async () => {
+    const kind = EventKind.TreasuryBountyRejected;
+    const event = constructEvent([ '1', 100 ]);
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      data: {
+        kind,
+        bountyIndex: 1,
+        bond: '100',
+      },
+    });
+  });
+
+  it('should enrich bounty-became-active event', async () => {
+    const kind = EventKind.TreasuryBountyBecameActive;
+    const event = constructEvent([ '1' ]);
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      data: {
+        kind,
+        bountyIndex: 1,
+      },
+    });
+  });
+
+  it('should enrich bounty-claimed event', async () => {
+    const kind = EventKind.TreasuryBountyClaimed;
+    const beneficiary = 'alice';
+    const event = constructEvent([ '1', 100, beneficiary ]);
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      data: {
+        kind,
+        bountyIndex: 1,
+        beneficiary,
+        payout: 100,
+      },
+    });
+  });
+
+  it('should enrich bounty-canceled event', async () => {
+    const kind = EventKind.TreasuryBountyCanceled;
+    const beneficiary = 'alice';
+    const event = constructEvent([ '1', ]);
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      data: {
+        kind,
+        bountyIndex: 1,
+      },
+    });
+  });
+
+  it('should enrich bounty-extended event', async () => {
+    const kind = EventKind.TreasuryBountyExtended;
+    const beneficiary = 'alice';
+    const event = constructEvent([ '1', ]);
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      data: {
+        kind,
+        bountyIndex: 1,
       },
     });
   });

@@ -533,8 +533,8 @@ export async function Enrich(
           data: {
             kind,
             bountyIndex: +bountyIndex,
-            payout: payout.toString(),
-            beneficiary: beneficiary.toString(),
+            payout,
+            beneficiary: beneficiary?.toString(),
           }
         };
       }
