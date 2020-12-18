@@ -67,6 +67,11 @@ describe('Edgeware Event Processor Tests', () => {
           isApplyExtrinsic: true,
           asApplyExtrinsic: 0,
         }
+      },
+      {
+        section: 'bounty',
+        method: 'BountyProposed',
+        data: [ '1', ]
       }
     ];
 
