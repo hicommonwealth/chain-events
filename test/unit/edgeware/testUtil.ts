@@ -98,7 +98,7 @@ export function constructFakeApi(
   proposals.multi = callOverrides['treasuryProposalsMulti'];
 
   const bounties = function (...args) { return callOverrides['treasuryBounties'](...args); };
-  bounties.multi = callOverrides['treasuryBountiesMulti'];
+  bounties.multi = callOverrides['bountiesMulti'];
 
   return {
     createType: (name, value) => value,

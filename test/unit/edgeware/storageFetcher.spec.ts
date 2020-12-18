@@ -121,6 +121,16 @@ const api = constructFakeApi({
   // bounty proposals
   bountyApprovals: async () => [ '0', '1', '2' ],
   bountyCount: async () => '3',
+  bountiesMulti: async (ids) => ids.length === 1 && +ids[0] === 3 ? [
+    constructOption({
+      proposer: 'alice',
+      value: 50,
+      fee: 10,
+      curatorDeposit: 10,
+      bond: 10,
+      status: {}
+    } as unknown as Bounty)
+  ] : [], // should not see anything else
   
 
   // collective proposals
