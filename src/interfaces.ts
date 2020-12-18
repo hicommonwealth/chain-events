@@ -171,6 +171,7 @@ export function entityToFieldName(entity: IChainEntityKind): string | null {
 
 export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, EntityEventKind ] {
   switch (event) {
+    // Democracy Events
     case SubstrateTypes.EventKind.DemocracyProposed: {
       return [ SubstrateTypes.EntityKind.DemocracyProposal, EntityEventKind.Create ];
     }
@@ -190,6 +191,7 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
       return [ SubstrateTypes.EntityKind.DemocracyReferendum, EntityEventKind.Complete ];
     }
 
+    // Preimage Events
     case SubstrateTypes.EventKind.PreimageNoted: {
       return [ SubstrateTypes.EntityKind.DemocracyPreimage, EntityEventKind.Create ];
     }
@@ -199,6 +201,7 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
       return [ SubstrateTypes.EntityKind.DemocracyPreimage, EntityEventKind.Complete ];
     }
 
+    // Treasury Events
     case SubstrateTypes.EventKind.TreasuryProposed: {
       return [ SubstrateTypes.EntityKind.TreasuryProposal, EntityEventKind.Create ];
     }
@@ -207,6 +210,30 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
       return [ SubstrateTypes.EntityKind.TreasuryProposal, EntityEventKind.Complete ];
     }
 
+    // Bounty Events
+    case SubstrateTypes.EventKind.TreasuryBountyProposed: {
+      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Create ];
+    }
+    case SubstrateTypes.EventKind.TreasuryBountyAwarded: {
+      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Update ]; // TODO: I believe this is correct, check frame/treasury/src/lib.rs 995-1020
+    }
+    case SubstrateTypes.EventKind.TreasuryBountyBecameActive: {
+      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Update ];
+    }
+    case SubstrateTypes.EventKind.TreasuryBountyCanceled: {
+      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Complete ];
+    }
+    case SubstrateTypes.EventKind.TreasuryBountyClaimed: {
+      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Complete ]; 
+    }
+    case SubstrateTypes.EventKind.TreasuryBountyExtended: {
+      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Update ];
+    }
+    case SubstrateTypes.EventKind.TreasuryBountyRejected: {
+      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Complete ];
+    }
+
+    // Collective Events
     case SubstrateTypes.EventKind.CollectiveProposed: {
       return [ SubstrateTypes.EntityKind.CollectiveProposal, EntityEventKind.Create ];
     }
@@ -218,9 +245,6 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
     case SubstrateTypes.EventKind.CollectiveExecuted: {
       return [ SubstrateTypes.EntityKind.CollectiveProposal, EntityEventKind.Complete ];
     }
-
-
-    // TODO: SUBSTRATE BOUNTY EVENTS HERE
 
     // Signaling Events
     case SubstrateTypes.EventKind.SignalingNewProposal: {
