@@ -520,7 +520,7 @@ export async function Enrich(
       case EventKind.TreasuryBountyExtended: {
         const [ bountyIndex ] = event.data as unknown as [ BountyIndex ] & Codec;
         return {
-          data: {g
+          data: {
             kind,
             bountyIndex: +bountyIndex,
           }
