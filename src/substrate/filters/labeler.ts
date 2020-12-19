@@ -352,7 +352,6 @@ export const Label: LabelerFilter = (
       return {
         heading: 'Treasury Bounty Proposed',
         label: `Treasury bounty ${bountyIndex} was proposed.`,
-        // TODO: should the slug be /bounty/treasurybounty????????
         linkUrl: chainId ? `/${chainId}/proposal/treasurybounty/${bountyIndex}` : null,
       };
     }
