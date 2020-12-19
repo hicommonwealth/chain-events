@@ -410,7 +410,7 @@ export interface ITreasuryBountyProposed extends IEvent {
   fee: BalanceString,
   curatorDeposit: BalanceString,
   bond: BalanceString,
-  status?: BountyStatus, // TODO: set as BountyStatus ENUM
+  status?: BountyStatus,
 }
 
 export interface ITreasuryBountyAwarded extends IEvent {
