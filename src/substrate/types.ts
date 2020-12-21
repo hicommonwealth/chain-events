@@ -696,3 +696,6 @@ export type ICollectiveProposalEvents =
 export type ISignalingProposalEvents =
   ISignalingNewProposal | ISignalingCommitStarted
   | ISignalingVotingStarted | ISignalingVotingCompleted;
+export type ITreasuryBountyEvents =
+  ITreasuryBountyBecameActive | ITreasuryBountyCanceled | ITreasuryBountyClaimed | ITreasuryBountyAwarded 
+    | ITreasuryBountyExtended | ITreasuryBountyProposed | ITreasuryBountyRejected; 
