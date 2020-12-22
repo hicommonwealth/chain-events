@@ -98,7 +98,7 @@ export enum EntityKind {
   TreasuryProposal = 'treasury-proposal',
   CollectiveProposal = 'collective-proposal',
   SignalingProposal = 'signaling-proposal',
-  Bounty = 'bounty',
+  TreasuryBounty = 'treasury-bounty',
 }
 
 // Each kind of event we handle
@@ -410,7 +410,6 @@ export interface ITreasuryBountyProposed extends IEvent {
   fee: BalanceString,
   curatorDeposit: BalanceString,
   bond: BalanceString,
-  status?: BountyStatus,
 }
 
 export interface ITreasuryBountyAwarded extends IEvent {

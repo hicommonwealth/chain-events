@@ -471,26 +471,6 @@ export async function Enrich(
             fee: bounty.fee.toString(),
             curatorDeposit: bounty.curatorDeposit.toString(),
             bond: bounty.bond.toString(),
-            status: {
-              isProposed: bounty.status.isProposed,
-              isApproved: bounty.status.isApproved,
-              isFunded: bounty.status.isFunded,
-              isCuratorProposed: bounty.status.isCuratorProposed,
-              asCuratorProposed: {
-                curator: bounty.status.asCuratorProposed.curator.toString(),
-              },
-              isActive: bounty.status.isActive,
-              asActive: {
-                curator: bounty.status.asActive.curator.toString(),
-                updateDue: +bounty.status.asActive.updateDue,
-              },
-              isPendingPayout: bounty.status.isPendingPayout,
-              asPendingPayout: {
-                curator: bounty.status.asPendingPayout.curator.toString(),
-                beneficiary: bounty.status.asPendingPayout.curator.toString(),
-                unlockAt: +bounty.status.asPendingPayout.unlockAt,
-              }
-            },
           }
         };
       }
