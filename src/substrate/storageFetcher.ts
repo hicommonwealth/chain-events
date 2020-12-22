@@ -262,10 +262,12 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       }
     }
     const bounties = await this._api.query.treasury.bounties.multi<Option<Bounty>>(bountyIds);
-    const proposedEvents = bountyIds.map((id, index) => {
+    const allEvents = [];
+    bountyIds.forEach((id, index) => {
       if (!bounties[index] || !bounties[index].isSome) return null;
+      // TODO: look at Status and return ALL appropriate events
       const { proposer, value, fee, curatorDeposit, bond, } = bounties[index].unwrap();
-      return {
+      allEvents.push({
         kind: EventKind.TreasuryBountyProposed,
         bountyIndex: +id,
         proposer: proposer.toString(),
@@ -273,10 +275,11 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         fee: fee.toString(),
         curatorDeposit: curatorDeposit.toString(),
         bond: bond.toString(),
-    } as ITreasuryBountyProposed;
-  }).filter((e) => !!e);
-    log.info(`Found ${proposedEvents.length} treasury bounties!`);
-    return proposedEvents.map((data) => ({ blockNumber, data }));
+    } as ITreasuryBountyProposed);
+  })
+  const filteredEvents = allEvents.filter((e) => !!e);
+    log.info(`Found ${filteredEvents.length} treasury bounties!`);
+    return filteredEvents.map((data) => ({ blockNumber, data }));
   }
 
   public async fetchCollectiveProposals(
