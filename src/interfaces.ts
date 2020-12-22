@@ -146,7 +146,7 @@ export function entityToFieldName(entity: IChainEntityKind): string | null {
     case SubstrateTypes.EntityKind.TreasuryProposal: {
       return 'proposalIndex';
     }
-    case SubstrateTypes.EntityKind.Bounty: {
+    case SubstrateTypes.EntityKind.TreasuryBounty: {
       return 'bountyIndex';
     }
     case SubstrateTypes.EntityKind.CollectiveProposal: {
@@ -212,25 +212,25 @@ export function eventToEntity(event: IChainEventKind): [ IChainEntityKind, Entit
 
     // Bounty Events
     case SubstrateTypes.EventKind.TreasuryBountyProposed: {
-      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Create ];
+      return [ SubstrateTypes.EntityKind.TreasuryBounty, EntityEventKind.Create ];
     }
     case SubstrateTypes.EventKind.TreasuryBountyAwarded: {
-      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Update ]; // TODO: I believe this is correct, check frame/treasury/src/lib.rs 995-1020
+      return [ SubstrateTypes.EntityKind.TreasuryBounty, EntityEventKind.Update ];
     }
     case SubstrateTypes.EventKind.TreasuryBountyBecameActive: {
-      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Update ];
+      return [ SubstrateTypes.EntityKind.TreasuryBounty, EntityEventKind.Update ];
     }
     case SubstrateTypes.EventKind.TreasuryBountyCanceled: {
-      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Complete ];
+      return [ SubstrateTypes.EntityKind.TreasuryBounty, EntityEventKind.Complete ];
     }
     case SubstrateTypes.EventKind.TreasuryBountyClaimed: {
-      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Complete ]; 
+      return [ SubstrateTypes.EntityKind.TreasuryBounty, EntityEventKind.Complete ]; 
     }
     case SubstrateTypes.EventKind.TreasuryBountyExtended: {
-      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Update ];
+      return [ SubstrateTypes.EntityKind.TreasuryBounty, EntityEventKind.Update ];
     }
     case SubstrateTypes.EventKind.TreasuryBountyRejected: {
-      return [ SubstrateTypes.EntityKind.Bounty, EntityEventKind.Complete ];
+      return [ SubstrateTypes.EntityKind.TreasuryBounty, EntityEventKind.Complete ];
     }
 
     // Collective Events
