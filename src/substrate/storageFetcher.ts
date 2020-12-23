@@ -37,6 +37,7 @@ import {
   IIdentitySet,
   parseJudgement,
   IdentityJudgement,
+  ITreasuryBountyBecameActive,
 } from './types';
 
 import { factory, formatFilename } from '../logging';
@@ -266,7 +267,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     bountyIds.forEach((id, index) => {
       if (!bounties[index] || !bounties[index].isSome) return null;
       // TODO: look at Status and return ALL appropriate events
-      const { proposer, value, fee, curatorDeposit, bond, } = bounties[index].unwrap();
+      const { proposer, value, fee, curatorDeposit, bond, status } = bounties[index].unwrap();
       allEvents.push({
         kind: EventKind.TreasuryBountyProposed,
         bountyIndex: +id,
@@ -276,6 +277,20 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         curatorDeposit: curatorDeposit.toString(),
         bond: bond.toString(),
     } as ITreasuryBountyProposed);
+    if (status.isActive) {
+      allEvents.push({
+        kind: EventKind.TreasuryBountyBecameActive,
+        bountyIndex: +id,
+      } as ITreasuryBountyBecameActive)
+    }
+    if (status.isApproved) {
+      // TODO
+    }
+    if (status.isCuratorProposed) {
+
+    }
+    if (status.isFunded)
+    if (status.isPendingPayout)
   })
   const filteredEvents = allEvents.filter((e) => !!e);
     log.info(`Found ${filteredEvents.length} treasury bounties!`);
