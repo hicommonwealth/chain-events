@@ -400,6 +400,7 @@ export interface ITreasuryRejected extends IEvent {
   // cannot fetch other data because proposal data disappears on rejection
 }
 
+// Treasury Bounty Event Interfaces
 
 export interface ITreasuryBountyProposed extends IEvent {
   // New bounty proposal. [index]
