@@ -276,23 +276,25 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         fee: fee.toString(),
         curatorDeposit: curatorDeposit.toString(),
         bond: bond.toString(),
-    } as ITreasuryBountyProposed);
-    if (status.isActive) {
-      allEvents.push({
-        kind: EventKind.TreasuryBountyBecameActive,
-        bountyIndex: +id,
-      } as ITreasuryBountyBecameActive)
-    }
-    if (status.isApproved) {
-      // TODO
-    }
-    if (status.isCuratorProposed) {
+      } as ITreasuryBountyProposed);
+      if (status.isActive) {
+        allEvents.push({
+          kind: EventKind.TreasuryBountyBecameActive,
+          bountyIndex: +id,
+        } as ITreasuryBountyBecameActive)
+      }
+      if (status.isApproved) {
+        // TODO
+      }
+      if (status.isCuratorProposed) {
 
-    }
-    if (status.isFunded)
-    if (status.isPendingPayout)
-  })
-  const filteredEvents = allEvents.filter((e) => !!e);
+      }
+      if (status.isFunded) {
+
+      }
+      if (status.isPendingPayout){}
+    });
+    const filteredEvents = allEvents.filter((e) => !!e);
     log.info(`Found ${filteredEvents.length} treasury bounties!`);
     return filteredEvents.map((data) => ({ blockNumber, data }));
   }
