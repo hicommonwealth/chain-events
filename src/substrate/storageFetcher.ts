@@ -38,6 +38,7 @@ import {
   parseJudgement,
   IdentityJudgement,
   ITreasuryBountyBecameActive,
+  BountyStatusPendingPayout,
 } from './types';
 
 import { factory, formatFilename } from '../logging';
@@ -281,18 +282,25 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         allEvents.push({
           kind: EventKind.TreasuryBountyBecameActive,
           bountyIndex: +id,
-        } as ITreasuryBountyBecameActive)
+        } as ITreasuryBountyBecameActive);
       }
       if (status.isApproved) {
-        // TODO
+        allEvents.push({
+        });
       }
-      if (status.isCuratorProposed) {
-
+      if (status.asCuratorProposed) {
+        allEvents.push({
+          kind: EventKind.
+        });
       }
-      if (status.isFunded) {
-
+      if (status.asPendingPayout){
+        allEvents.push({
+          kind: EventKind.TreasuryBountyAwarded,
+          bountyIndex: +id,
+          value: value.toString(),
+          beneficiary: (status.asPendingPayout).beneficiary.toString(),
+        });
       }
-      if (status.isPendingPayout){}
     });
     const filteredEvents = allEvents.filter((e) => !!e);
     log.info(`Found ${filteredEvents.length} treasury bounties!`);
