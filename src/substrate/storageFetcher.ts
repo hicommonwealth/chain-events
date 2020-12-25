@@ -269,7 +269,6 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     const allEvents = [];
     bountyIds.forEach((id, index) => {
       if (!bounties[index] || !bounties[index].isSome) return null;
-      // TODO: look at Status and return ALL appropriate events
       const { proposer, value, fee, curatorDeposit, bond, status } = bounties[index].unwrap();
       allEvents.push({
         kind: EventKind.TreasuryBountyProposed,
@@ -286,14 +285,8 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
           bountyIndex: +id,
         } as ITreasuryBountyBecameActive);
       }
-      if (status.isApproved) {
-        allEvents.push({
-        });
-      }
-      if (status.asCuratorProposed) {
-        allEvents.push({
-        });
-      }
+      if (status.isApproved) {} // no events
+      if (status.asCuratorProposed) {} // no events
       if (status.asPendingPayout){
         allEvents.push({
           kind: EventKind.TreasuryBountyAwarded,
