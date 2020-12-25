@@ -295,12 +295,12 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         });
       }
       if (status.asPendingPayout){
-        // allEvents.push({
-        //   kind: EventKind.TreasuryBountyAwarded,
-        //   bountyIndex: +id,
-        //   value: value.toString(),
-        //   beneficiary: (status.asPendingPayout).beneficiary.toString(),
-        // } as ITreasuryBountyAwarded);
+        allEvents.push({
+          kind: EventKind.TreasuryBountyAwarded,
+          bountyIndex: +id,
+          value: value.toString(),
+          beneficiary: (status.asPendingPayout).beneficiary.toString(),
+        } as ITreasuryBountyAwarded);
         allEvents.push({
           kind: EventKind.TreasuryBountyClaimed,
           bountyIndex: +id,
