@@ -1126,26 +1126,6 @@ describe('Edgeware Event Enricher Filter Tests', () => {
         fee: "1000",
         proposer: "alice",
         value: "1000",
-        status: {
-          asActive: {
-            curator: "alice",
-            updateDue: 12345678
-          },
-          asCuratorProposed: {
-            curator: "alice",
-          },
-          asPendingPayout: {
-            beneficiary: "alice",
-            curator: "alice",
-            unlockAt: 123456789
-          },
-          isActive: false,
-          isApproved: true,
-          isCuratorProposed: true,
-          isFunded: true,
-          isPendingPayout: false,
-          isProposed: true,
-        },
       },
     });
   });
@@ -1202,7 +1182,7 @@ describe('Edgeware Event Enricher Filter Tests', () => {
         kind,
         bountyIndex: 1,
         beneficiary,
-        payout: 100,
+        payout: "100",
       },
     });
   });
