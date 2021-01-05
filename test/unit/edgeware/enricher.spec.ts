@@ -416,8 +416,8 @@ const api = constructFakeApi({
       at: 30,
       balance: 1000,
       proposal: {
-        sectionName: 'section',
-        methodName: 'method',
+        section: 'section',
+        method: 'method',
         args: ['arg1', 'arg2'],
       },
       proposer: 'alice',
@@ -425,8 +425,8 @@ const api = constructFakeApi({
   collectiveProposalOf: async (hash) => hash.toString() !== 'hash'
     ? constructOption()
     : constructOption({
-      sectionName: 'section',
-      methodName: 'method',
+      section: 'section',
+      method: 'method',
       args: ['arg1', 'arg2'],
     } as unknown as Proposal),
   identityOf: async (addr) => constructOption({
