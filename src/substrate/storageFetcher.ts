@@ -256,8 +256,9 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
 
   public async fetchTreasuryBounties(blockNumber: number): Promise<CWEvent<ITreasuryBountyProposed>[]> {
     log.info('Migrating treasury bounties...');
-    const approvals = await this._api.query.treasury.bountyApprovals();
-    const nBounties = await this._api.query.treasury.bountyCount();
+    // const approvals = await this._api.query.treasury.bountyApprovals();
+    const approvals = await this._api.query.bounties.bountyApprovals();
+    const nBounties = await this._api.query.bounties.bountyCount();
     const bountyIds: number[] = [];
 
     for (let i = 0; i < +nBounties; i++) {
