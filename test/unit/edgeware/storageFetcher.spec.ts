@@ -6,7 +6,6 @@ import { Vec, Data, TypeRegistry } from '@polkadot/types';
 import { Codec } from '@polkadot/types/types';
 import { stringToHex } from '@polkadot/util';
 import { DeriveReferendum } from '@polkadot/api-derive/democracy/types';
-import { ProposalRecord, VoteRecord } from '@edgeware/node-types';
 
 import { constructFakeApi, constructOption, constructIdentityJudgement } from './testUtil';
 import {
@@ -177,7 +176,7 @@ const api = constructFakeApi({
         isVoting: false,
         isCompleted: false,
       }
-    } as unknown as ProposalRecord)
+    } as any)
     : hash === 'active-hash'
       ? constructOption({
         author: 'Active Author',
@@ -190,7 +189,7 @@ const api = constructFakeApi({
           isVoting: true,
           isCompleted: false,
         }
-      } as unknown as ProposalRecord)
+      } as any)
       : hash === 'completed-hash'
         ? constructOption({
           author: 'Completed Author',
@@ -203,7 +202,7 @@ const api = constructFakeApi({
             isVoting: false,
             isCompleted: true,
           }
-        } as unknown as ProposalRecord) : constructOption(),
+        } as any) : constructOption(),
   voteRecords: async (id) => id === '1'
     ? constructOption({
       id: 1,
@@ -212,7 +211,7 @@ const api = constructFakeApi({
         tally_type: 'inactive tally',
         vote_type: 'inactive vote',
       }
-    } as unknown as VoteRecord)
+    } as any)
     : id === '2'
       ? constructOption({
         id: 2,
@@ -221,7 +220,7 @@ const api = constructFakeApi({
           tally_type: 'active tally',
           vote_type: 'active vote',
         }
-      } as unknown as VoteRecord)
+      } as any)
       : id === '3'
         ? constructOption({
           id: 3,
@@ -230,7 +229,7 @@ const api = constructFakeApi({
             tally_type: 'completed tally',
             vote_type: 'completed vote',
           }
-        } as unknown as VoteRecord) : constructOption(),
+        } as any) : constructOption(),
 });
 
 /* eslint-disable: dot-notation */
