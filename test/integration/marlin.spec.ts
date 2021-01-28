@@ -244,7 +244,6 @@ describe('Marlin Event Integration Tests', () => {
         handler.emitter.on(
           EventKind.DelegateChanged.toString(),
           (evt: CWEvent<IEventData>) => {
-            console.log('1', evt.data);
             assert.deepEqual(evt.data, {
               kind: EventKind.DelegateChanged,
               delegator: addresses[0],
@@ -257,7 +256,6 @@ describe('Marlin Event Integration Tests', () => {
         handler.emitter.on(
           EventKind.DelegateVotesChanged.toString(),
           (evt: CWEvent<IDelegateVotesChanged>) => {
-            console.log('2', evt.data);
             const { kind, delegate, previousBalance, newBalance } = evt.data;
             assert.deepEqual({
               kind,
