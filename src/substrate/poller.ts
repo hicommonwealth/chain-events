@@ -78,7 +78,7 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
    * @param batchSize size of the batch in which blocks are to be fetched from chain
    * @param processBlockFn an optional function to process the blocks
    */
-  public async archive(range: IDisconnectedRange, batchSize: number = 10, processBlockFn: (block: Block) => any = null) {
+  public async archive(range: IDisconnectedRange, batchSize: number = 500, processBlockFn: (block: Block) => any = null) {
     const syncWithHead = !range.endBlock? true:false;
 
     // if the endBlock is not provided then we will run archival mode until we reach the head
