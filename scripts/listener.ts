@@ -78,7 +78,7 @@ const argv = yargs.options({
 }).argv;
 const archival: boolean = argv.archival;
 // if running in archival mode then which block shall we star from
-const startBlock: number = argv.startBlock? argv.startBlock: 0;
+const startBlock: number = argv.startBlock ?? 0;
 const network = argv.network;
 const url: string = argv.url || networkUrls[network];
 const spec = networkSpecs[network] || {};

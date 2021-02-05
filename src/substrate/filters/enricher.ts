@@ -12,7 +12,7 @@ import { filter } from 'lodash';
 import { Kind, OpaqueTimeSlot, OffenceDetails } from '@polkadot/types/interfaces/offences';
 import { CWEvent } from '../../interfaces';
 import { EventKind, IEventData, isEvent, parseJudgement, IdentityJudgement } from '../types';
-import { currentPoints } from './currentPoint';
+import { currentPoints } from '../utils/currentPoint';
 
 /**
  * This is an "enricher" function, whose goal is to augment the initial event data
@@ -35,9 +35,6 @@ export async function Enrich(
     excludeAddresses?: string[],
   }> => {
 
-    // get the hash of current block number
-    const hash = await api.rpc.chain.getBlockHash(blockNumber);
-    const sessionIndex = await api.query.session.currentIndex.at(hash);
 
     switch (kind) {
       /**
@@ -54,6 +51,8 @@ export async function Enrich(
       }
       
       case EventKind.SomeOffline: {
+        const hash = await api.rpc.chain.getBlockHash(blockNumber);
+        const sessionIndex = await api.query.session.currentIndex.at(hash);
         const [ validators ] = event.data as unknown as [ Vec<IdentificationTuple> ];
         return {
           data: {
@@ -64,6 +63,8 @@ export async function Enrich(
         }
       }
       case EventKind.AllGood: {
+        const hash = await api.rpc.chain.getBlockHash(blockNumber);
+        const sessionIndex = await api.query.session.currentIndex.at(hash);
         const validators = await api.query.session.validators.at(hash);
         return {
           data: {
@@ -81,10 +82,7 @@ export async function Enrich(
         const [ offenceKind, opaqueTimeSlot, applied ] = event.data as unknown as [ Kind, OpaqueTimeSlot, bool ];
         
         // for past events we dont get the applied field so offenceApplied can be undefined
-        let offenceApplied:boolean = null;
-        if (applied){
-          offenceApplied = applied.isTrue;
-        }
+        const offenceApplied = applied?.isTrue;
         const reportIds = await api.query.offences.concurrentReportsIndex(offenceKind, opaqueTimeSlot);
         const offenceDetails: Option<OffenceDetails>[] = await api.query.offences.reports
           .multi(reportIds);
@@ -110,20 +108,16 @@ export async function Enrich(
        * Session Events
        */
       case EventKind.NewSession: {
-
+        const hash = await api.rpc.chain.getBlockHash(blockNumber);
+        const sessionIndex = await api.query.session.currentIndex.at(hash);
         const validators = await api.query.session.validators.at(hash);
         // get the era of block
         const rawCurrentEra = await api.query.staking.currentEra.at(hash);
-        const currentEra = rawCurrentEra.toRawType
-          ? rawCurrentEra.toRawType() === 'u32'
-            ? rawCurrentEra.toString() as unknown as EraIndex
-            : rawCurrentEra.unwrap()
-          : rawCurrentEra.unwrap();
-        
+        const currentEra = rawCurrentEra instanceof Option ? rawCurrentEra.unwrap() : rawCurrentEra;        
         // get the nextElected Validators
         const keys = api.query.staking.erasStakers
-          ? await api.query.staking.erasStakers.keysAt(hash,currentEra)
-          : await api.query.staking.stakers.keysAt(hash, currentEra) ; 
+          ? await api.query.staking.erasStakers.keysAt(hash, currentEra)
+          : await api.query.staking.stakers.keysAt(hash, currentEra); 
 
         const nextElected = keys.length ? keys.map((key) => key.args[1] as AccountId): validators['nextElected'];
         
@@ -132,14 +126,12 @@ export async function Enrich(
 
         // find the waiting validator
         const nextElectedStr = nextElected.map((v) => v.toString())
-        // const stashesStr =stashes.map((v) => v.args[0].toString())
-        const stashesStr =stashes.filter((v) => v.args.length).map((v) => v.args[0].toString())
-        
+        const stashesStr =stashes.filter((v) => v.args.length).map((v) => v.args[0].toString())        
         const waiting = stashesStr.filter((v) => !nextElectedStr.includes(v));
 
 
         // get validators current era reward points
-        const validatorEraPoints: EraRewardPoints = await currentPoints(api, currentEra, hash, validators) as EraRewardPoints;
+        const validatorEraPoints = await currentPoints(api, currentEra, hash, validators);
         const eraPointsIndividual = validatorEraPoints.individual.toJSON();
 
         const validatorInfo = {};
@@ -152,7 +144,7 @@ export async function Enrich(
             ? await api.query.staking.erasValidatorPrefs.at(hash, currentEra,key)
             : await api.query.staking.validators.at(hash, key);
 
-          const commissionPer =  (Number)(preference.commission || new BN(0)) / 10_000_000;
+          const commissionPer =  (+preference.commission || 0) / 10_000_000;
 
           const rewardDestination = await api.query.staking.payee.at(hash,key);
           const controllerId = await api.query.staking.bonded.at(hash, key);
@@ -169,23 +161,21 @@ export async function Enrich(
             nextSessionKeysOpt = await api.query.session.nextKeys.at(hash,key);
           }
           
-          const nextSessionKeys = nextSessionKeysOpt.isSome
-            ? nextSessionKeysOpt.unwrap()
-            : []
+          const nextSessionKeys = nextSessionKeysOpt.unwrapOr([]);
 
           validatorInfo[key] = {
             commissionPer,
             controllerId: controllerId.toString() == ''? key: controllerId.toString(),
-            rewardDestination: rewardDestination.toString(),
+            rewardDestination: rewardDestination,
             nextSessionIds: nextSessionKeys.map(key => key.toString()),
-            eraPoints: eraPointsIndividual[key]? Number(eraPointsIndividual[key]): 0
+            eraPoints: eraPointsIndividual[key]? +eraPointsIndividual[key]: 0
           };
         };
 
         const stakersCall = (account) => {
           return  api.query.staking.stakers ?
           api.query.staking.stakers.at(hash, account) : 
-          api.query.staking.erasStakers.at(hash,currentEra, account);
+          api.query.staking.erasStakers.at(hash, currentEra, account);
         }
 
         let activeExposures: { [key: string]: any } = {}
@@ -254,8 +244,9 @@ export async function Enrich(
 
       case EventKind.Bonded:
       case EventKind.Unbonded: {
+        const hash = await api.rpc.chain.getBlockHash(blockNumber);
         const [ stash, amount ] = event.data as unknown as [ AccountId, Balance ] & Codec;
-        const controllerOpt = await api.query.staking.bonded.at<Option<AccountId>>(hash,stash);
+        const controllerOpt = await api.query.staking.bonded.at<Option<AccountId>>(hash, stash);
         if (!controllerOpt.isSome) {
           throw new Error(`could not fetch staking controller for ${stash.toString()}`);
         }
