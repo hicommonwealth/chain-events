@@ -120,10 +120,10 @@ export async function Enrich(
           // for version >= 38
           ? await api.query.staking.erasStakers.keysAt(hash, currentEra)
           // for version = 31
-          : await api.query.staking.stakers.keysAt(hash, currentEra);
+          : await api.query.staking.stakers.keysAt(hash);
 
         const nextElected = keys.length
-          ? keys.map((key) => key.args[key.args.length - 1].toString())
+          ? (keys as any).map((key) => key.args[key.args.length - 1].toString())
           : validators.map((v) => v.toString());
 
         // get current stashes
@@ -141,35 +141,21 @@ export async function Enrich(
         for (let validator of validators) {
           const key = validator.toString();
 
-          // eraValidatorPrefs does not return comission prior to 3139800
           const preference = api.query.staking.erasValidatorPrefs
+            // for version >= 38
             ? await api.query.staking.erasValidatorPrefs.at(hash, currentEra, key)
+            // for version == 31
             : await api.query.staking.validators.at(hash, key);
 
           const commissionPer = (+preference.commission || 0) / 10_000_000;
 
           const rewardDestination = await api.query.staking.payee.at(hash, key);
           const controllerId = await api.query.staking.bonded.at(hash, key);
-          let nextSessionKeysOpt;
-
-          try {
-            // for version = 31
-            nextSessionKeysOpt = await api.query.session.nextKeys(hash, key);
-            // there is queuedKeys function as well not sure which one to use
-            // nextSessionKeysOpt = await api.query.session.queuedKeys(hash,key);
-          }
-          catch (e) {
-            // for version >= 38
-            nextSessionKeysOpt = await api.query.session.nextKeys.at(hash, key);
-          }
-
-          const nextSessionKeys = nextSessionKeysOpt.unwrapOr([]);
 
           validatorInfo[key] = {
             commissionPer,
             controllerId: controllerId.isSome ? controllerId.toString() : key,
             rewardDestination: rewardDestination,
-            nextSessionIds: nextSessionKeys.map(key => key.toString()),
             eraPoints: validatorEraPoints[key] ? validatorEraPoints[key] : 0
           };
         };
@@ -178,7 +164,6 @@ export async function Enrich(
           return api.query.staking.erasStakers
             ? api.query.staking.erasStakers.at(hash, currentEra, account)
             : api.query.staking.stakers.at(hash, account)
-
         }
 
         let activeExposures: ActiveExposure = {};
