@@ -106,7 +106,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
 
     /** treasury proposals */
     const treasuryProposalEvents = await this.fetchTreasuryProposals(blockNumber);
-    const treasuryBountyEvents = await this.fetchTreasuryBounties(blockNumber);
+    const bountyEvents = await this.fetchTreasuryBounties(blockNumber);
 
     /** collective proposals */
     let technicalCommitteeProposalEvents = [];
@@ -124,7 +124,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       ...democracyReferendaEvents,
       ...democracyPreimageEvents,
       ...treasuryProposalEvents,
-      ...treasuryBountyEvents,
+      ...bountyEvents,
       ...technicalCommitteeProposalEvents,
       ...councilProposalEvents,
       ...signalingProposalEvents,
@@ -256,7 +256,9 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
   public async fetchTreasuryBounties(blockNumber: number): Promise<CWEvent<ITreasuryBountyProposed>[]> {
     log.info('Migrating treasury bounties...');
     const approvals = await this._api.query.bounties.bountyApprovals();
+    log.info('02...');
     const nBounties = await this._api.query.bounties.bountyCount();
+    log.info('1...');
 
     const bountyIds: number[] = [];
 
@@ -265,8 +267,11 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         bountyIds.push(i);
       }
     }
+    log.info('2...');
+
     const bounties = await this._api.query.bounties.bounties.multi<Option<Bounty>>(bountyIds);
     const allEvents = [];
+    log.info('3...');
     bountyIds.forEach((id, index) => {
       if (!bounties[index] || !bounties[index].isSome) return null;
       const { proposer, value, fee, curatorDeposit, bond, status } = bounties[index].unwrap();
