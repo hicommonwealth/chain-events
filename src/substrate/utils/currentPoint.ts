@@ -2,22 +2,6 @@ import { AccountId, EraPoints, EraRewardPoints, RewardPoint, EraIndex, BlockHash
 import { ApiPromise } from '@polkadot/api';
 import { AccountPoints } from '../types';
 
-async function retrievePoints(api: ApiPromise, era: EraIndex, hash: BlockHash, validators: AccountId[]): Promise<EraRewardPoints> {
-  const currentEraPointsEarned = await api.query.staking.currentEraPointsEarned.at<EraPoints>(hash, era);
-  const total = currentEraPointsEarned.total;
-  const individual = currentEraPointsEarned.individual;
-
-  return api.registry.createType('EraRewardPoints', {
-    individual: new Map<AccountId, RewardPoint>(
-      individual
-        .map((points) => api.registry.createType('RewardPoint', points))
-        .map((points, index): [AccountId, RewardPoint] => [validators[index] as AccountId, points])
-    ),
-    total
-  });
-}
-
-
 export function currentPoints(api: ApiPromise, era: EraIndex, hash: BlockHash, validators: AccountId[]): Promise<AccountPoints> {
   const points: AccountPoints = {};
   // api call to retreive eraRewardPoints for version >= 38
