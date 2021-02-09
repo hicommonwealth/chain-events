@@ -527,6 +527,11 @@ export interface IIdentityKilled extends IEvent {
   who: AccountId;
 }
 
+// Interface for era reward points
+export interface AccountPoints {
+  [key: string]: number;
+}
+
 export type IEventData =
   ISlash
   | IReward

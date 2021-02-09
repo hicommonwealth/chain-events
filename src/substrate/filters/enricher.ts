@@ -132,10 +132,8 @@ export async function Enrich(
 
         // get validators current era reward points
         const validatorEraPoints = await currentPoints(api, currentEra, hash, validators);
-        const eraPointsIndividual = validatorEraPoints.individual.toJSON();
 
         const validatorInfo = {};
-
         for(let validator of validators){
           const key = validator.toString();
 
@@ -168,7 +166,7 @@ export async function Enrich(
             controllerId: controllerId.toString() == ''? key: controllerId.toString(),
             rewardDestination: rewardDestination,
             nextSessionIds: nextSessionKeys.map(key => key.toString()),
-            eraPoints: eraPointsIndividual[key]? +eraPointsIndividual[key]: 0
+            eraPoints: validatorEraPoints[key] ? validatorEraPoints[key]: 0
           };
         };
 
