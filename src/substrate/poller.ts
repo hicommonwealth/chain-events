@@ -78,29 +78,38 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
    * @param batchSize size of the batch in which blocks are to be fetched from chain
    * @param processBlockFn an optional function to process the blocks
    */
-  public async archive(range: IDisconnectedRange, batchSize: number = 500, processBlockFn: (block: Block) => any = null) {
-    const syncWithHead = !range.endBlock? true:false;
+  public async archive(
+    range: IDisconnectedRange,
+    batchSize: number = 500,
+    processBlockFn: (block: Block) => any = null,
+  ) {
+    const syncWithHead = !range.endBlock;
 
     // if the endBlock is not provided then we will run archival mode until we reach the head
-    if(syncWithHead){
+    if (syncWithHead) {
       const header = await this._api.rpc.chain.getHeader();
-      range.endBlock =  +header.number;
+      range.endBlock = +header.number;
     }
     
     for (let block = range.startBlock; block < range.endBlock; block = Math.min(block + batchSize, range.endBlock)) {
       try {
-        let currentBlocks = await this.poll({startBlock: block, endBlock: Math.min(block + batchSize, range.endBlock)}, batchSize); 
-        if(processBlockFn){
-          // process all blocks sequentially
-          for(let block of currentBlocks) await processBlockFn(block); 
+        const currentBlocks = await this.poll({
+          startBlock: block,
+          endBlock: Math.min(block + batchSize, range.endBlock)
+        }, batchSize);
 
+        // process all blocks sequentially
+        if (processBlockFn) {
+          for (const block of currentBlocks) {
+            await processBlockFn(block);
+          }
         }
       } catch (e) {
         log.error(`Block polling failed after disconnect at block ${range.startBlock}`);
         return;
       }
       // if sync with head then update the endBlock to current header 
-      if(syncWithHead){
+      if (syncWithHead) {
         const header = await this._api.rpc.chain.getHeader();
         range.endBlock =  +header.number;
       }

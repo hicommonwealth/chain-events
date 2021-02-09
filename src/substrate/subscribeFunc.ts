@@ -76,6 +76,17 @@ export const subscribeEvents: SubscribeFunc<ApiPromise, Block, ISubscribeOptions
   const subscriber = new Subscriber(api, verbose);
   const poller = new Poller(api);
 
+  // if running in archival mode: run poller.archive with batch_size 50
+  // then exit without subscribing.
+  // TODO: should we start subscription?
+  if (archival) {
+    // default to startBlock 0
+    const offlineRange: IDisconnectedRange = { startBlock : startBlock ?? 0 };
+    log.info(`Executing in archival mode, polling blocks starting from: ${offlineRange.startBlock}`);
+    await poller.archive(offlineRange, 50, processBlockFn);
+    return subscriber;
+  }
+
   // helper function that runs after we've been offline/the server's been down,
   // and attempts to fetch events from skipped blocks
   const pollMissedBlocksFn = async () => {
@@ -116,30 +127,20 @@ export const subscribeEvents: SubscribeFunc<ApiPromise, Block, ISubscribeOptions
     }
   };
 
-  if (archival) {
-    // if running in archival mode then run poller.archive with 
-    // batch_size 50 
-    // startBlock 0 if none pased else from startBlock
-    const offlineRange: IDisconnectedRange = {startBlock : startBlock? startBlock: 0 };
-    log.info(`Executing in archival mode, polling blocks starting from: ${offlineRange.startBlock}`);
-    await poller.archive(offlineRange,50,processBlockFn);
+  if (!skipCatchup) {
+    await pollMissedBlocksFn();
+  } else {
+    log.info('Skipping event catchup on startup!');
   }
-  else { 
-    if (!skipCatchup ) {
-      await pollMissedBlocksFn();
-    } else {
-      log.info('Skipping event catchup on startup!');
-    }
 
-    try {
-      log.info(`Subscribing to ${chain} endpoint...`);
-      await subscriber.subscribe(processBlockFn);
+  try {
+    log.info(`Subscribing to ${chain} endpoint...`);
+    await subscriber.subscribe(processBlockFn);
 
-      // handle reconnects with poller
-      api.on('connected', pollMissedBlocksFn);
-    } catch (e) {
-      log.error(`Subscription error: ${e.message}`);
-    }
+    // handle reconnects with poller
+    api.on('connected', pollMissedBlocksFn);
+  } catch (e) {
+    log.error(`Subscription error: ${e.message}`);
   }
   return subscriber;
 };

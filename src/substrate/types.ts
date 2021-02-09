@@ -186,12 +186,14 @@ export interface IndividualExposure {
   who: AccountId,
   value: string
 }
+
 // Active Exposure
 export interface ActiveExposure {
   [key: string]: {
-    own: number, 
-    total: number, 
-    others: IndividualExposure[] } 
+    own: number,
+    total: number,
+    others: IndividualExposure[],
+  }
 }
 
 /**
@@ -206,7 +208,6 @@ export interface INewSession extends IEvent {
   currentEra?: number;
   validatorInfo: { [key: string]: Validator },
 }
-
 
 /**
  * Staking Events
