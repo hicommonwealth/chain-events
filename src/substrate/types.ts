@@ -191,7 +191,7 @@ export interface ActiveExposure {
   [key: string]: {
     own: number, 
     total: number, 
-    others: Array<IndividualExposure> } 
+    others: IndividualExposure[] } 
 }
 
 /**

@@ -34,8 +34,6 @@ export async function Enrich(
     includeAddresses?: string[],
     excludeAddresses?: string[],
   }> => {
-
-
     switch (kind) {
       /**
        * ImOnline Events
@@ -80,26 +78,20 @@ export async function Enrich(
        */
       case EventKind.Offence: {
         const [ offenceKind, opaqueTimeSlot, applied ] = event.data as unknown as [ Kind, OpaqueTimeSlot, bool ];
-
-        // for past events we dont get the applied field so offenceApplied can be undefined
-        const offenceApplied = applied?.isTrue;
         const reportIds = await api.query.offences.concurrentReportsIndex(offenceKind, opaqueTimeSlot);
         const offenceDetails: Option<OffenceDetails>[] = await api.query.offences.reports
           .multi(reportIds);
 
         const allOffenders: Array<ValidatorId> = offenceDetails.map((offence) => {
-          if (offence.isSome)
-            return offence.unwrap().offender[0];
-          return null;
+          return offence.isSome ? offence.unwrap().offender[0] : null;
         });
         const offenders: Array<ValidatorId> = filter(allOffenders, null);
-
         return {
           data: {
             kind,
             offenceKind: offenceKind.toString(),
             opaqueTimeSlot: opaqueTimeSlot.toString(),
-            applied: offenceApplied,
+            applied: applied?.isTrue,
             offenders: offenders.map((offender => offender.toString()))
           }
         };
@@ -154,7 +146,7 @@ export async function Enrich(
 
           validatorInfo[key] = {
             commissionPer,
-            controllerId: controllerId.isSome ? controllerId.unwrap.toString() : key,
+            controllerId: controllerId.isSome ? controllerId.unwrap().toString() : key,
             rewardDestination: rewardDestination,
             eraPoints: validatorEraPoints[key] ?? 0
           };
