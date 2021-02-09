@@ -257,6 +257,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     log.info('Migrating treasury bounties...');
     const approvals = await this._api.query.bounties.bountyApprovals();
     const nBounties = await this._api.query.bounties.bountyCount();
+
     const bountyIds: number[] = [];
 
     for (let i = 0; i < +nBounties; i++) {
@@ -264,7 +265,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         bountyIds.push(i);
       }
     }
-    const bounties = await this._api.query.treasury.bounties.multi<Option<Bounty>>(bountyIds);
+    const bounties = await this._api.query.bounties.bounties.multi<Option<Bounty>>(bountyIds);
     const allEvents = [];
     bountyIds.forEach((id, index) => {
       if (!bounties[index] || !bounties[index].isSome) return null;
