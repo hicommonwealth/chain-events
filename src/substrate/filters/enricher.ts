@@ -2,10 +2,8 @@ import { ApiPromise } from '@polkadot/api';
 import {
   Event, ReferendumInfoTo239, AccountId, TreasuryProposal, Balance, PropIndex, Proposal,
   ReferendumIndex, ProposalIndex, VoteThreshold, Hash, BlockNumber, Extrinsic,
-  ReferendumInfo, ValidatorId, Exposure, EraIndex, AuthorityId, IdentificationTuple,
-  EraRewardPoints, AccountVote 
+  ReferendumInfo, ValidatorId, Exposure, AuthorityId, IdentificationTuple, AccountVote,
 } from '@polkadot/types/interfaces';
-import BN from 'bn.js';
 import { Option, bool, Vec, u32, u64, Compact, StorageKey } from '@polkadot/types';
 import { Codec, AnyTuple } from '@polkadot/types/types';
 import { filter } from 'lodash';
@@ -103,7 +101,8 @@ export async function Enrich(
         const hash = await api.rpc.chain.getBlockHash(blockNumber);
         const sessionIndex = await api.query.session.currentIndex.at(hash);
         const validators = await api.query.session.validators.at(hash);
-        // get the era of block
+
+        // get era of current block
         const rawCurrentEra = await api.query.staking.currentEra.at(hash);
         const currentEra = rawCurrentEra instanceof Option ? rawCurrentEra.unwrap() : rawCurrentEra;
 
@@ -114,7 +113,7 @@ export async function Enrich(
           // for version = 31
           : await api.query.staking.stakers.keysAt(hash);
 
-        const nextElected = keys.length
+        const nextElected = keys?.length > 0
           ? keys.map((key) => key.args[key.args.length - 1].toString())
           : validators.map((v) => v.toString());
 
@@ -122,17 +121,19 @@ export async function Enrich(
         const stashes = await api.query.staking.validators.keysAt(hash);
 
         // find waiting validators
-        const stashesStr = stashes.filter((v) => v.args.length > 0).map((v) => v.args[0].toString())
+        const stashesStr = stashes.filter((v) => v.args.length > 0)
+          .map((v) => v.args[0].toString());
         const waiting = stashesStr.filter((v) => !nextElected.includes(v));
-
 
         // get validators current era reward points
         const validatorEraPoints = await currentPoints(api, currentEra, hash, validators);
 
+        // populate per-validator information
         const validatorInfo = {};
         for (let validator of validators) {
           const key = validator.toString();
 
+          // get commissions
           const preference = api.query.staking.erasValidatorPrefs
             // for version >= 38
             ? await api.query.staking.erasValidatorPrefs.at(hash, currentEra, key)
@@ -152,22 +153,21 @@ export async function Enrich(
           };
         };
 
-        const stakersCall = (account): Promise<Exposure> => {
-          return api.query.staking.erasStakers
-            ? api.query.staking.erasStakers.at(hash, currentEra, account)
-            : api.query.staking.stakers.at(hash, account)
-        }
-
+        // populate exposures
         let activeExposures: ActiveExposure = {};
         if (validators && currentEra) { // if currentEra isn't empty
           await Promise.all(validators.map(async (validator) => {
-            const tmpExposure = await stakersCall(validator);
+            const tmpExposure: Exposure = api.query.staking.erasStakers
+              ? await api.query.staking.erasStakers.at(hash, currentEra, validator)
+              : await api.query.staking.stakers.at(hash, validator);
+
             activeExposures[validator.toString()] = {
               own: +tmpExposure.own,
               total: +tmpExposure.total,
-              others: tmpExposure.others.map((exp) => {  
-                return { 'who': exp.who.toString(), 'value': exp.value.toString()}
-              }) 
+              others: tmpExposure.others.map((exp) => ({
+                who: exp.who.toString(),
+                value: exp.value.toString(),
+              })),
             };
           }));
         }
@@ -176,7 +176,7 @@ export async function Enrich(
             kind,
             activeExposures,
             active: validators?.map((v) => v.toString()),
-            waiting: waiting,
+            waiting,
             sessionIndex: +sessionIndex,
             currentEra: +currentEra,
             validatorInfo,
