@@ -3,11 +3,11 @@ import {
   Event, ReferendumInfoTo239, AccountId, TreasuryProposal, Balance, PropIndex, Proposal,
   ReferendumIndex, ProposalIndex, VoteThreshold, Hash, BlockNumber, Extrinsic,
   ReferendumInfo, ValidatorId, Exposure, EraIndex, AuthorityId, IdentificationTuple,
-  EraRewardPoints, AccountVote
+  EraRewardPoints, AccountVote 
 } from '@polkadot/types/interfaces';
 import BN from 'bn.js';
-import { Option, bool, Vec, u32, u64, Compact } from '@polkadot/types';
-import { Codec } from '@polkadot/types/types';
+import { Option, bool, Vec, u32, u64, Compact, StorageKey } from '@polkadot/types';
+import { Codec, AnyTuple } from '@polkadot/types/types';
 import { filter } from 'lodash';
 import { Kind, OpaqueTimeSlot, OffenceDetails } from '@polkadot/types/interfaces/offences';
 import { CWEvent } from '../../interfaces';
@@ -41,7 +41,7 @@ export async function Enrich(
        * ImOnline Events
        */
       case EventKind.HeartbeatReceived: {
-        const [authorityId] = event.data as unknown as [AuthorityId] & Codec
+        const [ authorityId ] = event.data as unknown as [ AuthorityId ] & Codec
         return {
           data: {
             kind,
@@ -53,7 +53,7 @@ export async function Enrich(
       case EventKind.SomeOffline: {
         const hash = await api.rpc.chain.getBlockHash(blockNumber);
         const sessionIndex = await api.query.session.currentIndex.at(hash);
-        const [validators] = event.data as unknown as [Vec<IdentificationTuple>];
+        const [ validators ] = event.data as unknown as [Vec<IdentificationTuple>];
         return {
           data: {
             kind,
@@ -79,7 +79,7 @@ export async function Enrich(
        * Offences Events
        */
       case EventKind.Offence: {
-        const [offenceKind, opaqueTimeSlot, applied] = event.data as unknown as [Kind, OpaqueTimeSlot, bool];
+        const [ offenceKind, opaqueTimeSlot, applied ] = event.data as unknown as [ Kind, OpaqueTimeSlot, bool ];
 
         // for past events we dont get the applied field so offenceApplied can be undefined
         const offenceApplied = applied?.isTrue;
@@ -116,14 +116,14 @@ export async function Enrich(
         const currentEra = rawCurrentEra instanceof Option ? rawCurrentEra.unwrap() : rawCurrentEra;
 
         // get the nextElected Validators
-        const keys = api.query.staking.erasStakers
+        const keys: StorageKey<AnyTuple>[] = api.query.staking.erasStakers
           // for version >= 38
           ? await api.query.staking.erasStakers.keysAt(hash, currentEra)
           // for version = 31
           : await api.query.staking.stakers.keysAt(hash);
 
         const nextElected = keys.length
-          ? (keys as any).map((key) => key.args[key.args.length - 1].toString())
+          ? keys.map((key) => key.args[key.args.length - 1].toString())
           : validators.map((v) => v.toString());
 
         // get current stashes
@@ -154,9 +154,9 @@ export async function Enrich(
 
           validatorInfo[key] = {
             commissionPer,
-            controllerId: controllerId.isSome ? controllerId.toString() : key,
+            controllerId: controllerId.isSome ? controllerId.unwrap.toString() : key,
             rewardDestination: rewardDestination,
-            eraPoints: validatorEraPoints[key] ? validatorEraPoints[key] : 0
+            eraPoints: validatorEraPoints[key] ?? 0
           };
         };
 
@@ -173,7 +173,9 @@ export async function Enrich(
             activeExposures[validator.toString()] = {
               own: +tmpExposure.own,
               total: +tmpExposure.total,
-              others: tmpExposure.others
+              others: tmpExposure.others.map((exp) => {  
+                return { 'who': exp.who.toString(), 'value': exp.value.toString()}
+              }) 
             };
           }));
         }
@@ -196,7 +198,7 @@ export async function Enrich(
       case EventKind.Reward: {
         if (event.data.typeDef[0].type === 'Balance') {
           // edgeware/old event
-          const [amount, remainder] = event.data as unknown as [Balance, Balance] & Codec;
+          const [ amount, remainder ] = event.data as unknown as [Balance, Balance] & Codec;
           return {
             data: {
               kind,
@@ -205,9 +207,9 @@ export async function Enrich(
           };
         } else {
           // kusama/new event
-          const [validator, amount] = event.data as unknown as [AccountId, Balance] & Codec;
+          const [ validator, amount ] = event.data as unknown as [AccountId, Balance] & Codec;
           return {
-            includeAddresses: [validator.toString()],
+            includeAddresses: [ validator.toString() ],
             data: {
               kind,
               validator: validator.toString(),
@@ -217,9 +219,9 @@ export async function Enrich(
         }
       }
       case EventKind.Slash: {
-        const [validator, amount] = event.data as unknown as [AccountId, Balance] & Codec;
+        const [ validator, amount ] = event.data as unknown as [AccountId, Balance] & Codec;
         return {
-          includeAddresses: [validator.toString()],
+          includeAddresses: [ validator.toString() ],
           data: {
             kind,
             validator: validator.toString(),
@@ -231,13 +233,13 @@ export async function Enrich(
       case EventKind.Bonded:
       case EventKind.Unbonded: {
         const hash = await api.rpc.chain.getBlockHash(blockNumber);
-        const [stash, amount] = event.data as unknown as [AccountId, Balance] & Codec;
+        const [ stash, amount ] = event.data as unknown as [AccountId, Balance] & Codec;
         const controllerOpt = await api.query.staking.bonded.at<Option<AccountId>>(hash, stash);
         if (!controllerOpt.isSome) {
           throw new Error(`could not fetch staking controller for ${stash.toString()}`);
         }
         return {
-          includeAddresses: [stash.toString()],
+          includeAddresses: [ stash.toString() ],
           data: {
             kind,
             stash: stash.toString(),
@@ -262,9 +264,9 @@ export async function Enrich(
        * Democracy Events
        */
       case EventKind.VoteDelegated: {
-        const [who, target] = event.data as unknown as [AccountId, AccountId] & Codec;
+        const [ who, target ] = event.data as unknown as [AccountId, AccountId] & Codec;
         return {
-          includeAddresses: [target.toString()],
+          includeAddresses: [ target.toString() ],
           data: {
             kind,
             who: who.toString(),
@@ -274,13 +276,13 @@ export async function Enrich(
       }
 
       case EventKind.DemocracyProposed: {
-        const [proposalIndex, deposit] = event.data as unknown as [PropIndex, Balance] & Codec;
+        const [ proposalIndex, deposit ] = event.data as unknown as [PropIndex, Balance] & Codec;
         const props = await api.query.democracy.publicProps();
         const prop = props.find((p) => p.length > 0 && +p[0] === +proposalIndex);
         if (!prop) {
           throw new Error(`could not fetch info for proposal ${+proposalIndex}`);
         }
-        const [idx, hash, proposer] = prop;
+        const [ idx, hash, proposer ] = prop;
         return {
           excludeAddresses: [proposer.toString()],
           data: {
@@ -304,7 +306,7 @@ export async function Enrich(
       }
 
       case EventKind.DemocracyStarted: {
-        const [referendumIndex, voteThreshold] = event.data as unknown as [ReferendumIndex, VoteThreshold] & Codec;
+        const [ referendumIndex, voteThreshold ] = event.data as unknown as [ ReferendumIndex, VoteThreshold ] & Codec;
         const infoOpt = await api.query.democracy.referendumInfoOf<Option<ReferendumInfoTo239 | ReferendumInfo>>(
           referendumIndex
         );
@@ -342,7 +344,7 @@ export async function Enrich(
       }
 
       case EventKind.DemocracyPassed: {
-        const [referendumIndex] = event.data as unknown as [ReferendumIndex] & Codec;
+        const [ referendumIndex ] = event.data as unknown as [ReferendumIndex] & Codec;
         // dispatch queue -- if not present, it was already executed
         const dispatchQueue = await api.derive.democracy.dispatchQueue();
         const dispatchInfo = dispatchQueue.find(({ index }) => +index === +referendumIndex);
@@ -357,7 +359,7 @@ export async function Enrich(
 
       case EventKind.DemocracyNotPassed:
       case EventKind.DemocracyCancelled: {
-        const [referendumIndex] = event.data as unknown as [ReferendumIndex] & Codec;
+        const [ referendumIndex ] = event.data as unknown as [ ReferendumIndex ] & Codec;
         return {
           data: {
             kind,
@@ -367,7 +369,7 @@ export async function Enrich(
       }
 
       case EventKind.DemocracyExecuted: {
-        const [referendumIndex, executionOk] = event.data as unknown as [ReferendumIndex, bool] & Codec;
+        const [ referendumIndex, executionOk ] = event.data as unknown as [ ReferendumIndex, bool ] & Codec;
         return {
           data: {
             kind,
@@ -381,13 +383,13 @@ export async function Enrich(
        * Preimage Events
        */
       case EventKind.PreimageNoted: {
-        const [hash, noter, deposit] = event.data as unknown as [Hash, AccountId, Balance] & Codec;
+        const [ hash, noter, deposit ] = event.data as unknown as [ Hash, AccountId, Balance ] & Codec;
         const image = await api.derive.democracy.preimage(hash);
         if (!image || !image.proposal) {
           throw new Error(`could not find info for preimage ${hash.toString()}`);
         }
         return {
-          excludeAddresses: [noter.toString()],
+          excludeAddresses: [ noter.toString() ],
           data: {
             kind,
             proposalHash: hash.toString(),
@@ -401,7 +403,7 @@ export async function Enrich(
         };
       }
       case EventKind.PreimageUsed: {
-        const [hash, noter, deposit] = event.data as unknown as [Hash, AccountId, Balance] & Codec;
+        const [ hash, noter, deposit ] = event.data as unknown as [Hash, AccountId, Balance] & Codec;
         return {
           data: {
             kind,
@@ -412,7 +414,7 @@ export async function Enrich(
       }
       case EventKind.PreimageInvalid:
       case EventKind.PreimageMissing: {
-        const [hash, referendumIndex] = event.data as unknown as [Hash, ReferendumIndex] & Codec;
+        const [ hash, referendumIndex ] = event.data as unknown as [ Hash, ReferendumIndex ] & Codec;
         return {
           data: {
             kind,
@@ -427,7 +429,7 @@ export async function Enrich(
           noter,
           deposit,
           reaper,
-        ] = event.data as unknown as [Hash, AccountId, Balance, AccountId] & Codec;
+        ] = event.data as unknown as [ Hash, AccountId, Balance, AccountId ] & Codec;
         return {
           excludeAddresses: [reaper.toString()],
           data: {
@@ -443,7 +445,7 @@ export async function Enrich(
        * Treasury Events
        */
       case EventKind.TreasuryProposed: {
-        const [proposalIndex] = event.data as unknown as [ProposalIndex] & Codec;
+        const [ proposalIndex ] = event.data as unknown as [ProposalIndex] & Codec;
         const proposalOpt = await api.query.treasury.proposals<Option<TreasuryProposal>>(proposalIndex);
 
         if (!proposalOpt.isSome) {
@@ -451,7 +453,7 @@ export async function Enrich(
         }
         const proposal = proposalOpt.unwrap();
         return {
-          excludeAddresses: [proposal.proposer.toString()],
+          excludeAddresses: [ proposal.proposer.toString() ],
           data: {
             kind,
             proposalIndex: +proposalIndex,
@@ -468,7 +470,7 @@ export async function Enrich(
           proposalIndex,
           amount,
           beneficiary,
-        ] = event.data as unknown as [ProposalIndex, Balance, AccountId] & Codec;
+        ] = event.data as unknown as [ ProposalIndex, Balance, AccountId ] & Codec;
         return {
           data: {
             kind,
@@ -480,7 +482,7 @@ export async function Enrich(
       }
 
       case EventKind.TreasuryRejected: {
-        const [proposalIndex, slashedBond] = event.data as unknown as [ProposalIndex, Balance] & Codec;
+        const [ proposalIndex, slashedBond ] = event.data as unknown as [ ProposalIndex, Balance ] & Codec;
         return {
           data: {
             kind,
@@ -493,34 +495,34 @@ export async function Enrich(
        * Elections Events
        */
       case EventKind.ElectionNewTerm: {
-        const [newMembers] = event.data as unknown as [Vec<[AccountId, Balance] & Codec>] & Codec;
+        const [ newMembers ] = event.data as unknown as [ Vec<[ AccountId, Balance ] & Codec> ] & Codec;
         const section = api.query.electionsPhragmen ? 'electionsPhragmen' : 'elections';
-        const allMembers = await api.query[section].members<Vec<[AccountId, Balance] & Codec>>();
+        const allMembers = await api.query[section].members<Vec<[ AccountId, Balance ] & Codec>>();
         const round = await api.query[section].electionRounds<u32>();
         return {
           data: {
             kind,
             round: +round,
-            newMembers: newMembers.map(([who]) => who.toString()),
-            allMembers: allMembers.map(([who]) => who.toString()),
+            newMembers: newMembers.map(([ who ]) => who.toString()),
+            allMembers: allMembers.map(([ who ]) => who.toString()),
           }
         };
       }
       case EventKind.ElectionEmptyTerm: {
         const section = api.query.electionsPhragmen ? 'electionsPhragmen' : 'elections';
-        const allMembers = await api.query[section].members<Vec<[AccountId, Balance] & Codec>>();
+        const allMembers = await api.query[section].members<Vec<[ AccountId, Balance ] & Codec>>();
         const round = await api.query[section].electionRounds<u32>();
         return {
           data: {
             kind,
             round: +round,
-            members: allMembers.map(([who]) => who.toString()),
+            members: allMembers.map(([ who ]) => who.toString()),
           }
         };
       }
       case EventKind.ElectionMemberKicked:
       case EventKind.ElectionMemberRenounced: {
-        const [who] = event.data as unknown as [AccountId] & Codec;
+        const [who] = event.data as unknown as [ AccountId ] & Codec;
         return {
           data: {
             kind,
@@ -538,13 +540,13 @@ export async function Enrich(
           index,
           hash,
           threshold,
-        ] = event.data as unknown as [AccountId, ProposalIndex, Hash, u32] & Codec;
+        ] = event.data as unknown as [ AccountId, ProposalIndex, Hash, u32 ] & Codec;
         const proposalOpt = await api.query[event.section].proposalOf<Option<Proposal>>(hash);
         if (!proposalOpt.isSome) {
           throw new Error('could not fetch method for collective proposal');
         }
         return {
-          excludeAddresses: [proposer.toString()],
+          excludeAddresses: [ proposer.toString() ],
           data: {
             kind,
             collectiveName: event.section === 'council' || event.section === 'technicalCommittee'
@@ -562,9 +564,9 @@ export async function Enrich(
         };
       }
       case EventKind.CollectiveVoted: {
-        const [voter, hash, vote] = event.data as unknown as [AccountId, Hash, bool] & Codec;
+        const [ voter, hash, vote ] = event.data as unknown as [ AccountId, Hash, bool ] & Codec;
         return {
-          excludeAddresses: [voter.toString()],
+          excludeAddresses: [ voter.toString() ],
           data: {
             kind,
             collectiveName: event.section === 'council' || event.section === 'technicalCommittee'
@@ -577,7 +579,7 @@ export async function Enrich(
       }
       case EventKind.CollectiveApproved:
       case EventKind.CollectiveDisapproved: {
-        const [hash] = event.data as unknown as [Hash] & Codec;
+        const [ hash ] = event.data as unknown as [ Hash ] & Codec;
         return {
           data: {
             kind,
@@ -589,7 +591,7 @@ export async function Enrich(
       }
       case EventKind.CollectiveExecuted:
       case EventKind.CollectiveMemberExecuted: {
-        const [hash, executionOk] = event.data as unknown as [Hash, bool] & Codec;
+        const [ hash, executionOk ] = event.data as unknown as [ Hash, bool ] & Codec;
         return {
           data: {
             kind,
@@ -605,7 +607,7 @@ export async function Enrich(
        * Signaling Events
        */
       case EventKind.SignalingNewProposal: {
-        const [proposer, hash] = event.data as unknown as [AccountId, Hash] & Codec;
+        const [ proposer, hash ] = event.data as unknown as [ AccountId, Hash ] & Codec;
         const proposalInfoOpt = await api.query.signaling.proposalOf<Option<any>>(hash);
         if (!proposalInfoOpt.isSome) {
           throw new Error('unable to fetch signaling proposal info');
@@ -615,7 +617,7 @@ export async function Enrich(
           throw new Error('unable to fetch signaling proposal voting info');
         }
         return {
-          excludeAddresses: [proposer.toString()],
+          excludeAddresses: [ proposer.toString() ],
           data: {
             kind,
             proposer: proposer.toString(),
@@ -631,7 +633,7 @@ export async function Enrich(
       }
       case EventKind.SignalingCommitStarted:
       case EventKind.SignalingVotingStarted: {
-        const [hash, voteId, endBlock] = event.data as unknown as [Hash, u64, BlockNumber] & Codec;
+        const [ hash, voteId, endBlock ] = event.data as unknown as [ Hash, u64, BlockNumber ] & Codec;
         return {
           data: {
             kind,
@@ -642,7 +644,7 @@ export async function Enrich(
         };
       }
       case EventKind.SignalingVotingCompleted: {
-        const [hash, voteId] = event.data as unknown as [Hash, u64] & Codec;
+        const [ hash, voteId ] = event.data as unknown as [ Hash, u64 ] & Codec;
         return {
           data: {
             kind,
@@ -656,7 +658,7 @@ export async function Enrich(
        * TreasuryReward events
        */
       case EventKind.TreasuryRewardMinting: {
-        const [pot, reward, blockNum] = event.data as unknown as [Balance, Balance, BlockNumber] & Codec;
+        const [ pot, reward, blockNum ] = event.data as unknown as [ Balance, Balance, BlockNumber ] & Codec;
         return {
           data: {
             kind,
@@ -666,7 +668,7 @@ export async function Enrich(
         };
       }
       case EventKind.TreasuryRewardMintingV2: {
-        const [pot, blockNum, potAddress] = event.data as unknown as [Balance, BlockNumber, AccountId] & Codec;
+        const [ pot, blockNum, potAddress ] = event.data as unknown as [ Balance, BlockNumber, AccountId ] & Codec;
         return {
           data: {
             kind,
@@ -680,7 +682,7 @@ export async function Enrich(
        * Identity events
        */
       case EventKind.IdentitySet: {
-        const [who] = event.data as unknown as [AccountId] & Codec;
+        const [ who ] = event.data as unknown as [ AccountId ] & Codec;
         const registrationOpt = await api.query.identity.identityOf(who);
         if (!registrationOpt.isSome) {
           throw new Error('unable to retrieve identity info');
@@ -693,12 +695,12 @@ export async function Enrich(
         const judgements: [string, IdentityJudgement][] = [];
         if (judgementInfo.length > 0) {
           const registrars = await api.query.identity.registrars();
-          judgements.push(...judgementInfo.map(([id, judgement]): [string, IdentityJudgement] => {
+          judgements.push(...judgementInfo.map(([ id, judgement ]): [string, IdentityJudgement] => {
             const registrarOpt = registrars[+id];
             if (!registrarOpt || !registrarOpt.isSome) {
               throw new Error('invalid judgement!');
             }
-            return [registrarOpt.unwrap().account.toString(), parseJudgement(judgement)];
+            return [ registrarOpt.unwrap().account.toString(), parseJudgement(judgement) ];
           }));
         }
         return {
@@ -712,7 +714,7 @@ export async function Enrich(
         };
       }
       case EventKind.JudgementGiven: {
-        const [who, registrarId] = event.data as unknown as [AccountId, u32] & Codec;
+        const [ who, registrarId ] = event.data as unknown as [ AccountId, u32 ] & Codec;
 
         // convert registrar from id to address
         const registrars = await api.query.identity.registrars();
@@ -728,7 +730,7 @@ export async function Enrich(
           throw new Error('unable to retrieve identity info');
         }
         const judgementTuple = registrationOpt.unwrap().judgements
-          .find(([id, value]) => +id === +registrarId);
+          .find(([ id, value ]) => +id === +registrarId);
         if (!judgementTuple) {
           throw new Error('unable to find judgement');
         }
@@ -743,9 +745,9 @@ export async function Enrich(
         };
       }
       case EventKind.IdentityCleared: {
-        const [who] = event.data as unknown as [AccountId] & Codec;
+        const [ who ] = event.data as unknown as [ AccountId ] & Codec;
         return {
-          excludeAddresses: [who.toString()],
+          excludeAddresses: [ who.toString() ],
           data: {
             kind,
             who: who.toString(),
@@ -753,7 +755,7 @@ export async function Enrich(
         };
       }
       case EventKind.IdentityKilled: {
-        const [who] = event.data as unknown as [AccountId] & Codec;
+        const [who] = event.data as unknown as [ AccountId ] & Codec;
         return {
           data: {
             kind,
@@ -775,9 +777,9 @@ export async function Enrich(
     switch (kind) {
       case EventKind.DemocracySeconded: {
         const voter = extrinsic.signer.toString();
-        const [proposal] = extrinsic.args as [Compact<PropIndex>];
+        const [ proposal ] = extrinsic.args as [ Compact<PropIndex> ];
         return {
-          excludeAddresses: [voter],
+          excludeAddresses: [ voter ],
           data: {
             kind,
             proposalIndex: +proposal,
@@ -787,12 +789,12 @@ export async function Enrich(
       }
       case EventKind.DemocracyVoted: {
         const voter = extrinsic.signer.toString();
-        const [idx, vote] = extrinsic.args as [Compact<ReferendumIndex>, AccountVote];
+        const [ idx, vote ] = extrinsic.args as [Compact<ReferendumIndex>, AccountVote];
         if (vote.isSplit) {
           throw new Error('split votes not supported');
         }
         return {
-          excludeAddresses: [voter],
+          excludeAddresses: [ voter ],
           data: {
             kind,
             referendumIndex: +idx,
@@ -809,7 +811,7 @@ export async function Enrich(
         const section = api.query.electionsPhragmen ? 'electionsPhragmen' : 'elections';
         const round = await api.query[section].electionRounds<u32>();
         return {
-          excludeAddresses: [candidate],
+          excludeAddresses: [ candidate ],
           data: {
             kind,
             round: +round,

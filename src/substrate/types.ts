@@ -1,5 +1,5 @@
 import {
-  Header, EventRecord, Extrinsic, Event, IndividualExposure, IdentityJudgement as SubstrateJudgement,
+  Header, EventRecord, Extrinsic, Event, IdentityJudgement as SubstrateJudgement,
 } from '@polkadot/types/interfaces';
 
 export const EventChains = [
@@ -181,12 +181,17 @@ export interface IOffence extends IEvent {
   offenders: Array<string>
 }
 
+// Individual Exposure
+export interface IndividualExposure {
+  who: AccountId,
+  value: string
+}
 // Active Exposure
 export interface ActiveExposure {
   [key: string]: {
     own: number, 
     total: number, 
-    others: IndividualExposure[] } 
+    others: Array<IndividualExposure> } 
 }
 
 /**
