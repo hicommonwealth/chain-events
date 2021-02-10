@@ -40,6 +40,7 @@ import {
   BountyStatusPendingPayout,
   ITreasuryBountyAwarded,
   ITreasuryBountyClaimed,
+  ITreasuryBountyEvents,
 } from './types';
 
 import { factory, formatFilename } from '../logging';
@@ -106,7 +107,8 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
 
     /** treasury proposals */
     const treasuryProposalEvents = await this.fetchTreasuryProposals(blockNumber);
-    const bountyEvents = await this.fetchTreasuryBounties(blockNumber);
+    // const bountyEvents = await this.fetchTreasuryBounties(blockNumber);
+    const bountyEvents = await this.fetchBounties(blockNumber);
 
     /** collective proposals */
     let technicalCommitteeProposalEvents = [];
@@ -253,12 +255,28 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     return proposedEvents.map((data) => ({ blockNumber, data }));
   }
 
+  public async fetchBounties(blockNumber: number): Promise<CWEvent<ITreasuryBountyEvents>[]> { // TODO: List all relevant events explicitly?
+    log.info('Migrating treasury bounties...');
+
+    const bounties = await this._api.derive.bounties.bounties();
+    const events = bounties.map((b, idx) => {
+      return {
+        kind: EventKind.TreasuryBountyProposed,
+        bountyIndex: +b.index,
+        proposer: b.bounty.proposer.toString(),
+        value: b.bounty.value.toString(),
+        fee: b.bounty.fee.toString(),
+        curatorDeposit: b.bounty.curatorDeposit.toString(),
+        bond: b.bounty.bond.toString(),
+      } as ITreasuryBountyProposed
+    });
+    return events.map((data) => ({ blockNumber, data }));
+  }
+
   public async fetchTreasuryBounties(blockNumber: number): Promise<CWEvent<ITreasuryBountyProposed>[]> {
     log.info('Migrating treasury bounties...');
     const approvals = await this._api.query.bounties.bountyApprovals();
-    log.info('02...');
     const nBounties = await this._api.query.bounties.bountyCount();
-    log.info('1...');
 
     const bountyIds: number[] = [];
 
@@ -267,7 +285,6 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         bountyIds.push(i);
       }
     }
-    log.info('2...');
 
     const bounties = await this._api.query.bounties.bounties.multi<Option<Bounty>>(bountyIds);
     const allEvents = [];
