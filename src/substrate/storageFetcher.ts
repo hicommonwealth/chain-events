@@ -259,6 +259,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     log.info('Migrating treasury bounties...');
 
     const bounties = await this._api.derive.bounties.bounties();
+    log.info('length: ' + bounties.length.toString());
     const events = bounties.map((b, idx) => {
       return {
         kind: EventKind.TreasuryBountyProposed,
@@ -270,6 +271,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         bond: b.bounty.bond.toString(),
       } as ITreasuryBountyProposed
     });
+    log.info(events[0].proposer.toString());
     return events.map((data) => ({ blockNumber, data }));
   }
 
