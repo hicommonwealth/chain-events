@@ -272,6 +272,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       } as ITreasuryBountyProposed
     });
     log.info(events[0].proposer.toString());
+    log.info(`Found ${events.length} bounties!`);
     return events.map((data) => ({ blockNumber, data }));
   }
 
