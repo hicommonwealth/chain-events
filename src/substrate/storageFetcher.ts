@@ -302,62 +302,6 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     return events.map((data) => ({ blockNumber, data }));
   }
 
-  // @TODO: Remove method if deemed redundant
-  public async fetchTreasuryBounties(blockNumber: number): Promise<CWEvent<ITreasuryBountyProposed>[]> {
-    log.info('Migrating treasury bounties...');
-    const approvals = await this._api.query.bounties.bountyApprovals();
-    const nBounties = await this._api.query.bounties.bountyCount();
-
-    const bountyIds: number[] = [];
-
-    for (let i = 0; i < +nBounties; i++) {
-      if (!approvals.some((id) => +id === i)) {
-        bountyIds.push(i);
-      }
-    }
-
-    const bounties = await this._api.query.bounties.bounties.multi<Option<Bounty>>(bountyIds);
-    const allEvents = [];
-    bountyIds.forEach((id, index) => {
-      if (!bounties[index] || !bounties[index].isSome) return null;
-      const { proposer, value, fee, curatorDeposit, bond, status } = bounties[index].unwrap();
-      allEvents.push({
-        kind: EventKind.TreasuryBountyProposed,
-        bountyIndex: +id,
-        proposer: proposer.toString(),
-        value: value.toString(),
-        fee: fee.toString(),
-        curatorDeposit: curatorDeposit.toString(),
-        bond: bond.toString(),
-      } as ITreasuryBountyProposed);
-      if (status.isActive) {
-        allEvents.push({
-          kind: EventKind.TreasuryBountyBecameActive,
-          bountyIndex: +id,
-        } as ITreasuryBountyBecameActive);
-      }
-      if (status.isApproved) {} // no events
-      if (status.asCuratorProposed) {} // no events
-      if (status.asPendingPayout){
-        allEvents.push({
-          kind: EventKind.TreasuryBountyAwarded,
-          bountyIndex: +id,
-          value: value.toString(),
-          beneficiary: (status.asPendingPayout).beneficiary.toString(),
-        } as ITreasuryBountyAwarded);
-        allEvents.push({
-          kind: EventKind.TreasuryBountyClaimed,
-          bountyIndex: +id,
-          payout: value.toString(),
-          beneficiary: (status.asPendingPayout).beneficiary.toString(),
-        } as ITreasuryBountyClaimed);
-      }
-    });
-    const filteredEvents = allEvents.filter((e) => !!e);
-    log.info(`Found ${filteredEvents.length} treasury bounties!`);
-    return filteredEvents.map((data) => ({ blockNumber, data }));
-  }
-
   public async fetchCollectiveProposals(
     moduleName: 'council' | 'technicalCommittee', blockNumber: number
   ): Promise<CWEvent<ICollectiveProposed | ICollectiveVoted>[]> {
