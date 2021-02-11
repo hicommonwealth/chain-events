@@ -483,22 +483,26 @@ export async function Enrich(
         };
       }
 
+      /**
+       * Bounty Events
+       */
+
       case EventKind.TreasuryBountyProposed: {
         const [ bountyIndex ] = event.data as unknown as [ BountyIndex ] & Codec;
-        const bountyOpt = await api.query.treasury.bounties<Option<Bounty>>(bountyIndex);
-        if (!bountyOpt.isSome) {
-          throw new Error(`could not fetch treasury proposal index ${+bountyIndex}`);
+        const bounties = await api.derive.bounties.bounties();
+        const bounty = bounties.find((b) => b.index === bountyIndex);
+        if (!bounty) {
+          throw new Error(`could not fetch treasury proposals`);
         }
-        const bounty = bountyOpt.unwrap();
         return {
           data: {
             kind,
             bountyIndex: +bountyIndex,
-            proposer: bounty.proposer.toString(),
-            value: bounty.value.toString(),
-            fee: bounty.fee.toString(),
-            curatorDeposit: bounty.curatorDeposit.toString(),
-            bond: bounty.bond.toString(),
+            proposer: bounty.bounty.proposer.toString(),
+            value: bounty.bounty.value.toString(),
+            fee: bounty.bounty.fee.toString(),
+            curatorDeposit: bounty.bounty.curatorDeposit.toString(),
+            bond: bounty.bounty.bond.toString(),
           }
         };
       }
