@@ -41,6 +41,7 @@ import {
   ITreasuryBountyAwarded,
   ITreasuryBountyClaimed,
   ITreasuryBountyEvents,
+  ITreasuryBountyRejected,
 } from './types';
 
 import { factory, formatFilename } from '../logging';
@@ -260,8 +261,10 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
 
     const bounties = await this._api.derive.bounties.bounties();
     log.info('length: ' + bounties.length.toString());
-    const events = bounties.map((b, idx) => {
-      return {
+    log.info('bounty type: ' + bounties[0].bounty.status.type.toString());
+    const events = [];
+    bounties.forEach((b) => {
+      events.push({
         kind: EventKind.TreasuryBountyProposed,
         bountyIndex: +b.index,
         proposer: b.bounty.proposer.toString(),
@@ -269,10 +272,20 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         fee: b.bounty.fee.toString(),
         curatorDeposit: b.bounty.curatorDeposit.toString(),
         bond: b.bounty.bond.toString(),
-      } as ITreasuryBountyProposed
+      } as ITreasuryBountyProposed);
+      if (b.bounty.status.isProposed
+        || b.bounty.status.isNone
+        || b.bounty.status.isCuratorProposed) return; // Return here, not progressed
+      events.push({
+        kind: EventKind.TreasuryBountyBecameActive,
+        bountyIndex: +b.index,
+      } as ITreasuryBountyBecameActive);
+      if (b.bounty.status.isActive) return;
+      // No other events can be extracted from a derivable bounty itself
     });
-    log.info(events[0].proposer.toString());
-    log.info(`Found ${events.length} bounties!`);
+
+    // const events = [...proposedEvents,];
+    log.info(`Found ${bounties.length} bounties!`);
     return events.map((data) => ({ blockNumber, data }));
   }
 
