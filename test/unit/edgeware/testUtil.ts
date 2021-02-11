@@ -186,11 +186,6 @@ export function constructFakeApi(
       },
       treasury: {
         proposals,
-        bounties,
-        approvals: callOverrides['treasuryApprovals'],
-        proposalCount: callOverrides['treasuryProposalCount'],
-        bountyCount: callOverrides['bountyCount'],
-        bountyApprovals: callOverrides['bountyApprovals']
       },
       council: {
         voting: {
@@ -226,6 +221,9 @@ export function constructFakeApi(
       staking: {
         validators: callOverrides['validators'],
         electedInfo: callOverrides['electedInfo'],
+      },
+      bounties: {
+        bounties: callOverrides['bounties'],
       },
       democracy: {
         dispatchQueue: callOverrides['dispatchQueue'],
