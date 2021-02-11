@@ -260,8 +260,6 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     log.info('Migrating treasury bounties...');
 
     const bounties = await this._api.derive.bounties.bounties();
-    log.info('length: ' + bounties.length.toString());
-    log.info('bounty type: ' + bounties[0].bounty.status.type.toString());
     const events = [];
     bounties.forEach((b) => {
       events.push({
@@ -273,22 +271,38 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         curatorDeposit: b.bounty.curatorDeposit.toString(),
         bond: b.bounty.bond.toString(),
       } as ITreasuryBountyProposed);
+
       if (b.bounty.status.isProposed
         || b.bounty.status.isNone
         || b.bounty.status.isCuratorProposed) return; // Return here, not progressed
+      
       events.push({
         kind: EventKind.TreasuryBountyBecameActive,
         bountyIndex: +b.index,
       } as ITreasuryBountyBecameActive);
       if (b.bounty.status.isActive) return;
+      if (b.bounty.status.isPendingPayout){
+        events.push({
+          kind: EventKind.TreasuryBountyAwarded,
+          bountyIndex: +b.index,
+          value: b.bounty.value.toString(),
+          beneficiary: (b.bounty.status.asPendingPayout).beneficiary.toString(),
+        } as ITreasuryBountyAwarded);
+        events.push({
+          kind: EventKind.TreasuryBountyClaimed,
+          bountyIndex: +b.index,
+          payout: b.bounty.value.toString(),
+          beneficiary: (b.bounty.status.asPendingPayout).beneficiary.toString(),
+        } as ITreasuryBountyClaimed);
+      }
       // No other events can be extracted from a derivable bounty itself
     });
 
-    // const events = [...proposedEvents,];
     log.info(`Found ${bounties.length} bounties!`);
     return events.map((data) => ({ blockNumber, data }));
   }
 
+  // @TODO: Remove method if deemed redundant
   public async fetchTreasuryBounties(blockNumber: number): Promise<CWEvent<ITreasuryBountyProposed>[]> {
     log.info('Migrating treasury bounties...');
     const approvals = await this._api.query.bounties.bountyApprovals();
@@ -304,7 +318,6 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
 
     const bounties = await this._api.query.bounties.bounties.multi<Option<Bounty>>(bountyIds);
     const allEvents = [];
-    log.info('3...');
     bountyIds.forEach((id, index) => {
       if (!bounties[index] || !bounties[index].isSome) return null;
       const { proposer, value, fee, curatorDeposit, bond, status } = bounties[index].unwrap();
