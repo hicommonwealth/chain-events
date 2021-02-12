@@ -453,7 +453,7 @@ const api = constructFakeApi({
       beneficiary: 'bob',
       bond: 2000,
     } as unknown as TreasuryProposal),
-  treasuryBounties: async (idx) => +idx !== 1
+  bounties: async (idx) => +idx !== 1
     ? constructOption() // make Bounty?
     : constructOption({
       proposer: 'alice',

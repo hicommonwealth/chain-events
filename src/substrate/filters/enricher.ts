@@ -490,6 +490,7 @@ export async function Enrich(
       case EventKind.TreasuryBountyProposed: {
         const [ bountyIndex ] = event.data as unknown as [ BountyIndex ] & Codec;
         const bounties = await api.derive.bounties.bounties();
+        if (!bounties) return;
         const bounty = bounties.find((b) => b.index === bountyIndex);
         if (!bounty) {
           throw new Error(`could not fetch treasury proposals`);
