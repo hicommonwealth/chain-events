@@ -108,7 +108,6 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
 
     /** treasury proposals */
     const treasuryProposalEvents = await this.fetchTreasuryProposals(blockNumber);
-    // const bountyEvents = await this.fetchTreasuryBounties(blockNumber);
     const bountyEvents = await this.fetchBounties(blockNumber);
 
     /** collective proposals */
