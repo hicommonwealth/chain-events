@@ -186,6 +186,8 @@ export function constructFakeApi(
       },
       treasury: {
         proposals,
+        approvals: callOverrides['treasuryApprovals'],
+        proposalCount: callOverrides['treasuryProposalCount'],
       },
       council: {
         voting: {

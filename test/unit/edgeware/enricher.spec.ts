@@ -5,7 +5,7 @@ import {
   Proposal, TreasuryProposal, Votes, Event, Extrinsic, Registration,
   RegistrarInfo, Bounty, 
 } from '@polkadot/types/interfaces';
-import { DeriveDispatch, DeriveProposalImage } from '@polkadot/api-derive/types';
+import { DeriveDispatch, DeriveProposalImage, DeriveBounty, DeriveCollectiveProposal } from '@polkadot/api-derive/types';
 import { Vec, bool, Data, TypeRegistry, Option } from '@polkadot/types';
 import { Codec } from '@polkadot/types/types';
 import { ITuple, TypeDef } from '@polkadot/types/types';
@@ -456,32 +456,11 @@ const api = constructFakeApi({
   bounties: async (idx) => +idx !== 1
     ? constructOption() // make Bounty?
     : constructOption({
-      proposer: 'alice',
-      value: 1000,
-      fee: 1000,
-      curatorDeposit: 1000,
-      bond: 1000,
-      status: {
-        isProposed: true,
-        isApproved: true,
-        isFunded: true,
-        isCuratorProposed: true,
-        asCuratorProposed: {
-          curator: 'alice'
-        },
-        isActive: false,
-        asActive: {
-          curator: 'alice',
-          updateDue: 12345678,
-        },
-        isPendingPayout: false,
-        asPendingPayout: {
-          curator: 'alice',
-          beneficiary: 'rabbit',
-          unlockAt: 123456789,
-        },
-      }
-    } as unknown as Bounty),
+        bounty: {} as Bounty,
+        description: 'an empty bounty',
+        index: 0,
+        proposals: [] as DeriveCollectiveProposal[],
+    } as unknown as DeriveBounty),
   voting: async (hash) => hash.toString() !== 'hash'
     ? constructOption()
     : constructOption({
