@@ -456,7 +456,14 @@ const api = constructFakeApi({
   bounties: async (idx) => +idx !== 1
     ? constructOption() // make Bounty?
     : constructOption({
-        bounty: {} as Bounty,
+        bounty: {
+          proposer: 'alice',
+          value: 50,
+          fee: 10,
+          curatorDeposit: 10,
+          bond: 10,
+          status: "Proposed"
+        } as Bounty,
         description: 'an empty bounty',
         index: 0,
         proposals: [] as DeriveCollectiveProposal[],
