@@ -254,7 +254,6 @@ describe('Edgeware Event Migration Tests', () => {
   it('should generate proposal events events', async () => {
     const fetcher = new StorageFetcher(api);
     const events = await fetcher.fetch();
-    console.log(events);
     assert.sameDeepMembers(events, [
       { blockNumber,
         data: {
