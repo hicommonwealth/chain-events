@@ -23,6 +23,8 @@ import {
   ISignalingVotingCompleted,
   ICollectiveVoted,
   IdentityJudgement,
+  ITreasuryBountyProposed,
+  ITreasuryBountyBecameActive,
 } from '../../../src/substrate/types';
 import { StorageFetcher } from '../../../src/substrate/storageFetcher';
 
@@ -252,6 +254,7 @@ describe('Edgeware Event Migration Tests', () => {
   it('should generate proposal events events', async () => {
     const fetcher = new StorageFetcher(api);
     const events = await fetcher.fetch();
+    console.log(events);
     assert.sameDeepMembers(events, [
       { blockNumber,
         data: {
@@ -416,10 +419,29 @@ describe('Edgeware Event Migration Tests', () => {
           voteId: '3',
         } as ISignalingVotingCompleted
       },
+      {
+        blockNumber,
+        data: {
+          kind: 'treasury-bounty-proposed',
+          bountyIndex: 0,
+          proposer: 'alice',
+          value: '50',
+          fee: '10',
+          curatorDeposit: '10',
+          bond: '10'
+        } as ITreasuryBountyProposed
+      },
+      {
+        blockNumber,
+        data: {
+          kind: 'treasury-bounty-became-active',
+          bountyIndex: 0
+        } as ITreasuryBountyBecameActive
+      },
     ]);
   });
 
-  it('should generate identity-set events events', async () => {
+  it('should generate identity-set events', async () => {
     const fetcher = new StorageFetcher(api);
     const events = await fetcher.fetchIdentities(['alice', 'bob', 'charlie', 'dave']);
     assert.sameDeepMembers(events, [
