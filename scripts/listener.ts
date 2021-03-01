@@ -11,7 +11,7 @@ const CloverSpec = {
 }
 
 const networkUrls = {
-  'clover': 'wss://api.clover.finance',
+  'clover': 'ws://api.clover.finance',
   'edgeware': 'ws://mainnet1.edgewa.re:9944',
   'edgeware-local': 'ws://localhost:9944',
   'edgeware-testnet': 'wss://beresheet1.edgewa.re',
