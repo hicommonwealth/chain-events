@@ -1,4 +1,3 @@
-
 export const HydraDXSpec = {
   types: {
       "Amount": "i128",

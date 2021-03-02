@@ -1,7 +1,7 @@
 import * as yargs from 'yargs';
 
 import { spec as EdgewareSpec } from '@edgeware/node-types';
-import { HydraDXSpec } from '../dist/substrate/specs';
+import { HydraDXSpec } from './specs/hydraDX';
 import * as CloverSpecTypes from '@clover-network/node-tpye';
 import {
   chainSupportedBy, IEventHandler, CWEvent, SubstrateEvents, MarlinEvents, MolochEvents, EventSupportingChains
