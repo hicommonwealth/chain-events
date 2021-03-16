@@ -12,6 +12,13 @@ import { CWEvent } from '../../interfaces';
 import { EventKind, IEventData, isEvent, parseJudgement, IdentityJudgement, ActiveExposure } from '../types';
 import { currentPoints } from '../utils/currentPoint';
 
+export interface EnricherConfig {
+  // if a balance transfer > (totalIssuance * balanceTransferThresholdPermill / 1_000_000)
+  // then emit an event, otherwise do not emit for balance transfer.
+  // Set to 0 or undefined to emit for all balance transfers.
+  balanceTransferThresholdPermill?: number;
+}
+
 /**
  * This is an "enricher" function, whose goal is to augment the initial event data
  * received from the "system.events" query with additional useful information, as
@@ -26,6 +33,7 @@ export async function Enrich(
   blockNumber: number,
   kind: EventKind,
   rawData: Event | Extrinsic,
+  config: EnricherConfig = {},
 ): Promise<CWEvent<IEventData>> {
   const extractEventData = async (event: Event): Promise<{
     data: IEventData,
@@ -33,6 +41,27 @@ export async function Enrich(
     excludeAddresses?: string[],
   }> => {
     switch (kind) {
+      case EventKind.BalanceTransfer: {
+        const [ transactor, dest, value ] = event.data as unknown as [ AccountId, AccountId, Balance ] & Codec;
+        const totalIssuance = await api.query.balances.totalIssuance();
+
+        // only emit if transfer is 0 or above the configuration threshold
+        const shouldEmit = !config.balanceTransferThresholdPermill
+          || value.muln(1_000_000).divn(config.balanceTransferThresholdPermill).gte(totalIssuance);
+        if (!shouldEmit) return null;
+
+        return {
+          // should not notify sender or recipient
+          excludeAddresses: [ transactor.toString(), dest.toString() ],
+          data: {
+            kind,
+            transactor: transactor.toString(),
+            dest: dest.toString(),
+            value: value.toString(),
+          }
+        }
+      }
+
       /**
        * ImOnline Events
        */
@@ -910,5 +939,5 @@ export async function Enrich(
     ? extractEventData(rawData as Event)
     : extractExtrinsicData(rawData as Extrinsic)
   );
-  return { ...eventData, blockNumber };
+  return eventData ? { ...eventData, blockNumber } : null;
 }
