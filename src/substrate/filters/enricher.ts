@@ -33,6 +33,7 @@ export async function Enrich(
   blockNumber: number,
   kind: EventKind,
   rawData: Event | Extrinsic,
+  config: EnricherConfig = {},
 ): Promise<CWEvent<IEventData>> {
   const extractEventData = async (event: Event): Promise<{
     data: IEventData,
@@ -41,11 +42,23 @@ export async function Enrich(
   }> => {
     switch (kind) {
       case EventKind.BalanceTransfer: {
-        const [ sender, dest, value ] = event.data as unknown as [ AccountId, AccountId, Balance ] & Codec;
+        const [ transactor, dest, value ] = event.data as unknown as [ AccountId, AccountId, Balance ] & Codec;
+        const totalIssuance = await api.query.balances.totalIssuance();
+
+        // only emit if transfer is 0 or above the configuration threshold
+        const shouldEmit = !config.balanceTransferThresholdPermill
+          || value.muln(1_000_000).divn(config.balanceTransferThresholdPermill).gte(totalIssuance);
+        if (!shouldEmit) return null;
+
         return {
+<<<<<<< HEAD
+=======
+          // should not notify sender or recipient
+          excludeAddresses: [ transactor.toString(), dest.toString() ],
+>>>>>>> parent of 744cd43... Remove enricher config which filtered transfers.
           data: {
             kind,
-            sender: sender.toString(),
+            transactor: transactor.toString(),
             dest: dest.toString(),
             value: value.toString(),
           }
