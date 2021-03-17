@@ -558,59 +558,73 @@ const constructBool = (b: boolean): bool => {
 
 /* eslint-disable: dot-notation */
 describe('Edgeware Event Enricher Filter Tests', () => {
-  it('should enrich balance-transfer event without config', async () => {
+  it('should enrich balance-transfer event to everyone without config', async () => {
     const kind = EventKind.BalanceTransfer;
     const event = constructEvent([ 'alice', 'bob', new BN('1001') ], 'balances', [ 'AccountId', 'AccountId', 'Balance' ]);
+    
+    // publicly emit all transfers
     const result = await Enrich(api, blockNumber, kind, event);
     assert.deepEqual(result, {
       blockNumber,
+      includeAddresses: [],
       data: {
         kind,
-        transactor: 'alice',
+        sender: 'alice',
         dest: 'bob',
         value: '1001',
       }
     });
   });
-  it('should enrich balance-transfer event with threshold 0', async () => {
+  it('should enrich balance-transfer event with threshold 0 to everyone', async () => {
     const kind = EventKind.BalanceTransfer;
     const event = constructEvent([ 'alice', 'bob', new BN('10') ], 'balances', [ 'AccountId', 'AccountId', 'Balance' ]);
+    
+    // publicly emit all transfers
     const result = await Enrich(api, blockNumber, kind, event, { balanceTransferThresholdPermill: 0 });
     assert.deepEqual(result, {
       blockNumber,
-      excludeAddresses: [ 'alice', 'bob' ],
+      includeAddresses: [],
       data: {
         kind,
-        transactor: 'alice',
+        sender: 'alice',
         dest: 'bob',
         value: '10',
       }
     });
   });
-  it('should enrich large balance-transfer event with config', async () => {
+  it('should enrich large balance-transfer event to everyone with config', async () => {
     const kind = EventKind.BalanceTransfer;
     const event = constructEvent([ 'alice', 'bob', new BN('1001') ], 'balances', [ 'AccountId', 'AccountId', 'Balance' ]);
     
-    // only accept transfers > 1_000
+    // only publicly emit transfers > 1_000
     const result = await Enrich(api, blockNumber, kind, event, { balanceTransferThresholdPermill: 1_000 });
     assert.deepEqual(result, {
       blockNumber,
-      excludeAddresses: [ 'alice', 'bob' ],
+      includeAddresses: [],
       data: {
         kind,
-        transactor: 'alice',
+        sender: 'alice',
         dest: 'bob',
         value: '1001',
       }
     });
   });
-  it('should not enrich small balance-transfer event with config', async () => {
+  it('should enrich small balance-transfer event to included addresses with config', async () => {
     const kind = EventKind.BalanceTransfer;
     const event = constructEvent([ 'alice', 'bob', new BN('999') ], 'balances', [ 'AccountId', 'AccountId', 'Balance' ]);
     
-    // only accept transfers > 1_000
+    // only publicly emit transfers > 1_000
     const result = await Enrich(api, blockNumber, kind, event, { balanceTransferThresholdPermill: 1_000 });
-    assert.isNull(result);
+    assert.deepEqual(result, {
+      blockNumber,
+      includeAddresses: [ 'alice', 'bob' ],
+      data: {
+        kind,
+        sender: 'alice',
+        dest: 'bob',
+        value: '999',
+      }
+    });
   });
   it('should enrich new-session event', async () => {
     const kind = EventKind.NewSession;

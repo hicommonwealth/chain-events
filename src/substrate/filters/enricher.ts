@@ -42,23 +42,20 @@ export async function Enrich(
   }> => {
     switch (kind) {
       case EventKind.BalanceTransfer: {
-        const [ transactor, dest, value ] = event.data as unknown as [ AccountId, AccountId, Balance ] & Codec;
+        const [ sender, dest, value ] = event.data as unknown as [ AccountId, AccountId, Balance ] & Codec;
         const totalIssuance = await api.query.balances.totalIssuance();
 
-        // only emit if transfer is 0 or above the configuration threshold
-        const shouldEmit = !config.balanceTransferThresholdPermill
+        // only emit to everyone if transfer is 0 or above the configuration threshold
+        const shouldEmitToAll = !config.balanceTransferThresholdPermill
           || value.muln(1_000_000).divn(config.balanceTransferThresholdPermill).gte(totalIssuance);
-        if (!shouldEmit) return null;
+        const includeAddresses = shouldEmitToAll ? [] : [ sender.toString(), dest.toString() ]; 
 
         return {
-<<<<<<< HEAD
-=======
           // should not notify sender or recipient
-          excludeAddresses: [ transactor.toString(), dest.toString() ],
->>>>>>> parent of 744cd43... Remove enricher config which filtered transfers.
+          includeAddresses,
           data: {
             kind,
-            transactor: transactor.toString(),
+            sender: sender.toString(),
             dest: dest.toString(),
             value: value.toString(),
           }
