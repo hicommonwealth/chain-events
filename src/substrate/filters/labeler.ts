@@ -95,10 +95,10 @@ export const Label: LabelerFilter = (
   const balanceFormatter = (bal) => edgBalanceFormatter(chainId, bal);
   switch (data.kind) {
     case EventKind.BalanceTransfer: {
-      const { transactor, dest, value } = data;
+      const { sender, dest, value } = data;
       return {
         heading: 'Balance Transferred',
-        label: `${fmtAddr(transactor)} transferred ${balanceFormatter(value)} to ${fmtAddr(dest)}.`,
+        label: `${fmtAddr(sender)} transferred ${balanceFormatter(value)} to ${fmtAddr(dest)}.`,
       };
     }
     /**

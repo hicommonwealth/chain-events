@@ -43,8 +43,6 @@ export async function Enrich(
       case EventKind.BalanceTransfer: {
         const [ sender, dest, value ] = event.data as unknown as [ AccountId, AccountId, Balance ] & Codec;
         return {
-          // should not notify sender or recipient
-          excludeAddresses: [ sender.toString(), dest.toString() ],
           data: {
             kind,
             sender: sender.toString(),
