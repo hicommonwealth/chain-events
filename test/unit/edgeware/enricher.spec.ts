@@ -558,7 +558,7 @@ const constructBool = (b: boolean): bool => {
 
 /* eslint-disable: dot-notation */
 describe('Edgeware Event Enricher Filter Tests', () => {
-  it('should enrich balance-transfer event without config', async () => {
+  it('should enrich balance-transfer event', async () => {
     const kind = EventKind.BalanceTransfer;
     const event = constructEvent([ 'alice', 'bob', new BN('1001') ], 'balances', [ 'AccountId', 'AccountId', 'Balance' ]);
     const result = await Enrich(api, blockNumber, kind, event);
@@ -567,54 +567,15 @@ describe('Edgeware Event Enricher Filter Tests', () => {
       excludeAddresses: [ 'alice', 'bob' ],
       data: {
         kind,
-        transactor: 'alice',
+        sender: 'alice',
         dest: 'bob',
         value: '1001',
       }
     });
-  });
-  it('should enrich balance-transfer event with threshold 0', async () => {
-    const kind = EventKind.BalanceTransfer;
-    const event = constructEvent([ 'alice', 'bob', new BN('10') ], 'balances', [ 'AccountId', 'AccountId', 'Balance' ]);
-    const result = await Enrich(api, blockNumber, kind, event, { balanceTransferThresholdPermill: 0 });
-    assert.deepEqual(result, {
-      blockNumber,
-      excludeAddresses: [ 'alice', 'bob' ],
-      data: {
-        kind,
-        transactor: 'alice',
-        dest: 'bob',
-        value: '10',
-      }
-    });
-  });
-  it('should enrich large balance-transfer event with config', async () => {
-    const kind = EventKind.BalanceTransfer;
-    const event = constructEvent([ 'alice', 'bob', new BN('1001') ], 'balances', [ 'AccountId', 'AccountId', 'Balance' ]);
-    
-    // only accept transfers > 1_000
-    const result = await Enrich(api, blockNumber, kind, event, { balanceTransferThresholdPermill: 1_000 });
-    assert.deepEqual(result, {
-      blockNumber,
-      excludeAddresses: [ 'alice', 'bob' ],
-      data: {
-        kind,
-        transactor: 'alice',
-        dest: 'bob',
-        value: '1001',
-      }
-    });
-  });
-  it('should not enrich small balance-transfer event with config', async () => {
-    const kind = EventKind.BalanceTransfer;
-    const event = constructEvent([ 'alice', 'bob', new BN('999') ], 'balances', [ 'AccountId', 'AccountId', 'Balance' ]);
-    
-    // only accept transfers > 1_000
-    const result = await Enrich(api, blockNumber, kind, event, { balanceTransferThresholdPermill: 1_000 });
-    assert.isNull(result);
   });
   it('should enrich new-session event', async () => {
     const kind = EventKind.NewSession;
+    // TODO: why does this testcase basically do nothing?
     let activeExposures: { [key: string]: any } = {
       "EXkCSUQ6Z1hKvGWMNkUDKrTMVHRduQHWc8G6vgo4NccUmhU": {
         "others": [

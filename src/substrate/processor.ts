@@ -15,7 +15,6 @@ const log = factory.getLogger(formatFilename(__filename));
 export class Processor extends IEventProcessor<ApiPromise, Block> {
   constructor(
     protected _api: ApiPromise,
-    private _enricherConfig: EnricherConfig = {},
   ) {
     super(_api);
   }
@@ -48,7 +47,7 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
         );
       if (kind !== null) {
         try {
-          const result = await Enrich(this._api, blockNumber, kind, data, this._enricherConfig);
+          const result = await Enrich(this._api, blockNumber, kind, data);
           return result;
         } catch (e) {
           log.error(`Event enriching failed for ${kind}`);

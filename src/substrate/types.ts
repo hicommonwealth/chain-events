@@ -193,7 +193,7 @@ interface IEvent {
 
 export interface IBalanceTransfer extends IEvent {
   kind: EventKind.BalanceTransfer;
-  transactor: AccountId;
+  sender: AccountId;
   dest: AccountId;
   value: BalanceString;
 }
