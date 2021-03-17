@@ -43,6 +43,9 @@ export async function Enrich(
     switch (kind) {
       case EventKind.BalanceTransfer: {
         const [ sender, dest, value ] = event.data as unknown as [ AccountId, AccountId, Balance ] & Codec;
+        
+        // TODO: we may want to consider passing a hard threshold rather than recomputing it every
+        //   time, in order to save on queries for chains with a large amount of transfers.
         const totalIssuance = await api.query.balances.totalIssuance();
 
         // only emit to everyone if transfer is 0 or above the configuration threshold
