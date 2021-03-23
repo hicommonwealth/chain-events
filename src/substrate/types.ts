@@ -3,9 +3,11 @@ import {
 } from '@polkadot/types/interfaces';
 
 export const EventChains = [
+  'clover',
   'edgeware',
   'edgeware-local',
   'edgeware-testnet',
+  'hydradx',
   'kusama',
   'kusama-local',
   'polkadot',
