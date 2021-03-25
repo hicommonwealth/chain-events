@@ -5,13 +5,14 @@
 import * as SubstrateTypes from './substrate/types';
 import * as MolochTypes from './moloch/types';
 import * as MarlinTypes from './marlin/types';
+import * as CWPTypes from './cwp/types';
 
 // add other events here as union types
-export type IChainEntityKind = SubstrateTypes.EntityKind | MolochTypes.EntityKind | MarlinTypes.EntityKind;
-export type IChainEventData = SubstrateTypes.IEventData | MolochTypes.IEventData | MarlinTypes.IEventData;
-export type IChainEventKind = SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind;
-export const ChainEventKinds = [...SubstrateTypes.EventKinds, ...MolochTypes.EventKinds, ...MarlinTypes.EventKinds];
-export const EventSupportingChains = [...SubstrateTypes.EventChains, ...MolochTypes.EventChains, ...MarlinTypes.EventChains] as const;
+export type IChainEntityKind = SubstrateTypes.EntityKind | MolochTypes.EntityKind | MarlinTypes.EntityKind | CWPTypes.EntityKind;
+export type IChainEventData = SubstrateTypes.IEventData | MolochTypes.IEventData | MarlinTypes.IEventData | CWPTypes.IEventData;
+export type IChainEventKind = SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind | CWPTypes.EventKind;
+export const ChainEventKinds = [...SubstrateTypes.EventKinds, ...MolochTypes.EventKinds, ...MarlinTypes.EventKinds, ...CWPTypes.EventKinds];
+export const EventSupportingChains = [...SubstrateTypes.EventChains, ...MolochTypes.EventChains, ...MarlinTypes.EventChains, ...CWPTypes.EventChains] as const;
 export type EventSupportingChainT = typeof EventSupportingChains[number];
 
 export function chainSupportedBy<T extends readonly string[]>(c: string, eventChains: T): c is T[number] {

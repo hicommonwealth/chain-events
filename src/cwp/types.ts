@@ -4,9 +4,9 @@ import { compact } from 'underscore';
 import { ISubscribeOptions } from '../interfaces';
 
 // TODO: IMPORT CONTRACTS WHEN READY
-// import { MPond } from './contractTypes/MPond';
-// import { GovernorAlpha } from './contractTypes/GovernorAlpha';
-// import { Timelock } from './contractTypes/Timelock';
+// import { Protocol } from './contractTypes/Protocol';
+// import { Project } from './contractTypes/Project';
+// import { Collective } from './contractTypes/Collective';
 
 /*
   THESE ARE REFERENCE EVENTS
@@ -44,12 +44,14 @@ export enum EntityKind {
 }
 
 export enum EventKind {
+  // Project.sol Events
   DepositProject = 'deposit-project',
   CurateProject = 'curate-project',
   WithdrawProject = 'withdraw-project',
   ProposedProject = 'proposed-project',
   SucceededProject = 'succeeded-project',
   FailedProject = 'failed-project'
+  // TODO: Add more events
 }
 
 interface IEvent {
@@ -94,17 +96,6 @@ export interface IFailedProject extends IEvent {
   kind: EventKind.FailedProject;
   id: number
 }
-
-
-/*
-  Project.sol Events
-    event Deposit(address sender, uint amount);
-    event Curate(address sender, uint amount);
-    event Withdraw(address sender, uint amount);
-    event Proposed(address creator, uint threshold, uint deadline);
-    event Succeeded(uint id);
-    event Failed(uint id);
-*/
 
 
 export type IEventData =
