@@ -16,6 +16,31 @@ export async function Enrich(
         // TODO:
       } = rawData.args as any;
     }
+    case EventKind.CurateProject: {
+      const {
+        // TODO:
+      } = rawData.args as any;
+    }
+    case EventKind.WithdrawProject: {
+      const {
+        // TODO:
+      } = rawData.args as any;
+    }
+    case EventKind.ProposedProject: {
+      const {
+        // TODO:
+      } = rawData.args as any;
+    }
+    case EventKind.SucceededProject: {
+      const {
+        // TODO:
+      } = rawData.args as any;
+    }
+    case EventKind.FailedProject: {
+      const {
+        // TODO:
+      } = rawData.args as any;
+    }
 
     // TODO: Fill in all events
 
