@@ -45,8 +45,11 @@ export enum EntityKind {
 
 export enum EventKind {
   DepositProject = 'deposit-project',
-  CurateProject = 'curate-project'
-  // TODO: @Wang add events, like above but for the rest of the Project.sol Events 
+  CurateProject = 'curate-project',
+  WithdrawProject = 'withdraw-project',
+  ProposedProject = 'proposed-project',
+  SucceededProject = 'succeeded-project',
+  FailedProject = 'failed-project'
 }
 
 interface IEvent {
@@ -57,25 +60,39 @@ type Address = string;
 type Balance = string; // number???
 
 // Project.sol Events
-// TODO: @Wang add relevant data to event interfaces below, 
 export interface IDepositProject extends IEvent {
   kind: EventKind.DepositProject;
+  sender: Address,
+  amount: Balance
 }
 
 export interface ICurateProject extends IEvent {
   kind: EventKind.CurateProject;
+  sender: Address,
+  amount: Balance
 }
 
 export interface IWithdrawProject extends IEvent {
+  kind: EventKind.WithdrawProject;
+  sender: Address,
+  amount: Balance
 }
 
 export interface IProposedProject extends IEvent {
+  kind: EventKind.ProposedProject;
+  creator: Address,
+  threshold: number,
+  deadline: number
 }
 
 export interface ISucceededProject extends IEvent {
+  kind: EventKind.SucceededProject;
+  id: number
 }
 
 export interface IFailedProject extends IEvent {
+  kind: EventKind.FailedProject;
+  id: number
 }
 
 
