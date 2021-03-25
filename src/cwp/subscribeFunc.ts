@@ -74,7 +74,7 @@ export async function createApi(
     //   collective: collectiveContract,
     // };
   } catch (err) {
-    log.error(`Marlin ${contractAddresses.toString()} at ${ethNetworkUrl} failure: ${err.message}`);
+    log.error(`CWP ${contractAddresses.toString()} at ${ethNetworkUrl} failure: ${err.message}`);
     await sleep(retryTimeMs);
     log.error('Retrying connection...');
     return createApi(ethNetworkUrl, contractAddresses, retryTimeMs);
