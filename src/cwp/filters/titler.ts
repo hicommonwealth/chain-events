@@ -15,6 +15,36 @@ export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
         description: 'A Deposit was made to a Project.',
       };
     }
+    case EventKind.CurateProject: {
+      return {
+        title: 'Project Curate',
+        description: 'Project Curate',
+      };
+    }
+    case EventKind.WithdrawProject: {
+      return {
+        title: 'Project Withdraw',
+        description: 'Project Withdraw',
+      };
+    }
+    case EventKind.ProposedProject: {
+      return {
+        title: 'Project Proposed',
+        description: 'Project Proposed',
+      };
+    }
+    case EventKind.SucceededProject: {
+      return {
+        title: 'Project Succeeded',
+        description: 'Project Succeeded',
+      };
+    }
+    case EventKind.FailedProject: {
+      return {
+        title: 'Project Failed',
+        description: 'Project Failed',
+      };
+    }
     // TODO: All events
 
     default: {
