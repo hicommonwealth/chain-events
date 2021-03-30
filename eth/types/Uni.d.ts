@@ -10,17 +10,13 @@ import {
   TypedFunctionDescription
 } from ".";
 
-interface MPondInterface extends Interface {
+interface UniInterface extends Interface {
   functions: {
     DELEGATION_TYPEHASH: TypedFunctionDescription<{ encode([]: []): string }>;
 
     DOMAIN_TYPEHASH: TypedFunctionDescription<{ encode([]: []): string }>;
 
-    UNDELEGATION_TYPEHASH: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    admin: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    bridgeSupply: TypedFunctionDescription<{ encode([]: []): string }>;
+    PERMIT_TYPEHASH: TypedFunctionDescription<{ encode([]: []): string }>;
 
     checkpoints: TypedFunctionDescription<{
       encode([,]: [string, BigNumberish]): string;
@@ -28,13 +24,17 @@ interface MPondInterface extends Interface {
 
     decimals: TypedFunctionDescription<{ encode([]: []): string }>;
 
-    delegates: TypedFunctionDescription<{
-      encode([,]: [string, string]): string;
+    delegates: TypedFunctionDescription<{ encode([]: [string]): string }>;
+
+    minimumTimeBetweenMints: TypedFunctionDescription<{
+      encode([]: []): string;
     }>;
 
-    enableAllTranfers: TypedFunctionDescription<{ encode([]: []): string }>;
+    mintCap: TypedFunctionDescription<{ encode([]: []): string }>;
 
-    isWhiteListed: TypedFunctionDescription<{ encode([]: [string]): string }>;
+    minter: TypedFunctionDescription<{ encode([]: []): string }>;
+
+    mintingAllowedAfter: TypedFunctionDescription<{ encode([]: []): string }>;
 
     name: TypedFunctionDescription<{ encode([]: []): string }>;
 
@@ -46,14 +46,12 @@ interface MPondInterface extends Interface {
 
     totalSupply: TypedFunctionDescription<{ encode([]: []): string }>;
 
-    addWhiteListAddress: TypedFunctionDescription<{
-      encode([_address]: [string]): string;
+    setMinter: TypedFunctionDescription<{
+      encode([minter_]: [string]): string;
     }>;
 
-    enableAllTransfers: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    isWhiteListedTransfer: TypedFunctionDescription<{
-      encode([_address1, _address2]: [string, string]): string;
+    mint: TypedFunctionDescription<{
+      encode([dst, rawAmount]: [string, BigNumberish]): string;
     }>;
 
     allowance: TypedFunctionDescription<{
@@ -62,6 +60,18 @@ interface MPondInterface extends Interface {
 
     approve: TypedFunctionDescription<{
       encode([spender, rawAmount]: [string, BigNumberish]): string;
+    }>;
+
+    permit: TypedFunctionDescription<{
+      encode([owner, spender, rawAmount, deadline, v, r, s]: [
+        string,
+        string,
+        BigNumberish,
+        BigNumberish,
+        BigNumberish,
+        Arrayish,
+        Arrayish
+      ]): string;
     }>;
 
     balanceOf: TypedFunctionDescription<{
@@ -77,34 +87,17 @@ interface MPondInterface extends Interface {
     }>;
 
     delegate: TypedFunctionDescription<{
-      encode([delegatee, amount]: [string, BigNumberish]): string;
-    }>;
-
-    undelegate: TypedFunctionDescription<{
-      encode([delegatee, amount]: [string, BigNumberish]): string;
+      encode([delegatee]: [string]): string;
     }>;
 
     delegateBySig: TypedFunctionDescription<{
-      encode([delegatee, nonce, expiry, v, r, s, amount]: [
+      encode([delegatee, nonce, expiry, v, r, s]: [
         string,
         BigNumberish,
         BigNumberish,
         BigNumberish,
         Arrayish,
-        Arrayish,
-        BigNumberish
-      ]): string;
-    }>;
-
-    undelegateBySig: TypedFunctionDescription<{
-      encode([delegatee, nonce, expiry, v, r, s, amount]: [
-        string,
-        BigNumberish,
-        BigNumberish,
-        BigNumberish,
-        Arrayish,
-        Arrayish,
-        BigNumberish
+        Arrayish
       ]): string;
     }>;
 
@@ -142,6 +135,10 @@ interface MPondInterface extends Interface {
       ]): string[];
     }>;
 
+    MinterChanged: TypedEventDescription<{
+      encodeTopics([minter, newMinter]: [null, null]): string[];
+    }>;
+
     Transfer: TypedEventDescription<{
       encodeTopics([from, to, amount]: [
         string | null,
@@ -152,18 +149,18 @@ interface MPondInterface extends Interface {
   };
 }
 
-export class MPond extends Contract {
-  connect(signerOrProvider: Signer | Provider | string): MPond;
-  attach(addressOrName: string): MPond;
-  deployed(): Promise<MPond>;
+export class Uni extends Contract {
+  connect(signerOrProvider: Signer | Provider | string): Uni;
+  attach(addressOrName: string): Uni;
+  deployed(): Promise<Uni>;
 
-  on(event: EventFilter | string, listener: Listener): MPond;
-  once(event: EventFilter | string, listener: Listener): MPond;
-  addListener(eventName: EventFilter | string, listener: Listener): MPond;
-  removeAllListeners(eventName: EventFilter | string): MPond;
-  removeListener(eventName: any, listener: Listener): MPond;
+  on(event: EventFilter | string, listener: Listener): Uni;
+  once(event: EventFilter | string, listener: Listener): Uni;
+  addListener(eventName: EventFilter | string, listener: Listener): Uni;
+  removeAllListeners(eventName: EventFilter | string): Uni;
+  removeListener(eventName: any, listener: Listener): Uni;
 
-  interface: MPondInterface;
+  interface: UniInterface;
 
   functions: {
     DELEGATION_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
@@ -174,19 +171,9 @@ export class MPond extends Contract {
 
     "DOMAIN_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
-    UNDELEGATION_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
+    PERMIT_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
 
-    "UNDELEGATION_TYPEHASH()"(
-      overrides?: TransactionOverrides
-    ): Promise<string>;
-
-    admin(overrides?: TransactionOverrides): Promise<string>;
-
-    "admin()"(overrides?: TransactionOverrides): Promise<string>;
-
-    bridgeSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    "bridgeSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+    "PERMIT_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
     checkpoints(
       arg0: string,
@@ -214,31 +201,32 @@ export class MPond extends Contract {
 
     "decimals()"(overrides?: TransactionOverrides): Promise<number>;
 
-    delegates(
+    delegates(arg0: string, overrides?: TransactionOverrides): Promise<string>;
+
+    "delegates(address)"(
       arg0: string,
-      arg1: string,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
+
+    minimumTimeBetweenMints(overrides?: TransactionOverrides): Promise<number>;
+
+    "minimumTimeBetweenMints()"(
+      overrides?: TransactionOverrides
+    ): Promise<number>;
+
+    mintCap(overrides?: TransactionOverrides): Promise<number>;
+
+    "mintCap()"(overrides?: TransactionOverrides): Promise<number>;
+
+    minter(overrides?: TransactionOverrides): Promise<string>;
+
+    "minter()"(overrides?: TransactionOverrides): Promise<string>;
+
+    mintingAllowedAfter(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "mintingAllowedAfter()"(
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
-
-    "delegates(address,address)"(
-      arg0: string,
-      arg1: string,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    enableAllTranfers(overrides?: TransactionOverrides): Promise<boolean>;
-
-    "enableAllTranfers()"(overrides?: TransactionOverrides): Promise<boolean>;
-
-    isWhiteListed(
-      arg0: string,
-      overrides?: TransactionOverrides
-    ): Promise<boolean>;
-
-    "isWhiteListed(address)"(
-      arg0: string,
-      overrides?: TransactionOverrides
-    ): Promise<boolean>;
 
     name(overrides?: TransactionOverrides): Promise<string>;
 
@@ -269,35 +257,45 @@ export class MPond extends Contract {
 
     "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    addWhiteListAddress(
-      _address: string,
+    /**
+     * Change the minter address
+     * @param minter_ The address of the new minter
+     */
+    setMinter(
+      minter_: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    "addWhiteListAddress(address)"(
-      _address: string,
+    /**
+     * Change the minter address
+     * @param minter_ The address of the new minter
+     */
+    "setMinter(address)"(
+      minter_: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    enableAllTransfers(
+    /**
+     * Mint new tokens
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to be minted
+     */
+    mint(
+      dst: string,
+      rawAmount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    "enableAllTransfers()"(
+    /**
+     * Mint new tokens
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to be minted
+     */
+    "mint(address,uint256)"(
+      dst: string,
+      rawAmount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
-
-    isWhiteListedTransfer(
-      _address1: string,
-      _address2: string,
-      overrides?: TransactionOverrides
-    ): Promise<boolean>;
-
-    "isWhiteListedTransfer(address,address)"(
-      _address1: string,
-      _address2: string,
-      overrides?: TransactionOverrides
-    ): Promise<boolean>;
 
     /**
      * Get the number of tokens `spender` is approved to spend on behalf of `account`
@@ -346,6 +344,48 @@ export class MPond extends Contract {
     "approve(address,uint256)"(
       spender: string,
       rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Triggers an approval from owner to spends
+     * @param deadline The time at which to expire the signature
+     * @param owner The address to approve from
+     * @param r Half of the ECDSA signature pair
+     * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+     * @param s Half of the ECDSA signature pair
+     * @param spender The address to be approved
+     * @param v The recovery byte of the signature
+     */
+    permit(
+      owner: string,
+      spender: string,
+      rawAmount: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: Arrayish,
+      s: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Triggers an approval from owner to spends
+     * @param deadline The time at which to expire the signature
+     * @param owner The address to approve from
+     * @param r Half of the ECDSA signature pair
+     * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+     * @param s Half of the ECDSA signature pair
+     * @param spender The address to be approved
+     * @param v The recovery byte of the signature
+     */
+    "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)"(
+      owner: string,
+      spender: string,
+      rawAmount: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: Arrayish,
+      s: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -427,7 +467,6 @@ export class MPond extends Contract {
      */
     delegate(
       delegatee: string,
-      amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -435,21 +474,8 @@ export class MPond extends Contract {
      * Delegate votes from `msg.sender` to `delegatee`
      * @param delegatee The address to delegate votes to
      */
-    "delegate(address,uint96)"(
+    "delegate(address)"(
       delegatee: string,
-      amount: BigNumberish,
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
-
-    undelegate(
-      delegatee: string,
-      amount: BigNumberish,
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
-
-    "undelegate(address,uint96)"(
-      delegatee: string,
-      amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -469,7 +495,6 @@ export class MPond extends Contract {
       v: BigNumberish,
       r: Arrayish,
       s: Arrayish,
-      amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -482,36 +507,13 @@ export class MPond extends Contract {
      * @param s Half of the ECDSA signature pair
      * @param v The recovery byte of the signature
      */
-    "delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
+    "delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32)"(
       delegatee: string,
       nonce: BigNumberish,
       expiry: BigNumberish,
       v: BigNumberish,
       r: Arrayish,
       s: Arrayish,
-      amount: BigNumberish,
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
-
-    undelegateBySig(
-      delegatee: string,
-      nonce: BigNumberish,
-      expiry: BigNumberish,
-      v: BigNumberish,
-      r: Arrayish,
-      s: Arrayish,
-      amount: BigNumberish,
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
-
-    "undelegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
-      delegatee: string,
-      nonce: BigNumberish,
-      expiry: BigNumberish,
-      v: BigNumberish,
-      r: Arrayish,
-      s: Arrayish,
-      amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -570,17 +572,9 @@ export class MPond extends Contract {
 
   "DOMAIN_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
-  UNDELEGATION_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
+  PERMIT_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
 
-  "UNDELEGATION_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
-
-  admin(overrides?: TransactionOverrides): Promise<string>;
-
-  "admin()"(overrides?: TransactionOverrides): Promise<string>;
-
-  bridgeSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-  "bridgeSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+  "PERMIT_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
   checkpoints(
     arg0: string,
@@ -608,31 +602,30 @@ export class MPond extends Contract {
 
   "decimals()"(overrides?: TransactionOverrides): Promise<number>;
 
-  delegates(
-    arg0: string,
-    arg1: string,
-    overrides?: TransactionOverrides
-  ): Promise<BigNumber>;
+  delegates(arg0: string, overrides?: TransactionOverrides): Promise<string>;
 
-  "delegates(address,address)"(
-    arg0: string,
-    arg1: string,
-    overrides?: TransactionOverrides
-  ): Promise<BigNumber>;
-
-  enableAllTranfers(overrides?: TransactionOverrides): Promise<boolean>;
-
-  "enableAllTranfers()"(overrides?: TransactionOverrides): Promise<boolean>;
-
-  isWhiteListed(
+  "delegates(address)"(
     arg0: string,
     overrides?: TransactionOverrides
-  ): Promise<boolean>;
+  ): Promise<string>;
 
-  "isWhiteListed(address)"(
-    arg0: string,
+  minimumTimeBetweenMints(overrides?: TransactionOverrides): Promise<number>;
+
+  "minimumTimeBetweenMints()"(
     overrides?: TransactionOverrides
-  ): Promise<boolean>;
+  ): Promise<number>;
+
+  mintCap(overrides?: TransactionOverrides): Promise<number>;
+
+  "mintCap()"(overrides?: TransactionOverrides): Promise<number>;
+
+  minter(overrides?: TransactionOverrides): Promise<string>;
+
+  "minter()"(overrides?: TransactionOverrides): Promise<string>;
+
+  mintingAllowedAfter(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "mintingAllowedAfter()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   name(overrides?: TransactionOverrides): Promise<string>;
 
@@ -663,35 +656,45 @@ export class MPond extends Contract {
 
   "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  addWhiteListAddress(
-    _address: string,
+  /**
+   * Change the minter address
+   * @param minter_ The address of the new minter
+   */
+  setMinter(
+    minter_: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  "addWhiteListAddress(address)"(
-    _address: string,
+  /**
+   * Change the minter address
+   * @param minter_ The address of the new minter
+   */
+  "setMinter(address)"(
+    minter_: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  enableAllTransfers(
+  /**
+   * Mint new tokens
+   * @param dst The address of the destination account
+   * @param rawAmount The number of tokens to be minted
+   */
+  mint(
+    dst: string,
+    rawAmount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  "enableAllTransfers()"(
+  /**
+   * Mint new tokens
+   * @param dst The address of the destination account
+   * @param rawAmount The number of tokens to be minted
+   */
+  "mint(address,uint256)"(
+    dst: string,
+    rawAmount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
-
-  isWhiteListedTransfer(
-    _address1: string,
-    _address2: string,
-    overrides?: TransactionOverrides
-  ): Promise<boolean>;
-
-  "isWhiteListedTransfer(address,address)"(
-    _address1: string,
-    _address2: string,
-    overrides?: TransactionOverrides
-  ): Promise<boolean>;
 
   /**
    * Get the number of tokens `spender` is approved to spend on behalf of `account`
@@ -740,6 +743,48 @@ export class MPond extends Contract {
   "approve(address,uint256)"(
     spender: string,
     rawAmount: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Triggers an approval from owner to spends
+   * @param deadline The time at which to expire the signature
+   * @param owner The address to approve from
+   * @param r Half of the ECDSA signature pair
+   * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+   * @param s Half of the ECDSA signature pair
+   * @param spender The address to be approved
+   * @param v The recovery byte of the signature
+   */
+  permit(
+    owner: string,
+    spender: string,
+    rawAmount: BigNumberish,
+    deadline: BigNumberish,
+    v: BigNumberish,
+    r: Arrayish,
+    s: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Triggers an approval from owner to spends
+   * @param deadline The time at which to expire the signature
+   * @param owner The address to approve from
+   * @param r Half of the ECDSA signature pair
+   * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+   * @param s Half of the ECDSA signature pair
+   * @param spender The address to be approved
+   * @param v The recovery byte of the signature
+   */
+  "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)"(
+    owner: string,
+    spender: string,
+    rawAmount: BigNumberish,
+    deadline: BigNumberish,
+    v: BigNumberish,
+    r: Arrayish,
+    s: Arrayish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -821,7 +866,6 @@ export class MPond extends Contract {
    */
   delegate(
     delegatee: string,
-    amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -829,21 +873,8 @@ export class MPond extends Contract {
    * Delegate votes from `msg.sender` to `delegatee`
    * @param delegatee The address to delegate votes to
    */
-  "delegate(address,uint96)"(
+  "delegate(address)"(
     delegatee: string,
-    amount: BigNumberish,
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
-
-  undelegate(
-    delegatee: string,
-    amount: BigNumberish,
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
-
-  "undelegate(address,uint96)"(
-    delegatee: string,
-    amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -863,7 +894,6 @@ export class MPond extends Contract {
     v: BigNumberish,
     r: Arrayish,
     s: Arrayish,
-    amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -876,36 +906,13 @@ export class MPond extends Contract {
    * @param s Half of the ECDSA signature pair
    * @param v The recovery byte of the signature
    */
-  "delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
+  "delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32)"(
     delegatee: string,
     nonce: BigNumberish,
     expiry: BigNumberish,
     v: BigNumberish,
     r: Arrayish,
     s: Arrayish,
-    amount: BigNumberish,
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
-
-  undelegateBySig(
-    delegatee: string,
-    nonce: BigNumberish,
-    expiry: BigNumberish,
-    v: BigNumberish,
-    r: Arrayish,
-    s: Arrayish,
-    amount: BigNumberish,
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
-
-  "undelegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
-    delegatee: string,
-    nonce: BigNumberish,
-    expiry: BigNumberish,
-    v: BigNumberish,
-    r: Arrayish,
-    s: Arrayish,
-    amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -974,6 +981,8 @@ export class MPond extends Contract {
       newBalance: null
     ): EventFilter;
 
+    MinterChanged(minter: null, newMinter: null): EventFilter;
+
     Transfer(from: string | null, to: string | null, amount: null): EventFilter;
   };
 
@@ -988,19 +997,9 @@ export class MPond extends Contract {
 
     "DOMAIN_TYPEHASH()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    UNDELEGATION_TYPEHASH(overrides?: TransactionOverrides): Promise<BigNumber>;
+    PERMIT_TYPEHASH(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    "UNDELEGATION_TYPEHASH()"(
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    admin(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    "admin()"(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    bridgeSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    "bridgeSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+    "PERMIT_TYPEHASH()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     checkpoints(
       arg0: string,
@@ -1020,27 +1019,33 @@ export class MPond extends Contract {
 
     delegates(
       arg0: string,
-      arg1: string,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    "delegates(address,address)"(
-      arg0: string,
-      arg1: string,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    enableAllTranfers(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    "enableAllTranfers()"(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    isWhiteListed(
+    "delegates(address)"(
       arg0: string,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    "isWhiteListed(address)"(
-      arg0: string,
+    minimumTimeBetweenMints(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "minimumTimeBetweenMints()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    mintCap(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "mintCap()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    minter(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "minter()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    mintingAllowedAfter(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "mintingAllowedAfter()"(
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
@@ -1073,31 +1078,43 @@ export class MPond extends Contract {
 
     "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    addWhiteListAddress(
-      _address: string,
+    /**
+     * Change the minter address
+     * @param minter_ The address of the new minter
+     */
+    setMinter(
+      minter_: string,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    "addWhiteListAddress(address)"(
-      _address: string,
+    /**
+     * Change the minter address
+     * @param minter_ The address of the new minter
+     */
+    "setMinter(address)"(
+      minter_: string,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    enableAllTransfers(overrides?: TransactionOverrides): Promise<BigNumber>;
-
-    "enableAllTransfers()"(
+    /**
+     * Mint new tokens
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to be minted
+     */
+    mint(
+      dst: string,
+      rawAmount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    isWhiteListedTransfer(
-      _address1: string,
-      _address2: string,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    "isWhiteListedTransfer(address,address)"(
-      _address1: string,
-      _address2: string,
+    /**
+     * Mint new tokens
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to be minted
+     */
+    "mint(address,uint256)"(
+      dst: string,
+      rawAmount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
@@ -1148,6 +1165,48 @@ export class MPond extends Contract {
     "approve(address,uint256)"(
       spender: string,
       rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Triggers an approval from owner to spends
+     * @param deadline The time at which to expire the signature
+     * @param owner The address to approve from
+     * @param r Half of the ECDSA signature pair
+     * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+     * @param s Half of the ECDSA signature pair
+     * @param spender The address to be approved
+     * @param v The recovery byte of the signature
+     */
+    permit(
+      owner: string,
+      spender: string,
+      rawAmount: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: Arrayish,
+      s: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Triggers an approval from owner to spends
+     * @param deadline The time at which to expire the signature
+     * @param owner The address to approve from
+     * @param r Half of the ECDSA signature pair
+     * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+     * @param s Half of the ECDSA signature pair
+     * @param spender The address to be approved
+     * @param v The recovery byte of the signature
+     */
+    "permit(address,address,uint256,uint256,uint8,bytes32,bytes32)"(
+      owner: string,
+      spender: string,
+      rawAmount: BigNumberish,
+      deadline: BigNumberish,
+      v: BigNumberish,
+      r: Arrayish,
+      s: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
@@ -1229,7 +1288,6 @@ export class MPond extends Contract {
      */
     delegate(
       delegatee: string,
-      amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
@@ -1237,21 +1295,8 @@ export class MPond extends Contract {
      * Delegate votes from `msg.sender` to `delegatee`
      * @param delegatee The address to delegate votes to
      */
-    "delegate(address,uint96)"(
+    "delegate(address)"(
       delegatee: string,
-      amount: BigNumberish,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    undelegate(
-      delegatee: string,
-      amount: BigNumberish,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    "undelegate(address,uint96)"(
-      delegatee: string,
-      amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
@@ -1271,7 +1316,6 @@ export class MPond extends Contract {
       v: BigNumberish,
       r: Arrayish,
       s: Arrayish,
-      amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
@@ -1284,36 +1328,13 @@ export class MPond extends Contract {
      * @param s Half of the ECDSA signature pair
      * @param v The recovery byte of the signature
      */
-    "delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
+    "delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32)"(
       delegatee: string,
       nonce: BigNumberish,
       expiry: BigNumberish,
       v: BigNumberish,
       r: Arrayish,
       s: Arrayish,
-      amount: BigNumberish,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    undelegateBySig(
-      delegatee: string,
-      nonce: BigNumberish,
-      expiry: BigNumberish,
-      v: BigNumberish,
-      r: Arrayish,
-      s: Arrayish,
-      amount: BigNumberish,
-      overrides?: TransactionOverrides
-    ): Promise<BigNumber>;
-
-    "undelegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
-      delegatee: string,
-      nonce: BigNumberish,
-      expiry: BigNumberish,
-      v: BigNumberish,
-      r: Arrayish,
-      s: Arrayish,
-      amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 

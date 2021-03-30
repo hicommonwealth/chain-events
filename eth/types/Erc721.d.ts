@@ -91,21 +91,58 @@ export class Erc721 extends Contract {
     /**
      * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
      */
-    supportsInterface(interfaceId: Arrayish): Promise<boolean>;
+    supportsInterface(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    /**
+     * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
+     */
+    "supportsInterface(bytes4)"(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
 
     /**
      * Gets the balance of the specified address.
      * @param owner address to query the balance of
      * @returns uint256 representing the amount owned by the passed address
      */
-    balanceOf(owner: string): Promise<BigNumber>;
+    balanceOf(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Gets the balance of the specified address.
+     * @param owner address to query the balance of
+     * @returns uint256 representing the amount owned by the passed address
+     */
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * Gets the owner of the specified token ID.
      * @param tokenId uint256 ID of the token to query the owner of
      * @returns address currently marked as the owner of the given token ID
      */
-    ownerOf(tokenId: BigNumberish): Promise<string>;
+    ownerOf(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
+
+    /**
+     * Gets the owner of the specified token ID.
+     * @param tokenId uint256 ID of the token to query the owner of
+     * @returns address currently marked as the owner of the given token ID
+     */
+    "ownerOf(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
 
     /**
      * Approves another address to transfer the given token ID The zero address indicates there is no approved address. There can only be one approved address per token at a given time. Can only be called by the token owner or an approved operator.
@@ -119,11 +156,35 @@ export class Erc721 extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * Approves another address to transfer the given token ID The zero address indicates there is no approved address. There can only be one approved address per token at a given time. Can only be called by the token owner or an approved operator.
+     * @param to address to be approved for the given token ID
+     * @param tokenId uint256 ID of the token to be approved
+     */
+    "approve(address,uint256)"(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * Gets the approved address for a token ID, or zero if no address set Reverts if the token ID does not exist.
      * @param tokenId uint256 ID of the token to query the approval of
      * @returns address currently approved for the given token ID
      */
-    getApproved(tokenId: BigNumberish): Promise<string>;
+    getApproved(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
+
+    /**
+     * Gets the approved address for a token ID, or zero if no address set Reverts if the token ID does not exist.
+     * @param tokenId uint256 ID of the token to query the approval of
+     * @returns address currently approved for the given token ID
+     */
+    "getApproved(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
 
     /**
      * Sets or unsets the approval of a given operator An operator is allowed to transfer all tokens of the sender on their behalf.
@@ -137,12 +198,39 @@ export class Erc721 extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * Sets or unsets the approval of a given operator An operator is allowed to transfer all tokens of the sender on their behalf.
+     * @param approved representing the status of the approval to be set
+     * @param to operator address to set the approval
+     */
+    "setApprovalForAll(address,bool)"(
+      to: string,
+      approved: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * Tells whether an operator is approved by a given owner.
      * @param operator operator address which you want to query the approval of
      * @param owner owner address which you want to query the approval of
      * @returns bool whether the given operator is approved by the given owner
      */
-    isApprovedForAll(owner: string, operator: string): Promise<boolean>;
+    isApprovedForAll(
+      owner: string,
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    /**
+     * Tells whether an operator is approved by a given owner.
+     * @param operator operator address which you want to query the approval of
+     * @param owner owner address which you want to query the approval of
+     * @returns bool whether the given operator is approved by the given owner
+     */
+    "isApprovedForAll(address,address)"(
+      owner: string,
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
 
     /**
      * Transfers the ownership of a given token ID to another address. Usage of this method is discouraged, use {safeTransferFrom} whenever possible. Requires the msg.sender to be the owner, approved, or operator.
@@ -151,6 +239,32 @@ export class Erc721 extends Contract {
      * @param tokenId uint256 ID of the token to be transferred
      */
     transferFrom(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Transfers the ownership of a given token ID to another address. Usage of this method is discouraged, use {safeTransferFrom} whenever possible. Requires the msg.sender to be the owner, approved, or operator.
+     * @param from current owner of the token
+     * @param to address to receive the ownership of the given token ID
+     * @param tokenId uint256 ID of the token to be transferred
+     */
+    "transferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Safely transfers the ownership of a given token ID to another address If the target address is a contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer, and return the magic value `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`; otherwise, the transfer is reverted. Requires the msg.sender to be the owner, approved, or operator
+     * @param from current owner of the token
+     * @param to address to receive the ownership of the given token ID
+     * @param tokenId uint256 ID of the token to be transferred
+     */
+    safeTransferFrom(
       from: string,
       to: string,
       tokenId: BigNumberish,
@@ -189,21 +303,58 @@ export class Erc721 extends Contract {
   /**
    * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
    */
-  supportsInterface(interfaceId: Arrayish): Promise<boolean>;
+  supportsInterface(
+    interfaceId: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  /**
+   * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
+   */
+  "supportsInterface(bytes4)"(
+    interfaceId: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
 
   /**
    * Gets the balance of the specified address.
    * @param owner address to query the balance of
    * @returns uint256 representing the amount owned by the passed address
    */
-  balanceOf(owner: string): Promise<BigNumber>;
+  balanceOf(
+    owner: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Gets the balance of the specified address.
+   * @param owner address to query the balance of
+   * @returns uint256 representing the amount owned by the passed address
+   */
+  "balanceOf(address)"(
+    owner: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   /**
    * Gets the owner of the specified token ID.
    * @param tokenId uint256 ID of the token to query the owner of
    * @returns address currently marked as the owner of the given token ID
    */
-  ownerOf(tokenId: BigNumberish): Promise<string>;
+  ownerOf(
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
+
+  /**
+   * Gets the owner of the specified token ID.
+   * @param tokenId uint256 ID of the token to query the owner of
+   * @returns address currently marked as the owner of the given token ID
+   */
+  "ownerOf(uint256)"(
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
 
   /**
    * Approves another address to transfer the given token ID The zero address indicates there is no approved address. There can only be one approved address per token at a given time. Can only be called by the token owner or an approved operator.
@@ -217,11 +368,35 @@ export class Erc721 extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * Approves another address to transfer the given token ID The zero address indicates there is no approved address. There can only be one approved address per token at a given time. Can only be called by the token owner or an approved operator.
+   * @param to address to be approved for the given token ID
+   * @param tokenId uint256 ID of the token to be approved
+   */
+  "approve(address,uint256)"(
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * Gets the approved address for a token ID, or zero if no address set Reverts if the token ID does not exist.
    * @param tokenId uint256 ID of the token to query the approval of
    * @returns address currently approved for the given token ID
    */
-  getApproved(tokenId: BigNumberish): Promise<string>;
+  getApproved(
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
+
+  /**
+   * Gets the approved address for a token ID, or zero if no address set Reverts if the token ID does not exist.
+   * @param tokenId uint256 ID of the token to query the approval of
+   * @returns address currently approved for the given token ID
+   */
+  "getApproved(uint256)"(
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
 
   /**
    * Sets or unsets the approval of a given operator An operator is allowed to transfer all tokens of the sender on their behalf.
@@ -235,12 +410,39 @@ export class Erc721 extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * Sets or unsets the approval of a given operator An operator is allowed to transfer all tokens of the sender on their behalf.
+   * @param approved representing the status of the approval to be set
+   * @param to operator address to set the approval
+   */
+  "setApprovalForAll(address,bool)"(
+    to: string,
+    approved: boolean,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * Tells whether an operator is approved by a given owner.
    * @param operator operator address which you want to query the approval of
    * @param owner owner address which you want to query the approval of
    * @returns bool whether the given operator is approved by the given owner
    */
-  isApprovedForAll(owner: string, operator: string): Promise<boolean>;
+  isApprovedForAll(
+    owner: string,
+    operator: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  /**
+   * Tells whether an operator is approved by a given owner.
+   * @param operator operator address which you want to query the approval of
+   * @param owner owner address which you want to query the approval of
+   * @returns bool whether the given operator is approved by the given owner
+   */
+  "isApprovedForAll(address,address)"(
+    owner: string,
+    operator: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
 
   /**
    * Transfers the ownership of a given token ID to another address. Usage of this method is discouraged, use {safeTransferFrom} whenever possible. Requires the msg.sender to be the owner, approved, or operator.
@@ -249,6 +451,32 @@ export class Erc721 extends Contract {
    * @param tokenId uint256 ID of the token to be transferred
    */
   transferFrom(
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Transfers the ownership of a given token ID to another address. Usage of this method is discouraged, use {safeTransferFrom} whenever possible. Requires the msg.sender to be the owner, approved, or operator.
+   * @param from current owner of the token
+   * @param to address to receive the ownership of the given token ID
+   * @param tokenId uint256 ID of the token to be transferred
+   */
+  "transferFrom(address,address,uint256)"(
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Safely transfers the ownership of a given token ID to another address If the target address is a contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer, and return the magic value `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`; otherwise, the transfer is reverted. Requires the msg.sender to be the owner, approved, or operator
+   * @param from current owner of the token
+   * @param to address to receive the ownership of the given token ID
+   * @param tokenId uint256 ID of the token to be transferred
+   */
+  safeTransferFrom(
     from: string,
     to: string,
     tokenId: BigNumberish,
@@ -304,30 +532,215 @@ export class Erc721 extends Contract {
   };
 
   estimate: {
-    supportsInterface(interfaceId: Arrayish): Promise<BigNumber>;
+    /**
+     * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
+     */
+    supportsInterface(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    balanceOf(owner: string): Promise<BigNumber>;
+    /**
+     * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
+     */
+    "supportsInterface(bytes4)"(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    ownerOf(tokenId: BigNumberish): Promise<BigNumber>;
+    /**
+     * Gets the balance of the specified address.
+     * @param owner address to query the balance of
+     * @returns uint256 representing the amount owned by the passed address
+     */
+    balanceOf(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    approve(to: string, tokenId: BigNumberish): Promise<BigNumber>;
+    /**
+     * Gets the balance of the specified address.
+     * @param owner address to query the balance of
+     * @returns uint256 representing the amount owned by the passed address
+     */
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    getApproved(tokenId: BigNumberish): Promise<BigNumber>;
+    /**
+     * Gets the owner of the specified token ID.
+     * @param tokenId uint256 ID of the token to query the owner of
+     * @returns address currently marked as the owner of the given token ID
+     */
+    ownerOf(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    setApprovalForAll(to: string, approved: boolean): Promise<BigNumber>;
+    /**
+     * Gets the owner of the specified token ID.
+     * @param tokenId uint256 ID of the token to query the owner of
+     * @returns address currently marked as the owner of the given token ID
+     */
+    "ownerOf(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    isApprovedForAll(owner: string, operator: string): Promise<BigNumber>;
+    /**
+     * Approves another address to transfer the given token ID The zero address indicates there is no approved address. There can only be one approved address per token at a given time. Can only be called by the token owner or an approved operator.
+     * @param to address to be approved for the given token ID
+     * @param tokenId uint256 ID of the token to be approved
+     */
+    approve(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
+    /**
+     * Approves another address to transfer the given token ID The zero address indicates there is no approved address. There can only be one approved address per token at a given time. Can only be called by the token owner or an approved operator.
+     * @param to address to be approved for the given token ID
+     * @param tokenId uint256 ID of the token to be approved
+     */
+    "approve(address,uint256)"(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Gets the approved address for a token ID, or zero if no address set Reverts if the token ID does not exist.
+     * @param tokenId uint256 ID of the token to query the approval of
+     * @returns address currently approved for the given token ID
+     */
+    getApproved(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Gets the approved address for a token ID, or zero if no address set Reverts if the token ID does not exist.
+     * @param tokenId uint256 ID of the token to query the approval of
+     * @returns address currently approved for the given token ID
+     */
+    "getApproved(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Sets or unsets the approval of a given operator An operator is allowed to transfer all tokens of the sender on their behalf.
+     * @param approved representing the status of the approval to be set
+     * @param to operator address to set the approval
+     */
+    setApprovalForAll(
+      to: string,
+      approved: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Sets or unsets the approval of a given operator An operator is allowed to transfer all tokens of the sender on their behalf.
+     * @param approved representing the status of the approval to be set
+     * @param to operator address to set the approval
+     */
+    "setApprovalForAll(address,bool)"(
+      to: string,
+      approved: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Tells whether an operator is approved by a given owner.
+     * @param operator operator address which you want to query the approval of
+     * @param owner owner address which you want to query the approval of
+     * @returns bool whether the given operator is approved by the given owner
+     */
+    isApprovedForAll(
+      owner: string,
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Tells whether an operator is approved by a given owner.
+     * @param operator operator address which you want to query the approval of
+     * @param owner owner address which you want to query the approval of
+     * @returns bool whether the given operator is approved by the given owner
+     */
+    "isApprovedForAll(address,address)"(
+      owner: string,
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Transfers the ownership of a given token ID to another address. Usage of this method is discouraged, use {safeTransferFrom} whenever possible. Requires the msg.sender to be the owner, approved, or operator.
+     * @param from current owner of the token
+     * @param to address to receive the ownership of the given token ID
+     * @param tokenId uint256 ID of the token to be transferred
+     */
     transferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
+    /**
+     * Transfers the ownership of a given token ID to another address. Usage of this method is discouraged, use {safeTransferFrom} whenever possible. Requires the msg.sender to be the owner, approved, or operator.
+     * @param from current owner of the token
+     * @param to address to receive the ownership of the given token ID
+     * @param tokenId uint256 ID of the token to be transferred
+     */
+    "transferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Safely transfers the ownership of a given token ID to another address If the target address is a contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer, and return the magic value `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`; otherwise, the transfer is reverted. Requires the msg.sender to be the owner, approved, or operator
+     * @param from current owner of the token
+     * @param to address to receive the ownership of the given token ID
+     * @param tokenId uint256 ID of the token to be transferred
+     */
     safeTransferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Safely transfers the ownership of a given token ID to another address If the target address is a contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer, and return the magic value `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`; otherwise, the transfer is reverted. Requires the msg.sender to be the owner, approved, or operator
+     * @param from current owner of the token
+     * @param to address to receive the ownership of the given token ID
+     * @param tokenId uint256 ID of the token to be transferred
+     */
+    "safeTransferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Safely transfers the ownership of a given token ID to another address If the target address is a contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer, and return the magic value `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`; otherwise, the transfer is reverted. Requires the _msgSender() to be the owner, approved, or operator
+     * @param _data bytes data to send along with a safe transfer check
+     * @param from current owner of the token
+     * @param to address to receive the ownership of the given token ID
+     * @param tokenId uint256 ID of the token to be transferred
+     */
+    "safeTransferFrom(address,address,uint256,bytes)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      _data: Arrayish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 }

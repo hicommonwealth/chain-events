@@ -131,33 +131,76 @@ export class Timelock extends Contract {
   interface: TimelockInterface;
 
   functions: {
-    GRACE_PERIOD(): Promise<BigNumber>;
+    GRACE_PERIOD(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    MAXIMUM_DELAY(): Promise<BigNumber>;
+    "GRACE_PERIOD()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    MINIMUM_DELAY(): Promise<BigNumber>;
+    MAXIMUM_DELAY(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    admin(): Promise<string>;
+    "MAXIMUM_DELAY()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    delay(): Promise<BigNumber>;
+    MINIMUM_DELAY(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    pendingAdmin(): Promise<string>;
+    "MINIMUM_DELAY()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    queuedTransactions(arg0: Arrayish): Promise<boolean>;
+    admin(overrides?: TransactionOverrides): Promise<string>;
+
+    "admin()"(overrides?: TransactionOverrides): Promise<string>;
+
+    delay(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "delay()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    pendingAdmin(overrides?: TransactionOverrides): Promise<string>;
+
+    "pendingAdmin()"(overrides?: TransactionOverrides): Promise<string>;
+
+    queuedTransactions(
+      arg0: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    "queuedTransactions(bytes32)"(
+      arg0: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
 
     setDelay(
       delay_: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    "setDelay(uint256)"(
+      delay_: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     acceptAdmin(overrides?: TransactionOverrides): Promise<ContractTransaction>;
+
+    "acceptAdmin()"(
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
 
     setPendingAdmin(
       pendingAdmin_: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    "setPendingAdmin(address)"(
+      pendingAdmin_: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     queueTransaction(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: Arrayish,
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "queueTransaction(address,uint256,string,bytes,uint256)"(
       target: string,
       value: BigNumberish,
       signature: string,
@@ -175,7 +218,25 @@ export class Timelock extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    "cancelTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: Arrayish,
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     executeTransaction(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: Arrayish,
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "executeTransaction(address,uint256,string,bytes,uint256)"(
       target: string,
       value: BigNumberish,
       signature: string,
@@ -185,33 +246,76 @@ export class Timelock extends Contract {
     ): Promise<ContractTransaction>;
   };
 
-  GRACE_PERIOD(): Promise<BigNumber>;
+  GRACE_PERIOD(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  MAXIMUM_DELAY(): Promise<BigNumber>;
+  "GRACE_PERIOD()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  MINIMUM_DELAY(): Promise<BigNumber>;
+  MAXIMUM_DELAY(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  admin(): Promise<string>;
+  "MAXIMUM_DELAY()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  delay(): Promise<BigNumber>;
+  MINIMUM_DELAY(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  pendingAdmin(): Promise<string>;
+  "MINIMUM_DELAY()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  queuedTransactions(arg0: Arrayish): Promise<boolean>;
+  admin(overrides?: TransactionOverrides): Promise<string>;
+
+  "admin()"(overrides?: TransactionOverrides): Promise<string>;
+
+  delay(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "delay()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  pendingAdmin(overrides?: TransactionOverrides): Promise<string>;
+
+  "pendingAdmin()"(overrides?: TransactionOverrides): Promise<string>;
+
+  queuedTransactions(
+    arg0: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  "queuedTransactions(bytes32)"(
+    arg0: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
 
   setDelay(
     delay_: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  "setDelay(uint256)"(
+    delay_: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   acceptAdmin(overrides?: TransactionOverrides): Promise<ContractTransaction>;
+
+  "acceptAdmin()"(
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
 
   setPendingAdmin(
     pendingAdmin_: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  "setPendingAdmin(address)"(
+    pendingAdmin_: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   queueTransaction(
+    target: string,
+    value: BigNumberish,
+    signature: string,
+    data: Arrayish,
+    eta: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "queueTransaction(address,uint256,string,bytes,uint256)"(
     target: string,
     value: BigNumberish,
     signature: string,
@@ -229,7 +333,25 @@ export class Timelock extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  "cancelTransaction(address,uint256,string,bytes,uint256)"(
+    target: string,
+    value: BigNumberish,
+    signature: string,
+    data: Arrayish,
+    eta: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   executeTransaction(
+    target: string,
+    value: BigNumberish,
+    signature: string,
+    data: Arrayish,
+    eta: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "executeTransaction(address,uint256,string,bytes,uint256)"(
     target: string,
     value: BigNumberish,
     signature: string,
@@ -274,32 +396,80 @@ export class Timelock extends Contract {
   };
 
   estimate: {
-    GRACE_PERIOD(): Promise<BigNumber>;
+    GRACE_PERIOD(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    MAXIMUM_DELAY(): Promise<BigNumber>;
+    "GRACE_PERIOD()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    MINIMUM_DELAY(): Promise<BigNumber>;
+    MAXIMUM_DELAY(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    admin(): Promise<BigNumber>;
+    "MAXIMUM_DELAY()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    delay(): Promise<BigNumber>;
+    MINIMUM_DELAY(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    pendingAdmin(): Promise<BigNumber>;
+    "MINIMUM_DELAY()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    queuedTransactions(arg0: Arrayish): Promise<BigNumber>;
+    admin(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    setDelay(delay_: BigNumberish): Promise<BigNumber>;
+    "admin()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    acceptAdmin(): Promise<BigNumber>;
+    delay(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    setPendingAdmin(pendingAdmin_: string): Promise<BigNumber>;
+    "delay()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    pendingAdmin(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "pendingAdmin()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    queuedTransactions(
+      arg0: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "queuedTransactions(bytes32)"(
+      arg0: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    setDelay(
+      delay_: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "setDelay(uint256)"(
+      delay_: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    acceptAdmin(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "acceptAdmin()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    setPendingAdmin(
+      pendingAdmin_: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "setPendingAdmin(address)"(
+      pendingAdmin_: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     queueTransaction(
       target: string,
       value: BigNumberish,
       signature: string,
       data: Arrayish,
-      eta: BigNumberish
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "queueTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: Arrayish,
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
     cancelTransaction(
@@ -307,7 +477,17 @@ export class Timelock extends Contract {
       value: BigNumberish,
       signature: string,
       data: Arrayish,
-      eta: BigNumberish
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "cancelTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: Arrayish,
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
     executeTransaction(
@@ -315,7 +495,17 @@ export class Timelock extends Contract {
       value: BigNumberish,
       signature: string,
       data: Arrayish,
-      eta: BigNumberish
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "executeTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: Arrayish,
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 }

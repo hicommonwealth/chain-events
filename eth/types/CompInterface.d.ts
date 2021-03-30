@@ -39,18 +39,42 @@ export class CompInterface extends Contract {
   functions: {
     getPriorVotes(
       account: string,
-      blockNumber: BigNumberish
+      blockNumber: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 
-  getPriorVotes(account: string, blockNumber: BigNumberish): Promise<BigNumber>;
+  getPriorVotes(
+    account: string,
+    blockNumber: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  "getPriorVotes(address,uint256)"(
+    account: string,
+    blockNumber: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   filters: {};
 
   estimate: {
     getPriorVotes(
       account: string,
-      blockNumber: BigNumberish
+      blockNumber: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 }

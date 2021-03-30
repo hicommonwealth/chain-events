@@ -16,7 +16,7 @@ interface GovernorAlphaInterface extends Interface {
 
     DOMAIN_TYPEHASH: TypedFunctionDescription<{ encode([]: []): string }>;
 
-    MPond: TypedFunctionDescription<{ encode([]: []): string }>;
+    comp: TypedFunctionDescription<{ encode([]: []): string }>;
 
     guardian: TypedFunctionDescription<{ encode([]: []): string }>;
 
@@ -158,22 +158,43 @@ export class GovernorAlpha extends Contract {
   interface: GovernorAlphaInterface;
 
   functions: {
-    BALLOT_TYPEHASH(): Promise<string>;
+    BALLOT_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
 
-    DOMAIN_TYPEHASH(): Promise<string>;
+    "BALLOT_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
-    MPond(): Promise<string>;
+    DOMAIN_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
 
-    guardian(): Promise<string>;
+    "DOMAIN_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
-    latestProposalIds(arg0: string): Promise<BigNumber>;
+    comp(overrides?: TransactionOverrides): Promise<string>;
 
-    name(): Promise<string>;
+    "comp()"(overrides?: TransactionOverrides): Promise<string>;
 
-    proposalCount(): Promise<BigNumber>;
+    guardian(overrides?: TransactionOverrides): Promise<string>;
+
+    "guardian()"(overrides?: TransactionOverrides): Promise<string>;
+
+    latestProposalIds(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "latestProposalIds(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    name(overrides?: TransactionOverrides): Promise<string>;
+
+    "name()"(overrides?: TransactionOverrides): Promise<string>;
+
+    proposalCount(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "proposalCount()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     proposals(
-      arg0: BigNumberish
+      arg0: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<{
       id: BigNumber;
       proposer: string;
@@ -195,34 +216,96 @@ export class GovernorAlpha extends Contract {
       8: boolean;
     }>;
 
-    timelock(): Promise<string>;
+    "proposals(uint256)"(
+      arg0: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<{
+      id: BigNumber;
+      proposer: string;
+      eta: BigNumber;
+      startBlock: BigNumber;
+      endBlock: BigNumber;
+      forVotes: BigNumber;
+      againstVotes: BigNumber;
+      canceled: boolean;
+      executed: boolean;
+      0: BigNumber;
+      1: string;
+      2: BigNumber;
+      3: BigNumber;
+      4: BigNumber;
+      5: BigNumber;
+      6: BigNumber;
+      7: boolean;
+      8: boolean;
+    }>;
+
+    timelock(overrides?: TransactionOverrides): Promise<string>;
+
+    "timelock()"(overrides?: TransactionOverrides): Promise<string>;
 
     /**
      * The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
      */
-    quorumVotes(): Promise<BigNumber>;
+    quorumVotes(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
+     */
+    "quorumVotes()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     /**
      * The number of votes required in order for a voter to become a proposer
      */
-    proposalThreshold(): Promise<BigNumber>;
+    proposalThreshold(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The number of votes required in order for a voter to become a proposer
+     */
+    "proposalThreshold()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     /**
      * The maximum number of actions that can be included in a proposal
      */
-    proposalMaxOperations(): Promise<BigNumber>;
+    proposalMaxOperations(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The maximum number of actions that can be included in a proposal
+     */
+    "proposalMaxOperations()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * The delay before voting on a proposal may take place, once proposed
      */
-    votingDelay(): Promise<BigNumber>;
+    votingDelay(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The delay before voting on a proposal may take place, once proposed
+     */
+    "votingDelay()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     /**
      * The duration of voting on a proposal, in blocks
      */
-    votingPeriod(): Promise<BigNumber>;
+    votingPeriod(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The duration of voting on a proposal, in blocks
+     */
+    "votingPeriod()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     propose(
+      targets: string[],
+      values: BigNumberish[],
+      signatures: string[],
+      calldatas: Arrayish[],
+      description: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "propose(address[],uint256[],string[],bytes[],string)"(
       targets: string[],
       values: BigNumberish[],
       signatures: string[],
@@ -236,7 +319,17 @@ export class GovernorAlpha extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    "queue(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     execute(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "execute(uint256)"(
       proposalId: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -246,8 +339,28 @@ export class GovernorAlpha extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    "cancel(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     getActions(
-      proposalId: BigNumberish
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<{
+      targets: string[];
+      values: BigNumber[];
+      signatures: string[];
+      calldatas: string[];
+      0: string[];
+      1: BigNumber[];
+      2: string[];
+      3: string[];
+    }>;
+
+    "getActions(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<{
       targets: string[];
       values: BigNumber[];
@@ -261,7 +374,8 @@ export class GovernorAlpha extends Contract {
 
     getReceipt(
       proposalId: BigNumberish,
-      voter: string
+      voter: string,
+      overrides?: TransactionOverrides
     ): Promise<{
       hasVoted: boolean;
       support: boolean;
@@ -271,9 +385,36 @@ export class GovernorAlpha extends Contract {
       2: BigNumber;
     }>;
 
-    state(proposalId: BigNumberish): Promise<number>;
+    "getReceipt(uint256,address)"(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: TransactionOverrides
+    ): Promise<{
+      hasVoted: boolean;
+      support: boolean;
+      votes: BigNumber;
+      0: boolean;
+      1: boolean;
+      2: BigNumber;
+    }>;
+
+    state(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<number>;
+
+    "state(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<number>;
 
     castVote(
+      proposalId: BigNumberish,
+      support: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "castVote(uint256,bool)"(
       proposalId: BigNumberish,
       support: boolean,
       overrides?: TransactionOverrides
@@ -288,13 +429,36 @@ export class GovernorAlpha extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    "castVoteBySig(uint256,bool,uint8,bytes32,bytes32)"(
+      proposalId: BigNumberish,
+      support: boolean,
+      v: BigNumberish,
+      r: Arrayish,
+      s: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     __acceptAdmin(
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "__acceptAdmin()"(
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
     __abdicate(overrides?: TransactionOverrides): Promise<ContractTransaction>;
 
+    "__abdicate()"(
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     __queueSetTimelockPendingAdmin(
+      newPendingAdmin: string,
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "__queueSetTimelockPendingAdmin(address,uint256)"(
       newPendingAdmin: string,
       eta: BigNumberish,
       overrides?: TransactionOverrides
@@ -305,24 +469,51 @@ export class GovernorAlpha extends Contract {
       eta: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
+
+    "__executeSetTimelockPendingAdmin(address,uint256)"(
+      newPendingAdmin: string,
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
   };
 
-  BALLOT_TYPEHASH(): Promise<string>;
+  BALLOT_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
 
-  DOMAIN_TYPEHASH(): Promise<string>;
+  "BALLOT_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
-  MPond(): Promise<string>;
+  DOMAIN_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
 
-  guardian(): Promise<string>;
+  "DOMAIN_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
-  latestProposalIds(arg0: string): Promise<BigNumber>;
+  comp(overrides?: TransactionOverrides): Promise<string>;
 
-  name(): Promise<string>;
+  "comp()"(overrides?: TransactionOverrides): Promise<string>;
 
-  proposalCount(): Promise<BigNumber>;
+  guardian(overrides?: TransactionOverrides): Promise<string>;
+
+  "guardian()"(overrides?: TransactionOverrides): Promise<string>;
+
+  latestProposalIds(
+    arg0: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  "latestProposalIds(address)"(
+    arg0: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  name(overrides?: TransactionOverrides): Promise<string>;
+
+  "name()"(overrides?: TransactionOverrides): Promise<string>;
+
+  proposalCount(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "proposalCount()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   proposals(
-    arg0: BigNumberish
+    arg0: BigNumberish,
+    overrides?: TransactionOverrides
   ): Promise<{
     id: BigNumber;
     proposer: string;
@@ -344,34 +535,96 @@ export class GovernorAlpha extends Contract {
     8: boolean;
   }>;
 
-  timelock(): Promise<string>;
+  "proposals(uint256)"(
+    arg0: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<{
+    id: BigNumber;
+    proposer: string;
+    eta: BigNumber;
+    startBlock: BigNumber;
+    endBlock: BigNumber;
+    forVotes: BigNumber;
+    againstVotes: BigNumber;
+    canceled: boolean;
+    executed: boolean;
+    0: BigNumber;
+    1: string;
+    2: BigNumber;
+    3: BigNumber;
+    4: BigNumber;
+    5: BigNumber;
+    6: BigNumber;
+    7: boolean;
+    8: boolean;
+  }>;
+
+  timelock(overrides?: TransactionOverrides): Promise<string>;
+
+  "timelock()"(overrides?: TransactionOverrides): Promise<string>;
 
   /**
    * The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
    */
-  quorumVotes(): Promise<BigNumber>;
+  quorumVotes(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  /**
+   * The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
+   */
+  "quorumVotes()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   /**
    * The number of votes required in order for a voter to become a proposer
    */
-  proposalThreshold(): Promise<BigNumber>;
+  proposalThreshold(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  /**
+   * The number of votes required in order for a voter to become a proposer
+   */
+  "proposalThreshold()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   /**
    * The maximum number of actions that can be included in a proposal
    */
-  proposalMaxOperations(): Promise<BigNumber>;
+  proposalMaxOperations(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  /**
+   * The maximum number of actions that can be included in a proposal
+   */
+  "proposalMaxOperations()"(
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   /**
    * The delay before voting on a proposal may take place, once proposed
    */
-  votingDelay(): Promise<BigNumber>;
+  votingDelay(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  /**
+   * The delay before voting on a proposal may take place, once proposed
+   */
+  "votingDelay()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   /**
    * The duration of voting on a proposal, in blocks
    */
-  votingPeriod(): Promise<BigNumber>;
+  votingPeriod(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  /**
+   * The duration of voting on a proposal, in blocks
+   */
+  "votingPeriod()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   propose(
+    targets: string[],
+    values: BigNumberish[],
+    signatures: string[],
+    calldatas: Arrayish[],
+    description: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "propose(address[],uint256[],string[],bytes[],string)"(
     targets: string[],
     values: BigNumberish[],
     signatures: string[],
@@ -385,7 +638,17 @@ export class GovernorAlpha extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  "queue(uint256)"(
+    proposalId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   execute(
+    proposalId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "execute(uint256)"(
     proposalId: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -395,8 +658,28 @@ export class GovernorAlpha extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  "cancel(uint256)"(
+    proposalId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   getActions(
-    proposalId: BigNumberish
+    proposalId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<{
+    targets: string[];
+    values: BigNumber[];
+    signatures: string[];
+    calldatas: string[];
+    0: string[];
+    1: BigNumber[];
+    2: string[];
+    3: string[];
+  }>;
+
+  "getActions(uint256)"(
+    proposalId: BigNumberish,
+    overrides?: TransactionOverrides
   ): Promise<{
     targets: string[];
     values: BigNumber[];
@@ -410,7 +693,8 @@ export class GovernorAlpha extends Contract {
 
   getReceipt(
     proposalId: BigNumberish,
-    voter: string
+    voter: string,
+    overrides?: TransactionOverrides
   ): Promise<{
     hasVoted: boolean;
     support: boolean;
@@ -420,9 +704,36 @@ export class GovernorAlpha extends Contract {
     2: BigNumber;
   }>;
 
-  state(proposalId: BigNumberish): Promise<number>;
+  "getReceipt(uint256,address)"(
+    proposalId: BigNumberish,
+    voter: string,
+    overrides?: TransactionOverrides
+  ): Promise<{
+    hasVoted: boolean;
+    support: boolean;
+    votes: BigNumber;
+    0: boolean;
+    1: boolean;
+    2: BigNumber;
+  }>;
+
+  state(
+    proposalId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<number>;
+
+  "state(uint256)"(
+    proposalId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<number>;
 
   castVote(
+    proposalId: BigNumberish,
+    support: boolean,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "castVote(uint256,bool)"(
     proposalId: BigNumberish,
     support: boolean,
     overrides?: TransactionOverrides
@@ -437,9 +748,26 @@ export class GovernorAlpha extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  "castVoteBySig(uint256,bool,uint8,bytes32,bytes32)"(
+    proposalId: BigNumberish,
+    support: boolean,
+    v: BigNumberish,
+    r: Arrayish,
+    s: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   __acceptAdmin(overrides?: TransactionOverrides): Promise<ContractTransaction>;
 
+  "__acceptAdmin()"(
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   __abdicate(overrides?: TransactionOverrides): Promise<ContractTransaction>;
+
+  "__abdicate()"(
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
 
   __queueSetTimelockPendingAdmin(
     newPendingAdmin: string,
@@ -447,7 +775,19 @@ export class GovernorAlpha extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  "__queueSetTimelockPendingAdmin(address,uint256)"(
+    newPendingAdmin: string,
+    eta: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   __executeSetTimelockPendingAdmin(
+    newPendingAdmin: string,
+    eta: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "__executeSetTimelockPendingAdmin(address,uint256)"(
     newPendingAdmin: string,
     eta: BigNumberish,
     overrides?: TransactionOverrides
@@ -481,76 +821,246 @@ export class GovernorAlpha extends Contract {
   };
 
   estimate: {
-    BALLOT_TYPEHASH(): Promise<BigNumber>;
+    BALLOT_TYPEHASH(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    DOMAIN_TYPEHASH(): Promise<BigNumber>;
+    "BALLOT_TYPEHASH()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    MPond(): Promise<BigNumber>;
+    DOMAIN_TYPEHASH(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    guardian(): Promise<BigNumber>;
+    "DOMAIN_TYPEHASH()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    latestProposalIds(arg0: string): Promise<BigNumber>;
+    comp(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    name(): Promise<BigNumber>;
+    "comp()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    proposalCount(): Promise<BigNumber>;
+    guardian(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    proposals(arg0: BigNumberish): Promise<BigNumber>;
+    "guardian()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    timelock(): Promise<BigNumber>;
+    latestProposalIds(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    quorumVotes(): Promise<BigNumber>;
+    "latestProposalIds(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    proposalThreshold(): Promise<BigNumber>;
+    name(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    proposalMaxOperations(): Promise<BigNumber>;
+    "name()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    votingDelay(): Promise<BigNumber>;
+    proposalCount(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    votingPeriod(): Promise<BigNumber>;
+    "proposalCount()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    proposals(
+      arg0: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "proposals(uint256)"(
+      arg0: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    timelock(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "timelock()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
+     */
+    quorumVotes(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
+     */
+    "quorumVotes()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The number of votes required in order for a voter to become a proposer
+     */
+    proposalThreshold(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The number of votes required in order for a voter to become a proposer
+     */
+    "proposalThreshold()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The maximum number of actions that can be included in a proposal
+     */
+    proposalMaxOperations(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The maximum number of actions that can be included in a proposal
+     */
+    "proposalMaxOperations()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * The delay before voting on a proposal may take place, once proposed
+     */
+    votingDelay(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The delay before voting on a proposal may take place, once proposed
+     */
+    "votingDelay()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The duration of voting on a proposal, in blocks
+     */
+    votingPeriod(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * The duration of voting on a proposal, in blocks
+     */
+    "votingPeriod()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     propose(
       targets: string[],
       values: BigNumberish[],
       signatures: string[],
       calldatas: Arrayish[],
-      description: string
+      description: string,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    queue(proposalId: BigNumberish): Promise<BigNumber>;
+    "propose(address[],uint256[],string[],bytes[],string)"(
+      targets: string[],
+      values: BigNumberish[],
+      signatures: string[],
+      calldatas: Arrayish[],
+      description: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    execute(proposalId: BigNumberish): Promise<BigNumber>;
+    queue(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    cancel(proposalId: BigNumberish): Promise<BigNumber>;
+    "queue(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    getActions(proposalId: BigNumberish): Promise<BigNumber>;
+    execute(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    getReceipt(proposalId: BigNumberish, voter: string): Promise<BigNumber>;
+    "execute(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    state(proposalId: BigNumberish): Promise<BigNumber>;
+    cancel(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    castVote(proposalId: BigNumberish, support: boolean): Promise<BigNumber>;
+    "cancel(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    getActions(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "getActions(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    getReceipt(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "getReceipt(uint256,address)"(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    state(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "state(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    castVote(
+      proposalId: BigNumberish,
+      support: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "castVote(uint256,bool)"(
+      proposalId: BigNumberish,
+      support: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     castVoteBySig(
       proposalId: BigNumberish,
       support: boolean,
       v: BigNumberish,
       r: Arrayish,
-      s: Arrayish
+      s: Arrayish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    __acceptAdmin(): Promise<BigNumber>;
+    "castVoteBySig(uint256,bool,uint8,bytes32,bytes32)"(
+      proposalId: BigNumberish,
+      support: boolean,
+      v: BigNumberish,
+      r: Arrayish,
+      s: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    __abdicate(): Promise<BigNumber>;
+    __acceptAdmin(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "__acceptAdmin()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    __abdicate(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "__abdicate()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     __queueSetTimelockPendingAdmin(
       newPendingAdmin: string,
-      eta: BigNumberish
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "__queueSetTimelockPendingAdmin(address,uint256)"(
+      newPendingAdmin: string,
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
     __executeSetTimelockPendingAdmin(
       newPendingAdmin: string,
-      eta: BigNumberish
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "__executeSetTimelockPendingAdmin(address,uint256)"(
+      newPendingAdmin: string,
+      eta: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 }

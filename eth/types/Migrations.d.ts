@@ -44,11 +44,24 @@ export class Migrations extends Contract {
   interface: MigrationsInterface;
 
   functions: {
-    last_completed_migration(): Promise<BigNumber>;
+    last_completed_migration(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    owner(): Promise<string>;
+    "last_completed_migration()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    owner(overrides?: TransactionOverrides): Promise<string>;
+
+    "owner()"(overrides?: TransactionOverrides): Promise<string>;
 
     setCompleted(
+      completed: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "setCompleted(uint256)"(
       completed: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -57,13 +70,31 @@ export class Migrations extends Contract {
       new_address: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
+
+    "upgrade(address)"(
+      new_address: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
   };
 
-  last_completed_migration(): Promise<BigNumber>;
+  last_completed_migration(
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
-  owner(): Promise<string>;
+  "last_completed_migration()"(
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  owner(overrides?: TransactionOverrides): Promise<string>;
+
+  "owner()"(overrides?: TransactionOverrides): Promise<string>;
 
   setCompleted(
+    completed: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "setCompleted(uint256)"(
     completed: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -73,15 +104,44 @@ export class Migrations extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  "upgrade(address)"(
+    new_address: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   filters: {};
 
   estimate: {
-    last_completed_migration(): Promise<BigNumber>;
+    last_completed_migration(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    owner(): Promise<BigNumber>;
+    "last_completed_migration()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    setCompleted(completed: BigNumberish): Promise<BigNumber>;
+    owner(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    upgrade(new_address: string): Promise<BigNumber>;
+    "owner()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    setCompleted(
+      completed: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "setCompleted(uint256)"(
+      completed: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    upgrade(
+      new_address: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "upgrade(address)"(
+      new_address: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
   };
 }
