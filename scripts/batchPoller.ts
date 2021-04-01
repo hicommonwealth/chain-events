@@ -5,6 +5,7 @@ import {
   chainSupportedBy, SubstrateEvents, EventSupportingChains, IEventHandler, IDisconnectedRange, CWEvent, SubstrateTypes
 } from '../dist/index';
 import { factoryControl } from '../dist/logging';
+import { EventKind } from '../dist/substrate/types';
 
 export async function batchQuery(
   api: ApiPromise,
@@ -91,6 +92,39 @@ class StandaloneEventHandler extends IEventHandler {
   }
 }
 
+class GovernanceEventHandler extends IEventHandler {
+  public async handle(event: CWEvent): Promise<any> {
+    console.log(event.data.kind);
+    switch (event.data.kind) {
+      case EventKind.DemocracySeconded:
+        break;
+      case EventKind.DemocracyVoted:
+        break;
+      case EventKind.CollectiveProposed:
+        break;
+      case EventKind.CollectiveVoted:
+        break;
+      case EventKind.ElectionNewTerm:
+        break;
+      case EventKind.PreimageNoted:
+        break;
+      case EventKind.StakingElection:
+        break;
+      case EventKind.NewSession:
+        break;
+      case EventKind.TreasuryProposed:
+        break;
+      case EventKind.IdentitySet:
+        break;
+      case EventKind.ElectionCandidacySubmitted:
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+
 function main() {
   const args = process.argv.slice(2);
   const chain = args[0] || 'edgeware';
@@ -110,7 +144,7 @@ function main() {
   if (!url) throw new Error(`no url for chain ${chain}`);
   if (chainSupportedBy(chain, SubstrateEvents.Types.EventChains)) {
     SubstrateEvents.createApi(url, spec).then(async (api) => {
-      await batchQuery(api, [ new StandaloneEventHandler() ]);
+      await batchQuery(api, [ new GovernanceEventHandler() ]);
       process.exit(0);
     });
   }
