@@ -94,29 +94,39 @@ class StandaloneEventHandler extends IEventHandler {
 
 class GovernanceEventHandler extends IEventHandler {
   public async handle(event: CWEvent): Promise<any> {
-    console.log(event.data.kind);
     switch (event.data.kind) {
       case EventKind.DemocracySeconded:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       case EventKind.DemocracyVoted:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       case EventKind.CollectiveProposed:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       case EventKind.CollectiveVoted:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       case EventKind.ElectionNewTerm:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       case EventKind.PreimageNoted:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       case EventKind.StakingElection:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       case EventKind.NewSession:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       case EventKind.TreasuryProposed:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       case EventKind.IdentitySet:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       case EventKind.ElectionCandidacySubmitted:
+        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
         break;
       default:
         break;
