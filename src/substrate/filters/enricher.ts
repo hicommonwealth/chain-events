@@ -148,7 +148,7 @@ export async function Enrich(
           validatorInfo[key] = {
             commissionPer,
             controllerId: controllerId.isSome ? controllerId.unwrap().toString() : key,
-            rewardDestination: rewardDestination,
+            rewardDestination: rewardDestination.toHuman(),
             eraPoints: validatorEraPoints[key] ?? 0
           };
         };

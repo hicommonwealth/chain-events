@@ -6,6 +6,7 @@ import {
 } from '../dist/index';
 import { factoryControl } from '../dist/logging';
 import { EventKind } from '../dist/substrate/types';
+import { MongoClient } from 'mongodb';
 
 export async function batchQuery(
   api: ApiPromise,
@@ -33,7 +34,6 @@ export async function batchQuery(
     for (const block of blocks) {
       // retrieve events from block
       const events = await processor.process(block);
-
       // send all events through event-handlers in sequence
       await Promise.all(events.map(async (event) => {
         let prevResult = null;
@@ -51,7 +51,7 @@ export async function batchQuery(
   }
 
   // TODO: configure chunk size
-  const CHUNK_SIZE = 1000;
+  const CHUNK_SIZE = 2;
 
   const poller = new SubstrateEvents.Poller(api);
   const results = [];
@@ -93,21 +93,20 @@ class StandaloneEventHandler extends IEventHandler {
 }
 
 class GovernanceEventHandler extends IEventHandler {
-  public db: any;
+  public db;
 
   public async setup(options?: any) {
-    var MongoClient = require('mongodb').MongoClient;
     var url = "mongodb://localhost:27017/participation-events";
 
     return new Promise((resolve) => {
-      return (new MongoClient(url)).connect((err, db) => {
+      return (new MongoClient(url)).connect(async (err, db) => {
         if (err) throw err;
-        console.log("Database created!");
-        return resolve(db);
+        var dbo = db.db("participation-events");
+        await dbo.collection('events').drop();
+        await dbo.createCollection('events');
+        this.db = dbo;
+        resolve(this.db);
       });
-    }).then(async (db: any) => {
-      var dbo = db.db("participation-events");
-      this.db = dbo;
     });
   }
   
@@ -125,7 +124,9 @@ class GovernanceEventHandler extends IEventHandler {
         || event.data.kind == EventKind.ElectionCandidacySubmitted
     ) {
       const events = this.db.collection("events");
-      await events.insertOne(event);
+      events.insertOne(event, (err, result) => {
+        if (err) throw err;
+      });
     }
   }
 }
