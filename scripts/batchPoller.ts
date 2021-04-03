@@ -93,43 +93,39 @@ class StandaloneEventHandler extends IEventHandler {
 }
 
 class GovernanceEventHandler extends IEventHandler {
+  public db: any;
+
+  public async setup(options?: any) {
+    var MongoClient = require('mongodb').MongoClient;
+    var url = "mongodb://localhost:27017/participation-events";
+
+    return new Promise((resolve) => {
+      return (new MongoClient(url)).connect((err, db) => {
+        if (err) throw err;
+        console.log("Database created!");
+        return resolve(db);
+      });
+    }).then(async (db: any) => {
+      var dbo = db.db("participation-events");
+      this.db = dbo;
+    });
+  }
+  
   public async handle(event: CWEvent): Promise<any> {
-    switch (event.data.kind) {
-      case EventKind.DemocracySeconded:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      case EventKind.DemocracyVoted:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      case EventKind.CollectiveProposed:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      case EventKind.CollectiveVoted:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      case EventKind.ElectionNewTerm:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      case EventKind.PreimageNoted:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      case EventKind.StakingElection:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      case EventKind.NewSession:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      case EventKind.TreasuryProposed:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      case EventKind.IdentitySet:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      case EventKind.ElectionCandidacySubmitted:
-        console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-        break;
-      default:
-        break;
+    if (event.data.kind == EventKind.DemocracySeconded
+        || event.data.kind == EventKind.DemocracyVoted
+        || event.data.kind == EventKind.CollectiveProposed
+        || event.data.kind == EventKind.CollectiveVoted
+        || event.data.kind == EventKind.ElectionNewTerm
+        || event.data.kind == EventKind.PreimageNoted
+        || event.data.kind == EventKind.StakingElection
+        || event.data.kind == EventKind.NewSession
+        || event.data.kind == EventKind.TreasuryProposed
+        || event.data.kind == EventKind.IdentitySet
+        || event.data.kind == EventKind.ElectionCandidacySubmitted
+    ) {
+      const events = this.db.collection("events");
+      await events.insertOne(event);
     }
   }
 }
@@ -154,7 +150,9 @@ function main() {
   if (!url) throw new Error(`no url for chain ${chain}`);
   if (chainSupportedBy(chain, SubstrateEvents.Types.EventChains)) {
     SubstrateEvents.createApi(url, spec).then(async (api) => {
-      await batchQuery(api, [ new GovernanceEventHandler() ]);
+      const handler = new GovernanceEventHandler();
+      await handler.setup();
+      await batchQuery(api, [ handler ]);
       process.exit(0);
     });
   }
