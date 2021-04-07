@@ -6,7 +6,7 @@ import {
 } from '../dist/index';
 import { factoryControl } from '../dist/logging';
 import { EventKind } from '../dist/substrate/types';
-import { MongoClient } from 'mongodb';
+import { Db, MongoClient } from 'mongodb';
 
 export async function batchQuery(
   api: ApiPromise,
@@ -51,7 +51,7 @@ export async function batchQuery(
   }
 
   // TODO: configure chunk size
-  const CHUNK_SIZE = 2;
+  const CHUNK_SIZE = 10;
 
   const poller = new SubstrateEvents.Poller(api);
   const results = [];
@@ -94,16 +94,20 @@ class StandaloneEventHandler extends IEventHandler {
 
 class GovernanceEventHandler extends IEventHandler {
   public db;
+  public lastBlock: number;
 
-  public async setup(options?: any) {
+  public async setup(options?: any): Promise<Db> {
     var url = "mongodb://localhost:27017/participation-events";
 
     return new Promise((resolve) => {
       return (new MongoClient(url)).connect(async (err, db) => {
         if (err) throw err;
         var dbo = db.db("participation-events");
-        await dbo.collection('events').drop();
-        await dbo.createCollection('events');
+        try {
+          await dbo.createCollection('events');
+        } catch (e) {
+
+        }
         this.db = dbo;
         resolve(this.db);
       });
@@ -152,8 +156,13 @@ function main() {
   if (chainSupportedBy(chain, SubstrateEvents.Types.EventChains)) {
     SubstrateEvents.createApi(url, spec).then(async (api) => {
       const handler = new GovernanceEventHandler();
-      await handler.setup();
-      await batchQuery(api, [ handler ]);
+      const db = await handler.setup();
+      const record = await db.collection('events').find().sort({blockNumber:-1}).limit(1).toArray();
+      const range = {
+        startBlock: record[0].blockNumber + 1,
+      };
+
+      await batchQuery(api, [ handler ], range);
       process.exit(0);
     });
   }
