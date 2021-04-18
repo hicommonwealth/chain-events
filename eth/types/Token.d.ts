@@ -80,7 +80,23 @@ export class Token extends Contract {
      * @param spender address The address which will spend the funds.
      * @returns A uint256 specifying the amount of tokens still available for the spender.
      */
-    allowance(owner: string, spender: string): Promise<BigNumber>;
+    allowance(
+      owner: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Function to check the amount of tokens that an owner allowed to a spender.
+     * @param owner address The address which owns the funds.
+     * @param spender address The address which will spend the funds.
+     * @returns A uint256 specifying the amount of tokens still available for the spender.
+     */
+    "allowance(address,address)"(
+      owner: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * Approve the passed address to spend the specified amount of tokens on behalf of msg.sender. Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
@@ -94,11 +110,35 @@ export class Token extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * Approve the passed address to spend the specified amount of tokens on behalf of msg.sender. Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     * @param spender The address which will spend the funds.
+     * @param value The amount of tokens to be spent.
+     */
+    "approve(address,uint256)"(
+      spender: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * Gets the balance of the specified address.
      * @param owner The address to query the balance of.
      * @returns An uint256 representing the amount owned by the passed address.
      */
-    balanceOf(owner: string): Promise<BigNumber>;
+    balanceOf(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Gets the balance of the specified address.
+     * @param owner The address to query the balance of.
+     * @returns An uint256 representing the amount owned by the passed address.
+     */
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * Decrease the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To decrement allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol Emits an Approval event.
@@ -106,6 +146,17 @@ export class Token extends Contract {
      * @param subtractedValue The amount of tokens to decrease the allowance by.
      */
     decreaseAllowance(
+      spender: string,
+      subtractedValue: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Decrease the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To decrement allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol Emits an Approval event.
+     * @param spender The address which will spend the funds.
+     * @param subtractedValue The amount of tokens to decrease the allowance by.
+     */
+    "decreaseAllowance(address,uint256)"(
       spender: string,
       subtractedValue: BigNumberish,
       overrides?: TransactionOverrides
@@ -123,9 +174,25 @@ export class Token extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * Increase the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To increment allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol Emits an Approval event.
+     * @param addedValue The amount of tokens to increase the allowance by.
+     * @param spender The address which will spend the funds.
+     */
+    "increaseAllowance(address,uint256)"(
+      spender: string,
+      addedValue: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * Total number of tokens in existence
      */
-    totalSupply(): Promise<BigNumber>;
+    totalSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * Total number of tokens in existence
+     */
+    "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     /**
      * Transfer token for a specified address
@@ -133,6 +200,17 @@ export class Token extends Contract {
      * @param value The amount to be transferred.
      */
     transfer(
+      to: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Transfer token for a specified address
+     * @param to The address to transfer to.
+     * @param value The amount to be transferred.
+     */
+    "transfer(address,uint256)"(
       to: string,
       value: BigNumberish,
       overrides?: TransactionOverrides
@@ -150,6 +228,19 @@ export class Token extends Contract {
       value: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
+
+    /**
+     * Transfer tokens from one address to another. Note that while this function emits an Approval event, this is not required as per the specification, and other compliant implementations may not emit the event.
+     * @param from address The address which you want to send tokens from
+     * @param to address The address which you want to transfer to
+     * @param value uint256 the amount of tokens to be transferred
+     */
+    "transferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
   };
 
   /**
@@ -158,7 +249,23 @@ export class Token extends Contract {
    * @param spender address The address which will spend the funds.
    * @returns A uint256 specifying the amount of tokens still available for the spender.
    */
-  allowance(owner: string, spender: string): Promise<BigNumber>;
+  allowance(
+    owner: string,
+    spender: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Function to check the amount of tokens that an owner allowed to a spender.
+   * @param owner address The address which owns the funds.
+   * @param spender address The address which will spend the funds.
+   * @returns A uint256 specifying the amount of tokens still available for the spender.
+   */
+  "allowance(address,address)"(
+    owner: string,
+    spender: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   /**
    * Approve the passed address to spend the specified amount of tokens on behalf of msg.sender. Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
@@ -172,11 +279,35 @@ export class Token extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * Approve the passed address to spend the specified amount of tokens on behalf of msg.sender. Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+   * @param spender The address which will spend the funds.
+   * @param value The amount of tokens to be spent.
+   */
+  "approve(address,uint256)"(
+    spender: string,
+    value: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * Gets the balance of the specified address.
    * @param owner The address to query the balance of.
    * @returns An uint256 representing the amount owned by the passed address.
    */
-  balanceOf(owner: string): Promise<BigNumber>;
+  balanceOf(
+    owner: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Gets the balance of the specified address.
+   * @param owner The address to query the balance of.
+   * @returns An uint256 representing the amount owned by the passed address.
+   */
+  "balanceOf(address)"(
+    owner: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   /**
    * Decrease the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To decrement allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol Emits an Approval event.
@@ -184,6 +315,17 @@ export class Token extends Contract {
    * @param subtractedValue The amount of tokens to decrease the allowance by.
    */
   decreaseAllowance(
+    spender: string,
+    subtractedValue: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Decrease the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To decrement allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol Emits an Approval event.
+   * @param spender The address which will spend the funds.
+   * @param subtractedValue The amount of tokens to decrease the allowance by.
+   */
+  "decreaseAllowance(address,uint256)"(
     spender: string,
     subtractedValue: BigNumberish,
     overrides?: TransactionOverrides
@@ -201,9 +343,25 @@ export class Token extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * Increase the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To increment allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol Emits an Approval event.
+   * @param addedValue The amount of tokens to increase the allowance by.
+   * @param spender The address which will spend the funds.
+   */
+  "increaseAllowance(address,uint256)"(
+    spender: string,
+    addedValue: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * Total number of tokens in existence
    */
-  totalSupply(): Promise<BigNumber>;
+  totalSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  /**
+   * Total number of tokens in existence
+   */
+  "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   /**
    * Transfer token for a specified address
@@ -211,6 +369,17 @@ export class Token extends Contract {
    * @param value The amount to be transferred.
    */
   transfer(
+    to: string,
+    value: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Transfer token for a specified address
+   * @param to The address to transfer to.
+   * @param value The amount to be transferred.
+   */
+  "transfer(address,uint256)"(
     to: string,
     value: BigNumberish,
     overrides?: TransactionOverrides
@@ -229,6 +398,19 @@ export class Token extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  /**
+   * Transfer tokens from one address to another. Note that while this function emits an Approval event, this is not required as per the specification, and other compliant implementations may not emit the event.
+   * @param from address The address which you want to send tokens from
+   * @param to address The address which you want to transfer to
+   * @param value uint256 the amount of tokens to be transferred
+   */
+  "transferFrom(address,address,uint256)"(
+    from: string,
+    to: string,
+    value: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   filters: {
     Approval(
       owner: string | null,
@@ -240,30 +422,172 @@ export class Token extends Contract {
   };
 
   estimate: {
-    allowance(owner: string, spender: string): Promise<BigNumber>;
+    /**
+     * Function to check the amount of tokens that an owner allowed to a spender.
+     * @param owner address The address which owns the funds.
+     * @param spender address The address which will spend the funds.
+     * @returns A uint256 specifying the amount of tokens still available for the spender.
+     */
+    allowance(
+      owner: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    approve(spender: string, value: BigNumberish): Promise<BigNumber>;
+    /**
+     * Function to check the amount of tokens that an owner allowed to a spender.
+     * @param owner address The address which owns the funds.
+     * @param spender address The address which will spend the funds.
+     * @returns A uint256 specifying the amount of tokens still available for the spender.
+     */
+    "allowance(address,address)"(
+      owner: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    balanceOf(owner: string): Promise<BigNumber>;
+    /**
+     * Approve the passed address to spend the specified amount of tokens on behalf of msg.sender. Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     * @param spender The address which will spend the funds.
+     * @param value The amount of tokens to be spent.
+     */
+    approve(
+      spender: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
+    /**
+     * Approve the passed address to spend the specified amount of tokens on behalf of msg.sender. Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     * @param spender The address which will spend the funds.
+     * @param value The amount of tokens to be spent.
+     */
+    "approve(address,uint256)"(
+      spender: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Gets the balance of the specified address.
+     * @param owner The address to query the balance of.
+     * @returns An uint256 representing the amount owned by the passed address.
+     */
+    balanceOf(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Gets the balance of the specified address.
+     * @param owner The address to query the balance of.
+     * @returns An uint256 representing the amount owned by the passed address.
+     */
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Decrease the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To decrement allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol Emits an Approval event.
+     * @param spender The address which will spend the funds.
+     * @param subtractedValue The amount of tokens to decrease the allowance by.
+     */
     decreaseAllowance(
       spender: string,
-      subtractedValue: BigNumberish
+      subtractedValue: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
+    /**
+     * Decrease the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To decrement allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol Emits an Approval event.
+     * @param spender The address which will spend the funds.
+     * @param subtractedValue The amount of tokens to decrease the allowance by.
+     */
+    "decreaseAllowance(address,uint256)"(
+      spender: string,
+      subtractedValue: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Increase the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To increment allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol Emits an Approval event.
+     * @param addedValue The amount of tokens to increase the allowance by.
+     * @param spender The address which will spend the funds.
+     */
     increaseAllowance(
       spender: string,
-      addedValue: BigNumberish
+      addedValue: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    totalSupply(): Promise<BigNumber>;
+    /**
+     * Increase the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To increment allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol Emits an Approval event.
+     * @param addedValue The amount of tokens to increase the allowance by.
+     * @param spender The address which will spend the funds.
+     */
+    "increaseAllowance(address,uint256)"(
+      spender: string,
+      addedValue: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    transfer(to: string, value: BigNumberish): Promise<BigNumber>;
+    /**
+     * Total number of tokens in existence
+     */
+    totalSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
 
+    /**
+     * Total number of tokens in existence
+     */
+    "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * Transfer token for a specified address
+     * @param to The address to transfer to.
+     * @param value The amount to be transferred.
+     */
+    transfer(
+      to: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Transfer token for a specified address
+     * @param to The address to transfer to.
+     * @param value The amount to be transferred.
+     */
+    "transfer(address,uint256)"(
+      to: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Transfer tokens from one address to another. Note that while this function emits an Approval event, this is not required as per the specification, and other compliant implementations may not emit the event.
+     * @param from address The address which you want to send tokens from
+     * @param to address The address which you want to transfer to
+     * @param value uint256 the amount of tokens to be transferred
+     */
     transferFrom(
       from: string,
       to: string,
-      value: BigNumberish
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Transfer tokens from one address to another. Note that while this function emits an Approval event, this is not required as per the specification, and other compliant implementations may not emit the event.
+     * @param from address The address which you want to send tokens from
+     * @param to address The address which you want to transfer to
+     * @param value uint256 the amount of tokens to be transferred
+     */
+    "transferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 }

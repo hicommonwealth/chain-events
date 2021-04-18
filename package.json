@@ -12,6 +12,7 @@
     "build": "tsc",
     "unit-test": "nyc ts-mocha --config ./.mocharc.json ./test/unit/**/*.spec.ts",
     "marlin-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/marlin.spec.ts",
+    "compoundalpha-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/compoundalpha.spec.ts",
     "integration-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts",
     "test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts ./test/unit/**/*.spec.ts",
     "listen": "ts-node -T ./scripts/listener.ts",

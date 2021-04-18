@@ -181,20 +181,39 @@ export class Moloch1 extends Contract {
   interface: Moloch1Interface;
 
   functions: {
-    abortWindow(): Promise<BigNumber>;
+    abortWindow(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    approvedToken(): Promise<string>;
+    "abortWindow()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    dilutionBound(): Promise<BigNumber>;
+    approvedToken(overrides?: TransactionOverrides): Promise<string>;
 
-    gracePeriodLength(): Promise<BigNumber>;
+    "approvedToken()"(overrides?: TransactionOverrides): Promise<string>;
 
-    guildBank(): Promise<string>;
+    dilutionBound(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    memberAddressByDelegateKey(arg0: string): Promise<string>;
+    "dilutionBound()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    gracePeriodLength(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "gracePeriodLength()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    guildBank(overrides?: TransactionOverrides): Promise<string>;
+
+    "guildBank()"(overrides?: TransactionOverrides): Promise<string>;
+
+    memberAddressByDelegateKey(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
+
+    "memberAddressByDelegateKey(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
 
     members(
-      arg0: string
+      arg0: string,
+      overrides?: TransactionOverrides
     ): Promise<{
       delegateKey: string;
       shares: BigNumber;
@@ -206,14 +225,35 @@ export class Moloch1 extends Contract {
       3: BigNumber;
     }>;
 
-    periodDuration(): Promise<BigNumber>;
+    "members(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<{
+      delegateKey: string;
+      shares: BigNumber;
+      exists: boolean;
+      highestIndexYesVote: BigNumber;
+      0: string;
+      1: BigNumber;
+      2: boolean;
+      3: BigNumber;
+    }>;
 
-    processingReward(): Promise<BigNumber>;
+    periodDuration(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    proposalDeposit(): Promise<BigNumber>;
+    "periodDuration()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    processingReward(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "processingReward()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    proposalDeposit(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "proposalDeposit()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     proposalQueue(
-      arg0: BigNumberish
+      arg0: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<{
       proposer: string;
       applicant: string;
@@ -241,18 +281,71 @@ export class Moloch1 extends Contract {
       11: BigNumber;
     }>;
 
-    summoningTime(): Promise<BigNumber>;
+    "proposalQueue(uint256)"(
+      arg0: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<{
+      proposer: string;
+      applicant: string;
+      sharesRequested: BigNumber;
+      startingPeriod: BigNumber;
+      yesVotes: BigNumber;
+      noVotes: BigNumber;
+      processed: boolean;
+      didPass: boolean;
+      aborted: boolean;
+      tokenTribute: BigNumber;
+      details: string;
+      maxTotalSharesAtYesVote: BigNumber;
+      0: string;
+      1: string;
+      2: BigNumber;
+      3: BigNumber;
+      4: BigNumber;
+      5: BigNumber;
+      6: boolean;
+      7: boolean;
+      8: boolean;
+      9: BigNumber;
+      10: string;
+      11: BigNumber;
+    }>;
 
-    totalShares(): Promise<BigNumber>;
+    summoningTime(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    totalSharesRequested(): Promise<BigNumber>;
+    "summoningTime()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    votingPeriodLength(): Promise<BigNumber>;
+    totalShares(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "totalShares()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    totalSharesRequested(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "totalSharesRequested()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    votingPeriodLength(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "votingPeriodLength()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * *************** PROPOSAL FUNCTIONS****************
      */
     submitProposal(
+      applicant: string,
+      tokenTribute: BigNumberish,
+      sharesRequested: BigNumberish,
+      details: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * *************** PROPOSAL FUNCTIONS****************
+     */
+    "submitProposal(address,uint256,uint256,string)"(
       applicant: string,
       tokenTribute: BigNumberish,
       sharesRequested: BigNumberish,
@@ -266,7 +359,18 @@ export class Moloch1 extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    "submitVote(uint256,uint8)"(
+      proposalIndex: BigNumberish,
+      uintVote: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     processProposal(
+      proposalIndex: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "processProposal(uint256)"(
       proposalIndex: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -276,7 +380,17 @@ export class Moloch1 extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    "ragequit(uint256)"(
+      sharesToBurn: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     abort(
+      proposalIndex: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "abort(uint256)"(
       proposalIndex: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -286,34 +400,89 @@ export class Moloch1 extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    getCurrentPeriod(): Promise<BigNumber>;
+    "updateDelegateKey(address)"(
+      newDelegateKey: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
 
-    getProposalQueueLength(): Promise<BigNumber>;
+    getCurrentPeriod(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    canRagequit(highestIndexYesVote: BigNumberish): Promise<boolean>;
+    "getCurrentPeriod()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    hasVotingPeriodExpired(startingPeriod: BigNumberish): Promise<boolean>;
+    getProposalQueueLength(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "getProposalQueueLength()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    canRagequit(
+      highestIndexYesVote: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    "canRagequit(uint256)"(
+      highestIndexYesVote: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    hasVotingPeriodExpired(
+      startingPeriod: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    "hasVotingPeriodExpired(uint256)"(
+      startingPeriod: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
 
     getMemberProposalVote(
       memberAddress: string,
-      proposalIndex: BigNumberish
+      proposalIndex: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<number>;
+
+    "getMemberProposalVote(address,uint256)"(
+      memberAddress: string,
+      proposalIndex: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<number>;
   };
 
-  abortWindow(): Promise<BigNumber>;
+  abortWindow(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  approvedToken(): Promise<string>;
+  "abortWindow()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  dilutionBound(): Promise<BigNumber>;
+  approvedToken(overrides?: TransactionOverrides): Promise<string>;
 
-  gracePeriodLength(): Promise<BigNumber>;
+  "approvedToken()"(overrides?: TransactionOverrides): Promise<string>;
 
-  guildBank(): Promise<string>;
+  dilutionBound(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  memberAddressByDelegateKey(arg0: string): Promise<string>;
+  "dilutionBound()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  gracePeriodLength(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "gracePeriodLength()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  guildBank(overrides?: TransactionOverrides): Promise<string>;
+
+  "guildBank()"(overrides?: TransactionOverrides): Promise<string>;
+
+  memberAddressByDelegateKey(
+    arg0: string,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
+
+  "memberAddressByDelegateKey(address)"(
+    arg0: string,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
 
   members(
-    arg0: string
+    arg0: string,
+    overrides?: TransactionOverrides
   ): Promise<{
     delegateKey: string;
     shares: BigNumber;
@@ -325,14 +494,35 @@ export class Moloch1 extends Contract {
     3: BigNumber;
   }>;
 
-  periodDuration(): Promise<BigNumber>;
+  "members(address)"(
+    arg0: string,
+    overrides?: TransactionOverrides
+  ): Promise<{
+    delegateKey: string;
+    shares: BigNumber;
+    exists: boolean;
+    highestIndexYesVote: BigNumber;
+    0: string;
+    1: BigNumber;
+    2: boolean;
+    3: BigNumber;
+  }>;
 
-  processingReward(): Promise<BigNumber>;
+  periodDuration(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  proposalDeposit(): Promise<BigNumber>;
+  "periodDuration()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  processingReward(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "processingReward()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  proposalDeposit(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "proposalDeposit()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   proposalQueue(
-    arg0: BigNumberish
+    arg0: BigNumberish,
+    overrides?: TransactionOverrides
   ): Promise<{
     proposer: string;
     applicant: string;
@@ -360,18 +550,69 @@ export class Moloch1 extends Contract {
     11: BigNumber;
   }>;
 
-  summoningTime(): Promise<BigNumber>;
+  "proposalQueue(uint256)"(
+    arg0: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<{
+    proposer: string;
+    applicant: string;
+    sharesRequested: BigNumber;
+    startingPeriod: BigNumber;
+    yesVotes: BigNumber;
+    noVotes: BigNumber;
+    processed: boolean;
+    didPass: boolean;
+    aborted: boolean;
+    tokenTribute: BigNumber;
+    details: string;
+    maxTotalSharesAtYesVote: BigNumber;
+    0: string;
+    1: string;
+    2: BigNumber;
+    3: BigNumber;
+    4: BigNumber;
+    5: BigNumber;
+    6: boolean;
+    7: boolean;
+    8: boolean;
+    9: BigNumber;
+    10: string;
+    11: BigNumber;
+  }>;
 
-  totalShares(): Promise<BigNumber>;
+  summoningTime(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  totalSharesRequested(): Promise<BigNumber>;
+  "summoningTime()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  votingPeriodLength(): Promise<BigNumber>;
+  totalShares(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "totalShares()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  totalSharesRequested(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "totalSharesRequested()"(
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  votingPeriodLength(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "votingPeriodLength()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   /**
    * *************** PROPOSAL FUNCTIONS****************
    */
   submitProposal(
+    applicant: string,
+    tokenTribute: BigNumberish,
+    sharesRequested: BigNumberish,
+    details: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * *************** PROPOSAL FUNCTIONS****************
+   */
+  "submitProposal(address,uint256,uint256,string)"(
     applicant: string,
     tokenTribute: BigNumberish,
     sharesRequested: BigNumberish,
@@ -385,7 +626,18 @@ export class Moloch1 extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  "submitVote(uint256,uint8)"(
+    proposalIndex: BigNumberish,
+    uintVote: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   processProposal(
+    proposalIndex: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "processProposal(uint256)"(
     proposalIndex: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -395,7 +647,17 @@ export class Moloch1 extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  "ragequit(uint256)"(
+    sharesToBurn: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   abort(
+    proposalIndex: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "abort(uint256)"(
     proposalIndex: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -405,17 +667,51 @@ export class Moloch1 extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  getCurrentPeriod(): Promise<BigNumber>;
+  "updateDelegateKey(address)"(
+    newDelegateKey: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
 
-  getProposalQueueLength(): Promise<BigNumber>;
+  getCurrentPeriod(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  canRagequit(highestIndexYesVote: BigNumberish): Promise<boolean>;
+  "getCurrentPeriod()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-  hasVotingPeriodExpired(startingPeriod: BigNumberish): Promise<boolean>;
+  getProposalQueueLength(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "getProposalQueueLength()"(
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  canRagequit(
+    highestIndexYesVote: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  "canRagequit(uint256)"(
+    highestIndexYesVote: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  hasVotingPeriodExpired(
+    startingPeriod: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  "hasVotingPeriodExpired(uint256)"(
+    startingPeriod: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
 
   getMemberProposalVote(
     memberAddress: string,
-    proposalIndex: BigNumberish
+    proposalIndex: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<number>;
+
+  "getMemberProposalVote(address,uint256)"(
+    memberAddress: string,
+    proposalIndex: BigNumberish,
+    overrides?: TransactionOverrides
   ): Promise<number>;
 
   filters: {
@@ -460,67 +756,201 @@ export class Moloch1 extends Contract {
   };
 
   estimate: {
-    abortWindow(): Promise<BigNumber>;
+    abortWindow(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    approvedToken(): Promise<BigNumber>;
+    "abortWindow()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    dilutionBound(): Promise<BigNumber>;
+    approvedToken(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    gracePeriodLength(): Promise<BigNumber>;
+    "approvedToken()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    guildBank(): Promise<BigNumber>;
+    dilutionBound(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    memberAddressByDelegateKey(arg0: string): Promise<BigNumber>;
+    "dilutionBound()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    members(arg0: string): Promise<BigNumber>;
+    gracePeriodLength(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    periodDuration(): Promise<BigNumber>;
+    "gracePeriodLength()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    processingReward(): Promise<BigNumber>;
+    guildBank(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    proposalDeposit(): Promise<BigNumber>;
+    "guildBank()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    proposalQueue(arg0: BigNumberish): Promise<BigNumber>;
+    memberAddressByDelegateKey(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    summoningTime(): Promise<BigNumber>;
+    "memberAddressByDelegateKey(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    totalShares(): Promise<BigNumber>;
+    members(arg0: string, overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    totalSharesRequested(): Promise<BigNumber>;
+    "members(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    votingPeriodLength(): Promise<BigNumber>;
+    periodDuration(overrides?: TransactionOverrides): Promise<BigNumber>;
 
+    "periodDuration()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    processingReward(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "processingReward()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    proposalDeposit(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "proposalDeposit()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    proposalQueue(
+      arg0: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "proposalQueue(uint256)"(
+      arg0: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    summoningTime(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "summoningTime()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    totalShares(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "totalShares()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    totalSharesRequested(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "totalSharesRequested()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    votingPeriodLength(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "votingPeriodLength()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * *************** PROPOSAL FUNCTIONS****************
+     */
     submitProposal(
       applicant: string,
       tokenTribute: BigNumberish,
       sharesRequested: BigNumberish,
-      details: string
+      details: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * *************** PROPOSAL FUNCTIONS****************
+     */
+    "submitProposal(address,uint256,uint256,string)"(
+      applicant: string,
+      tokenTribute: BigNumberish,
+      sharesRequested: BigNumberish,
+      details: string,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
     submitVote(
       proposalIndex: BigNumberish,
-      uintVote: BigNumberish
+      uintVote: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    processProposal(proposalIndex: BigNumberish): Promise<BigNumber>;
+    "submitVote(uint256,uint8)"(
+      proposalIndex: BigNumberish,
+      uintVote: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    ragequit(sharesToBurn: BigNumberish): Promise<BigNumber>;
+    processProposal(
+      proposalIndex: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    abort(proposalIndex: BigNumberish): Promise<BigNumber>;
+    "processProposal(uint256)"(
+      proposalIndex: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    updateDelegateKey(newDelegateKey: string): Promise<BigNumber>;
+    ragequit(
+      sharesToBurn: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    getCurrentPeriod(): Promise<BigNumber>;
+    "ragequit(uint256)"(
+      sharesToBurn: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    getProposalQueueLength(): Promise<BigNumber>;
+    abort(
+      proposalIndex: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    canRagequit(highestIndexYesVote: BigNumberish): Promise<BigNumber>;
+    "abort(uint256)"(
+      proposalIndex: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    hasVotingPeriodExpired(startingPeriod: BigNumberish): Promise<BigNumber>;
+    updateDelegateKey(
+      newDelegateKey: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "updateDelegateKey(address)"(
+      newDelegateKey: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    getCurrentPeriod(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "getCurrentPeriod()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    getProposalQueueLength(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "getProposalQueueLength()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    canRagequit(
+      highestIndexYesVote: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "canRagequit(uint256)"(
+      highestIndexYesVote: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    hasVotingPeriodExpired(
+      startingPeriod: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "hasVotingPeriodExpired(uint256)"(
+      startingPeriod: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     getMemberProposalVote(
       memberAddress: string,
-      proposalIndex: BigNumberish
+      proposalIndex: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "getMemberProposalVote(address,uint256)"(
+      memberAddress: string,
+      proposalIndex: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 }

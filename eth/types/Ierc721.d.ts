@@ -91,22 +91,65 @@ export class Ierc721 extends Contract {
     /**
      * Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section] to learn more about how these ids are created.     * This function call must use less than 30 000 gas.
      */
-    supportsInterface(interfaceId: Arrayish): Promise<boolean>;
+    supportsInterface(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    /**
+     * Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section] to learn more about how these ids are created.     * This function call must use less than 30 000 gas.
+     */
+    "supportsInterface(bytes4)"(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
 
     /**
      * Returns the number of NFTs in `owner`'s account.
      */
-    balanceOf(owner: string): Promise<BigNumber>;
+    balanceOf(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Returns the number of NFTs in `owner`'s account.
+     */
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * Returns the owner of the NFT specified by `tokenId`.
      */
-    ownerOf(tokenId: BigNumberish): Promise<string>;
+    ownerOf(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
+
+    /**
+     * Returns the owner of the NFT specified by `tokenId`.
+     */
+    "ownerOf(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
 
     /**
      * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     * Requirements: - If the caller is not `from`, it must be approved to move this NFT by either {approve} or {setApprovalForAll}.
      */
     transferFrom(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     * Requirements: - If the caller is not `from`, it must be approved to move this NFT by either {approve} or {setApprovalForAll}.
+     */
+    "transferFrom(address,address,uint256)"(
       from: string,
       to: string,
       tokenId: BigNumberish,
@@ -119,7 +162,21 @@ export class Ierc721 extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    getApproved(tokenId: BigNumberish): Promise<string>;
+    "approve(address,uint256)"(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    getApproved(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
+
+    "getApproved(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<string>;
 
     setApprovalForAll(
       operator: string,
@@ -127,7 +184,33 @@ export class Ierc721 extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    isApprovedForAll(owner: string, operator: string): Promise<boolean>;
+    "setApprovalForAll(address,bool)"(
+      operator: string,
+      _approved: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    isApprovedForAll(
+      owner: string,
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    "isApprovedForAll(address,address)"(
+      owner: string,
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    /**
+     * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     *     * Requirements: - `from`, `to` cannot be zero. - `tokenId` must be owned by `from`. - If the caller is not `from`, it must be have been allowed to move this NFT by either {approve} or {setApprovalForAll}.
+     */
+    safeTransferFrom(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
 
     /**
      * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     *     * Requirements: - `from`, `to` cannot be zero. - `tokenId` must be owned by `from`. - If the caller is not `from`, it must be have been allowed to move this NFT by either {approve} or {setApprovalForAll}.
@@ -151,22 +234,65 @@ export class Ierc721 extends Contract {
   /**
    * Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section] to learn more about how these ids are created.     * This function call must use less than 30 000 gas.
    */
-  supportsInterface(interfaceId: Arrayish): Promise<boolean>;
+  supportsInterface(
+    interfaceId: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  /**
+   * Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section] to learn more about how these ids are created.     * This function call must use less than 30 000 gas.
+   */
+  "supportsInterface(bytes4)"(
+    interfaceId: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
 
   /**
    * Returns the number of NFTs in `owner`'s account.
    */
-  balanceOf(owner: string): Promise<BigNumber>;
+  balanceOf(
+    owner: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Returns the number of NFTs in `owner`'s account.
+   */
+  "balanceOf(address)"(
+    owner: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   /**
    * Returns the owner of the NFT specified by `tokenId`.
    */
-  ownerOf(tokenId: BigNumberish): Promise<string>;
+  ownerOf(
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
+
+  /**
+   * Returns the owner of the NFT specified by `tokenId`.
+   */
+  "ownerOf(uint256)"(
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
 
   /**
    * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     * Requirements: - If the caller is not `from`, it must be approved to move this NFT by either {approve} or {setApprovalForAll}.
    */
   transferFrom(
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     * Requirements: - If the caller is not `from`, it must be approved to move this NFT by either {approve} or {setApprovalForAll}.
+   */
+  "transferFrom(address,address,uint256)"(
     from: string,
     to: string,
     tokenId: BigNumberish,
@@ -179,7 +305,21 @@ export class Ierc721 extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  getApproved(tokenId: BigNumberish): Promise<string>;
+  "approve(address,uint256)"(
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  getApproved(
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
+
+  "getApproved(uint256)"(
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<string>;
 
   setApprovalForAll(
     operator: string,
@@ -187,7 +327,33 @@ export class Ierc721 extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  isApprovedForAll(owner: string, operator: string): Promise<boolean>;
+  "setApprovalForAll(address,bool)"(
+    operator: string,
+    _approved: boolean,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  isApprovedForAll(
+    owner: string,
+    operator: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  "isApprovedForAll(address,address)"(
+    owner: string,
+    operator: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  /**
+   * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     *     * Requirements: - `from`, `to` cannot be zero. - `tokenId` must be owned by `from`. - If the caller is not `from`, it must be have been allowed to move this NFT by either {approve} or {setApprovalForAll}.
+   */
+  safeTransferFrom(
+    from: string,
+    to: string,
+    tokenId: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
 
   /**
    * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     *     * Requirements: - `from`, `to` cannot be zero. - `tokenId` must be owned by `from`. - If the caller is not `from`, it must be have been allowed to move this NFT by either {approve} or {setApprovalForAll}.
@@ -228,30 +394,146 @@ export class Ierc721 extends Contract {
   };
 
   estimate: {
-    supportsInterface(interfaceId: Arrayish): Promise<BigNumber>;
+    /**
+     * Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section] to learn more about how these ids are created.     * This function call must use less than 30 000 gas.
+     */
+    supportsInterface(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    balanceOf(owner: string): Promise<BigNumber>;
+    /**
+     * Returns true if this contract implements the interface defined by `interfaceId`. See the corresponding https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP section] to learn more about how these ids are created.     * This function call must use less than 30 000 gas.
+     */
+    "supportsInterface(bytes4)"(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    ownerOf(tokenId: BigNumberish): Promise<BigNumber>;
+    /**
+     * Returns the number of NFTs in `owner`'s account.
+     */
+    balanceOf(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
+    /**
+     * Returns the number of NFTs in `owner`'s account.
+     */
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Returns the owner of the NFT specified by `tokenId`.
+     */
+    ownerOf(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Returns the owner of the NFT specified by `tokenId`.
+     */
+    "ownerOf(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     * Requirements: - If the caller is not `from`, it must be approved to move this NFT by either {approve} or {setApprovalForAll}.
+     */
     transferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    approve(to: string, tokenId: BigNumberish): Promise<BigNumber>;
+    /**
+     * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     * Requirements: - If the caller is not `from`, it must be approved to move this NFT by either {approve} or {setApprovalForAll}.
+     */
+    "transferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    getApproved(tokenId: BigNumberish): Promise<BigNumber>;
+    approve(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    setApprovalForAll(operator: string, _approved: boolean): Promise<BigNumber>;
+    "approve(address,uint256)"(
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    isApprovedForAll(owner: string, operator: string): Promise<BigNumber>;
+    getApproved(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
+    "getApproved(uint256)"(
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    setApprovalForAll(
+      operator: string,
+      _approved: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "setApprovalForAll(address,bool)"(
+      operator: string,
+      _approved: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    isApprovedForAll(
+      owner: string,
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "isApprovedForAll(address,address)"(
+      owner: string,
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     *     * Requirements: - `from`, `to` cannot be zero. - `tokenId` must be owned by `from`. - If the caller is not `from`, it must be have been allowed to move this NFT by either {approve} or {setApprovalForAll}.
+     */
     safeTransferFrom(
       from: string,
       to: string,
-      tokenId: BigNumberish
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Transfers a specific NFT (`tokenId`) from one account (`from`) to another (`to`).     *     * Requirements: - `from`, `to` cannot be zero. - `tokenId` must be owned by `from`. - If the caller is not `from`, it must be have been allowed to move this NFT by either {approve} or {setApprovalForAll}.
+     */
+    "safeTransferFrom(address,address,uint256)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "safeTransferFrom(address,address,uint256,bytes)"(
+      from: string,
+      to: string,
+      tokenId: BigNumberish,
+      data: Arrayish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 }

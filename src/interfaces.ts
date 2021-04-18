@@ -5,13 +5,14 @@
 import * as SubstrateTypes from './substrate/types';
 import * as MolochTypes from './moloch/types';
 import * as MarlinTypes from './marlin/types';
+import * as CompoundalphaTypes from './compoundalpha/types';
 
 // add other events here as union types
-export type IChainEntityKind = SubstrateTypes.EntityKind | MolochTypes.EntityKind | MarlinTypes.EntityKind;
-export type IChainEventData = SubstrateTypes.IEventData | MolochTypes.IEventData | MarlinTypes.IEventData;
-export type IChainEventKind = SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind;
-export const ChainEventKinds = [...SubstrateTypes.EventKinds, ...MolochTypes.EventKinds, ...MarlinTypes.EventKinds];
-export const EventSupportingChains = [...SubstrateTypes.EventChains, ...MolochTypes.EventChains, ...MarlinTypes.EventChains] as const;
+export type IChainEntityKind = SubstrateTypes.EntityKind | MolochTypes.EntityKind | MarlinTypes.EntityKind | CompoundalphaTypes.EntityKind;
+export type IChainEventData = SubstrateTypes.IEventData | MolochTypes.IEventData | MarlinTypes.IEventData | CompoundalphaTypes.IEventData;
+export type IChainEventKind = SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind | CompoundalphaTypes.EventKind;
+export const ChainEventKinds = [...SubstrateTypes.EventKinds, ...MolochTypes.EventKinds, ...MarlinTypes.EventKinds, ...CompoundalphaTypes.EventKinds];
+export const EventSupportingChains = [...SubstrateTypes.EventChains, ...MolochTypes.EventChains, ...MarlinTypes.EventChains, ...CompoundalphaTypes.EventChains] as const;
 export type EventSupportingChainT = typeof EventSupportingChains[number];
 
 export function chainSupportedBy<T extends readonly string[]>(c: string, eventChains: T): c is T[number] {
@@ -160,6 +161,9 @@ export function entityToFieldName(entity: IChainEntityKind): string | null {
       return 'proposalIndex';
     }
     case MarlinTypes.EntityKind.Proposal: {
+      return 'id';
+    }
+    case CompoundalphaTypes.EntityKind.Proposal: {
       return 'id';
     }
     default: {

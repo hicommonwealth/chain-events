@@ -56,6 +56,19 @@ export class Ierc777Recipient extends Contract {
       operatorData: Arrayish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
+
+    /**
+     * Called by an {IERC777} token contract whenever tokens are being moved or created into a registered account (`to`). The type of operation is conveyed by `from` being the zero address or not.     * This call occurs _after_ the token contract's state is updated, so {IERC777-balanceOf}, etc., can be used to query the post-operation state.     * This function may revert to prevent the operation from being executed.
+     */
+    "tokensReceived(address,address,address,uint256,bytes,bytes)"(
+      operator: string,
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      userData: Arrayish,
+      operatorData: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
   };
 
   /**
@@ -71,16 +84,46 @@ export class Ierc777Recipient extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  /**
+   * Called by an {IERC777} token contract whenever tokens are being moved or created into a registered account (`to`). The type of operation is conveyed by `from` being the zero address or not.     * This call occurs _after_ the token contract's state is updated, so {IERC777-balanceOf}, etc., can be used to query the post-operation state.     * This function may revert to prevent the operation from being executed.
+   */
+  "tokensReceived(address,address,address,uint256,bytes,bytes)"(
+    operator: string,
+    from: string,
+    to: string,
+    amount: BigNumberish,
+    userData: Arrayish,
+    operatorData: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   filters: {};
 
   estimate: {
+    /**
+     * Called by an {IERC777} token contract whenever tokens are being moved or created into a registered account (`to`). The type of operation is conveyed by `from` being the zero address or not.     * This call occurs _after_ the token contract's state is updated, so {IERC777-balanceOf}, etc., can be used to query the post-operation state.     * This function may revert to prevent the operation from being executed.
+     */
     tokensReceived(
       operator: string,
       from: string,
       to: string,
       amount: BigNumberish,
       userData: Arrayish,
-      operatorData: Arrayish
+      operatorData: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Called by an {IERC777} token contract whenever tokens are being moved or created into a registered account (`to`). The type of operation is conveyed by `from` being the zero address or not.     * This call occurs _after_ the token contract's state is updated, so {IERC777-balanceOf}, etc., can be used to query the post-operation state.     * This function may revert to prevent the operation from being executed.
+     */
+    "tokensReceived(address,address,address,uint256,bytes,bytes)"(
+      operator: string,
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      userData: Arrayish,
+      operatorData: Arrayish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 }

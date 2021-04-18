@@ -166,19 +166,32 @@ export class MPond extends Contract {
   interface: MPondInterface;
 
   functions: {
-    DELEGATION_TYPEHASH(): Promise<string>;
+    DELEGATION_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
 
-    DOMAIN_TYPEHASH(): Promise<string>;
+    "DELEGATION_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
-    UNDELEGATION_TYPEHASH(): Promise<string>;
+    DOMAIN_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
 
-    admin(): Promise<string>;
+    "DOMAIN_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
-    bridgeSupply(): Promise<BigNumber>;
+    UNDELEGATION_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
+
+    "UNDELEGATION_TYPEHASH()"(
+      overrides?: TransactionOverrides
+    ): Promise<string>;
+
+    admin(overrides?: TransactionOverrides): Promise<string>;
+
+    "admin()"(overrides?: TransactionOverrides): Promise<string>;
+
+    bridgeSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "bridgeSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     checkpoints(
       arg0: string,
-      arg1: BigNumberish
+      arg1: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<{
       fromBlock: number;
       votes: BigNumber;
@@ -186,25 +199,82 @@ export class MPond extends Contract {
       1: BigNumber;
     }>;
 
-    decimals(): Promise<number>;
+    "checkpoints(address,uint32)"(
+      arg0: string,
+      arg1: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<{
+      fromBlock: number;
+      votes: BigNumber;
+      0: number;
+      1: BigNumber;
+    }>;
 
-    delegates(arg0: string, arg1: string): Promise<BigNumber>;
+    decimals(overrides?: TransactionOverrides): Promise<number>;
 
-    enableAllTranfers(): Promise<boolean>;
+    "decimals()"(overrides?: TransactionOverrides): Promise<number>;
 
-    isWhiteListed(arg0: string): Promise<boolean>;
+    delegates(
+      arg0: string,
+      arg1: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    name(): Promise<string>;
+    "delegates(address,address)"(
+      arg0: string,
+      arg1: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    nonces(arg0: string): Promise<BigNumber>;
+    enableAllTranfers(overrides?: TransactionOverrides): Promise<boolean>;
 
-    numCheckpoints(arg0: string): Promise<number>;
+    "enableAllTranfers()"(overrides?: TransactionOverrides): Promise<boolean>;
 
-    symbol(): Promise<string>;
+    isWhiteListed(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
 
-    totalSupply(): Promise<BigNumber>;
+    "isWhiteListed(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    name(overrides?: TransactionOverrides): Promise<string>;
+
+    "name()"(overrides?: TransactionOverrides): Promise<string>;
+
+    nonces(arg0: string, overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "nonces(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    numCheckpoints(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<number>;
+
+    "numCheckpoints(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<number>;
+
+    symbol(overrides?: TransactionOverrides): Promise<string>;
+
+    "symbol()"(overrides?: TransactionOverrides): Promise<string>;
+
+    totalSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     addWhiteListAddress(
+      _address: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "addWhiteListAddress(address)"(
       _address: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -213,9 +283,20 @@ export class MPond extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    "enableAllTransfers()"(
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     isWhiteListedTransfer(
       _address1: string,
-      _address2: string
+      _address2: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    "isWhiteListedTransfer(address,address)"(
+      _address1: string,
+      _address2: string,
+      overrides?: TransactionOverrides
     ): Promise<boolean>;
 
     /**
@@ -224,7 +305,23 @@ export class MPond extends Contract {
      * @param spender The address of the account spending the funds
      * @returns The number of tokens approved
      */
-    allowance(account: string, spender: string): Promise<BigNumber>;
+    allowance(
+      account: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Get the number of tokens `spender` is approved to spend on behalf of `account`
+     * @param account The address of the account holding the funds
+     * @param spender The address of the account spending the funds
+     * @returns The number of tokens approved
+     */
+    "allowance(address,address)"(
+      account: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * This will overwrite the approval amount for `spender` and is subject to issues noted [here](https://eips.ethereum.org/EIPS/eip-20#approve)
@@ -240,11 +337,37 @@ export class MPond extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * This will overwrite the approval amount for `spender` and is subject to issues noted [here](https://eips.ethereum.org/EIPS/eip-20#approve)
+     * Approve `spender` to transfer up to `amount` from `src`
+     * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+     * @param spender The address of the account which may transfer tokens
+     * @returns Whether or not the approval succeeded
+     */
+    "approve(address,uint256)"(
+      spender: string,
+      rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * Get the number of tokens held by the `account`
      * @param account The address of the account to get the balance of
      * @returns The number of tokens held
      */
-    balanceOf(account: string): Promise<BigNumber>;
+    balanceOf(
+      account: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Get the number of tokens held by the `account`
+     * @param account The address of the account to get the balance of
+     * @returns The number of tokens held
+     */
+    "balanceOf(address)"(
+      account: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * Transfer `amount` tokens from `msg.sender` to `dst`
@@ -253,6 +376,18 @@ export class MPond extends Contract {
      * @returns Whether or not the transfer succeeded
      */
     transfer(
+      dst: string,
+      rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * Transfer `amount` tokens from `msg.sender` to `dst`
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to transfer
+     * @returns Whether or not the transfer succeeded
+     */
+    "transfer(address,uint256)"(
       dst: string,
       rawAmount: BigNumberish,
       overrides?: TransactionOverrides
@@ -273,6 +408,20 @@ export class MPond extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * Transfer `amount` tokens from `src` to `dst`
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to transfer
+     * @param src The address of the source account
+     * @returns Whether or not the transfer succeeded
+     */
+    "transferFrom(address,address,uint256)"(
+      src: string,
+      dst: string,
+      rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * Delegate votes from `msg.sender` to `delegatee`
      * @param delegatee The address to delegate votes to
      */
@@ -282,7 +431,23 @@ export class MPond extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    /**
+     * Delegate votes from `msg.sender` to `delegatee`
+     * @param delegatee The address to delegate votes to
+     */
+    "delegate(address,uint96)"(
+      delegatee: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     undelegate(
+      delegatee: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "undelegate(address,uint96)"(
       delegatee: string,
       amount: BigNumberish,
       overrides?: TransactionOverrides
@@ -308,7 +473,38 @@ export class MPond extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    /**
+     * Delegates votes from signatory to `delegatee`
+     * @param delegatee The address to delegate votes to
+     * @param expiry The time at which to expire the signature
+     * @param nonce The contract state required to match the signature
+     * @param r Half of the ECDSA signature pair
+     * @param s Half of the ECDSA signature pair
+     * @param v The recovery byte of the signature
+     */
+    "delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
+      delegatee: string,
+      nonce: BigNumberish,
+      expiry: BigNumberish,
+      v: BigNumberish,
+      r: Arrayish,
+      s: Arrayish,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     undelegateBySig(
+      delegatee: string,
+      nonce: BigNumberish,
+      expiry: BigNumberish,
+      v: BigNumberish,
+      r: Arrayish,
+      s: Arrayish,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    "undelegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
       delegatee: string,
       nonce: BigNumberish,
       expiry: BigNumberish,
@@ -324,7 +520,20 @@ export class MPond extends Contract {
      * @param account The address to get votes balance
      * @returns The number of current votes for `account`
      */
-    getCurrentVotes(account: string): Promise<BigNumber>;
+    getCurrentVotes(
+      account: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Gets the current votes balance for `account`
+     * @param account The address to get votes balance
+     * @returns The number of current votes for `account`
+     */
+    "getCurrentVotes(address)"(
+      account: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * Block number must be a finalized block or else this function will revert to prevent misinformation.
@@ -335,23 +544,48 @@ export class MPond extends Contract {
      */
     getPriorVotes(
       account: string,
-      blockNumber: BigNumberish
+      blockNumber: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Block number must be a finalized block or else this function will revert to prevent misinformation.
+     * Determine the prior number of votes for an account as of a block number
+     * @param account The address of the account to check
+     * @param blockNumber The block number to get the vote balance at
+     * @returns The number of votes the account had as of the given block
+     */
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 
-  DELEGATION_TYPEHASH(): Promise<string>;
+  DELEGATION_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
 
-  DOMAIN_TYPEHASH(): Promise<string>;
+  "DELEGATION_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
-  UNDELEGATION_TYPEHASH(): Promise<string>;
+  DOMAIN_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
 
-  admin(): Promise<string>;
+  "DOMAIN_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
 
-  bridgeSupply(): Promise<BigNumber>;
+  UNDELEGATION_TYPEHASH(overrides?: TransactionOverrides): Promise<string>;
+
+  "UNDELEGATION_TYPEHASH()"(overrides?: TransactionOverrides): Promise<string>;
+
+  admin(overrides?: TransactionOverrides): Promise<string>;
+
+  "admin()"(overrides?: TransactionOverrides): Promise<string>;
+
+  bridgeSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "bridgeSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   checkpoints(
     arg0: string,
-    arg1: BigNumberish
+    arg1: BigNumberish,
+    overrides?: TransactionOverrides
   ): Promise<{
     fromBlock: number;
     votes: BigNumber;
@@ -359,25 +593,82 @@ export class MPond extends Contract {
     1: BigNumber;
   }>;
 
-  decimals(): Promise<number>;
+  "checkpoints(address,uint32)"(
+    arg0: string,
+    arg1: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<{
+    fromBlock: number;
+    votes: BigNumber;
+    0: number;
+    1: BigNumber;
+  }>;
 
-  delegates(arg0: string, arg1: string): Promise<BigNumber>;
+  decimals(overrides?: TransactionOverrides): Promise<number>;
 
-  enableAllTranfers(): Promise<boolean>;
+  "decimals()"(overrides?: TransactionOverrides): Promise<number>;
 
-  isWhiteListed(arg0: string): Promise<boolean>;
+  delegates(
+    arg0: string,
+    arg1: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
-  name(): Promise<string>;
+  "delegates(address,address)"(
+    arg0: string,
+    arg1: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
-  nonces(arg0: string): Promise<BigNumber>;
+  enableAllTranfers(overrides?: TransactionOverrides): Promise<boolean>;
 
-  numCheckpoints(arg0: string): Promise<number>;
+  "enableAllTranfers()"(overrides?: TransactionOverrides): Promise<boolean>;
 
-  symbol(): Promise<string>;
+  isWhiteListed(
+    arg0: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
 
-  totalSupply(): Promise<BigNumber>;
+  "isWhiteListed(address)"(
+    arg0: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  name(overrides?: TransactionOverrides): Promise<string>;
+
+  "name()"(overrides?: TransactionOverrides): Promise<string>;
+
+  nonces(arg0: string, overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "nonces(address)"(
+    arg0: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  numCheckpoints(
+    arg0: string,
+    overrides?: TransactionOverrides
+  ): Promise<number>;
+
+  "numCheckpoints(address)"(
+    arg0: string,
+    overrides?: TransactionOverrides
+  ): Promise<number>;
+
+  symbol(overrides?: TransactionOverrides): Promise<string>;
+
+  "symbol()"(overrides?: TransactionOverrides): Promise<string>;
+
+  totalSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   addWhiteListAddress(
+    _address: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "addWhiteListAddress(address)"(
     _address: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -386,7 +677,21 @@ export class MPond extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  isWhiteListedTransfer(_address1: string, _address2: string): Promise<boolean>;
+  "enableAllTransfers()"(
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  isWhiteListedTransfer(
+    _address1: string,
+    _address2: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  "isWhiteListedTransfer(address,address)"(
+    _address1: string,
+    _address2: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
 
   /**
    * Get the number of tokens `spender` is approved to spend on behalf of `account`
@@ -394,7 +699,23 @@ export class MPond extends Contract {
    * @param spender The address of the account spending the funds
    * @returns The number of tokens approved
    */
-  allowance(account: string, spender: string): Promise<BigNumber>;
+  allowance(
+    account: string,
+    spender: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Get the number of tokens `spender` is approved to spend on behalf of `account`
+   * @param account The address of the account holding the funds
+   * @param spender The address of the account spending the funds
+   * @returns The number of tokens approved
+   */
+  "allowance(address,address)"(
+    account: string,
+    spender: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   /**
    * This will overwrite the approval amount for `spender` and is subject to issues noted [here](https://eips.ethereum.org/EIPS/eip-20#approve)
@@ -410,11 +731,37 @@ export class MPond extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * This will overwrite the approval amount for `spender` and is subject to issues noted [here](https://eips.ethereum.org/EIPS/eip-20#approve)
+   * Approve `spender` to transfer up to `amount` from `src`
+   * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+   * @param spender The address of the account which may transfer tokens
+   * @returns Whether or not the approval succeeded
+   */
+  "approve(address,uint256)"(
+    spender: string,
+    rawAmount: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * Get the number of tokens held by the `account`
    * @param account The address of the account to get the balance of
    * @returns The number of tokens held
    */
-  balanceOf(account: string): Promise<BigNumber>;
+  balanceOf(
+    account: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Get the number of tokens held by the `account`
+   * @param account The address of the account to get the balance of
+   * @returns The number of tokens held
+   */
+  "balanceOf(address)"(
+    account: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   /**
    * Transfer `amount` tokens from `msg.sender` to `dst`
@@ -423,6 +770,18 @@ export class MPond extends Contract {
    * @returns Whether or not the transfer succeeded
    */
   transfer(
+    dst: string,
+    rawAmount: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * Transfer `amount` tokens from `msg.sender` to `dst`
+   * @param dst The address of the destination account
+   * @param rawAmount The number of tokens to transfer
+   * @returns Whether or not the transfer succeeded
+   */
+  "transfer(address,uint256)"(
     dst: string,
     rawAmount: BigNumberish,
     overrides?: TransactionOverrides
@@ -443,6 +802,20 @@ export class MPond extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * Transfer `amount` tokens from `src` to `dst`
+   * @param dst The address of the destination account
+   * @param rawAmount The number of tokens to transfer
+   * @param src The address of the source account
+   * @returns Whether or not the transfer succeeded
+   */
+  "transferFrom(address,address,uint256)"(
+    src: string,
+    dst: string,
+    rawAmount: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * Delegate votes from `msg.sender` to `delegatee`
    * @param delegatee The address to delegate votes to
    */
@@ -452,7 +825,23 @@ export class MPond extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  /**
+   * Delegate votes from `msg.sender` to `delegatee`
+   * @param delegatee The address to delegate votes to
+   */
+  "delegate(address,uint96)"(
+    delegatee: string,
+    amount: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   undelegate(
+    delegatee: string,
+    amount: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "undelegate(address,uint96)"(
     delegatee: string,
     amount: BigNumberish,
     overrides?: TransactionOverrides
@@ -478,7 +867,38 @@ export class MPond extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  /**
+   * Delegates votes from signatory to `delegatee`
+   * @param delegatee The address to delegate votes to
+   * @param expiry The time at which to expire the signature
+   * @param nonce The contract state required to match the signature
+   * @param r Half of the ECDSA signature pair
+   * @param s Half of the ECDSA signature pair
+   * @param v The recovery byte of the signature
+   */
+  "delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
+    delegatee: string,
+    nonce: BigNumberish,
+    expiry: BigNumberish,
+    v: BigNumberish,
+    r: Arrayish,
+    s: Arrayish,
+    amount: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   undelegateBySig(
+    delegatee: string,
+    nonce: BigNumberish,
+    expiry: BigNumberish,
+    v: BigNumberish,
+    r: Arrayish,
+    s: Arrayish,
+    amount: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  "undelegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
     delegatee: string,
     nonce: BigNumberish,
     expiry: BigNumberish,
@@ -494,7 +914,20 @@ export class MPond extends Contract {
    * @param account The address to get votes balance
    * @returns The number of current votes for `account`
    */
-  getCurrentVotes(account: string): Promise<BigNumber>;
+  getCurrentVotes(
+    account: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Gets the current votes balance for `account`
+   * @param account The address to get votes balance
+   * @returns The number of current votes for `account`
+   */
+  "getCurrentVotes(address)"(
+    account: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   /**
    * Block number must be a finalized block or else this function will revert to prevent misinformation.
@@ -503,7 +936,24 @@ export class MPond extends Contract {
    * @param blockNumber The block number to get the vote balance at
    * @returns The number of votes the account had as of the given block
    */
-  getPriorVotes(account: string, blockNumber: BigNumberish): Promise<BigNumber>;
+  getPriorVotes(
+    account: string,
+    blockNumber: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Block number must be a finalized block or else this function will revert to prevent misinformation.
+   * Determine the prior number of votes for an account as of a block number
+   * @param account The address of the account to check
+   * @param blockNumber The block number to get the vote balance at
+   * @returns The number of votes the account had as of the given block
+   */
+  "getPriorVotes(address,uint256)"(
+    account: string,
+    blockNumber: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   filters: {
     Approval(
@@ -528,63 +978,292 @@ export class MPond extends Contract {
   };
 
   estimate: {
-    DELEGATION_TYPEHASH(): Promise<BigNumber>;
+    DELEGATION_TYPEHASH(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    DOMAIN_TYPEHASH(): Promise<BigNumber>;
+    "DELEGATION_TYPEHASH()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    UNDELEGATION_TYPEHASH(): Promise<BigNumber>;
+    DOMAIN_TYPEHASH(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    admin(): Promise<BigNumber>;
+    "DOMAIN_TYPEHASH()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    bridgeSupply(): Promise<BigNumber>;
+    UNDELEGATION_TYPEHASH(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    checkpoints(arg0: string, arg1: BigNumberish): Promise<BigNumber>;
+    "UNDELEGATION_TYPEHASH()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    decimals(): Promise<BigNumber>;
+    admin(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    delegates(arg0: string, arg1: string): Promise<BigNumber>;
+    "admin()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    enableAllTranfers(): Promise<BigNumber>;
+    bridgeSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    isWhiteListed(arg0: string): Promise<BigNumber>;
+    "bridgeSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    name(): Promise<BigNumber>;
+    checkpoints(
+      arg0: string,
+      arg1: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    nonces(arg0: string): Promise<BigNumber>;
+    "checkpoints(address,uint32)"(
+      arg0: string,
+      arg1: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    numCheckpoints(arg0: string): Promise<BigNumber>;
+    decimals(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    symbol(): Promise<BigNumber>;
+    "decimals()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    totalSupply(): Promise<BigNumber>;
+    delegates(
+      arg0: string,
+      arg1: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    addWhiteListAddress(_address: string): Promise<BigNumber>;
+    "delegates(address,address)"(
+      arg0: string,
+      arg1: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    enableAllTransfers(): Promise<BigNumber>;
+    enableAllTranfers(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "enableAllTranfers()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    isWhiteListed(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "isWhiteListed(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    name(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "name()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    nonces(arg0: string, overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "nonces(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    numCheckpoints(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "numCheckpoints(address)"(
+      arg0: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    symbol(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "symbol()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    totalSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    addWhiteListAddress(
+      _address: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "addWhiteListAddress(address)"(
+      _address: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    enableAllTransfers(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    "enableAllTransfers()"(
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     isWhiteListedTransfer(
       _address1: string,
-      _address2: string
+      _address2: string,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    allowance(account: string, spender: string): Promise<BigNumber>;
+    "isWhiteListedTransfer(address,address)"(
+      _address1: string,
+      _address2: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    approve(spender: string, rawAmount: BigNumberish): Promise<BigNumber>;
+    /**
+     * Get the number of tokens `spender` is approved to spend on behalf of `account`
+     * @param account The address of the account holding the funds
+     * @param spender The address of the account spending the funds
+     * @returns The number of tokens approved
+     */
+    allowance(
+      account: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    balanceOf(account: string): Promise<BigNumber>;
+    /**
+     * Get the number of tokens `spender` is approved to spend on behalf of `account`
+     * @param account The address of the account holding the funds
+     * @param spender The address of the account spending the funds
+     * @returns The number of tokens approved
+     */
+    "allowance(address,address)"(
+      account: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    transfer(dst: string, rawAmount: BigNumberish): Promise<BigNumber>;
+    /**
+     * This will overwrite the approval amount for `spender` and is subject to issues noted [here](https://eips.ethereum.org/EIPS/eip-20#approve)
+     * Approve `spender` to transfer up to `amount` from `src`
+     * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+     * @param spender The address of the account which may transfer tokens
+     * @returns Whether or not the approval succeeded
+     */
+    approve(
+      spender: string,
+      rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
+    /**
+     * This will overwrite the approval amount for `spender` and is subject to issues noted [here](https://eips.ethereum.org/EIPS/eip-20#approve)
+     * Approve `spender` to transfer up to `amount` from `src`
+     * @param rawAmount The number of tokens that are approved (2^256-1 means infinite)
+     * @param spender The address of the account which may transfer tokens
+     * @returns Whether or not the approval succeeded
+     */
+    "approve(address,uint256)"(
+      spender: string,
+      rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Get the number of tokens held by the `account`
+     * @param account The address of the account to get the balance of
+     * @returns The number of tokens held
+     */
+    balanceOf(
+      account: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Get the number of tokens held by the `account`
+     * @param account The address of the account to get the balance of
+     * @returns The number of tokens held
+     */
+    "balanceOf(address)"(
+      account: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Transfer `amount` tokens from `msg.sender` to `dst`
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to transfer
+     * @returns Whether or not the transfer succeeded
+     */
+    transfer(
+      dst: string,
+      rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Transfer `amount` tokens from `msg.sender` to `dst`
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to transfer
+     * @returns Whether or not the transfer succeeded
+     */
+    "transfer(address,uint256)"(
+      dst: string,
+      rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Transfer `amount` tokens from `src` to `dst`
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to transfer
+     * @param src The address of the source account
+     * @returns Whether or not the transfer succeeded
+     */
     transferFrom(
       src: string,
       dst: string,
-      rawAmount: BigNumberish
+      rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    delegate(delegatee: string, amount: BigNumberish): Promise<BigNumber>;
+    /**
+     * Transfer `amount` tokens from `src` to `dst`
+     * @param dst The address of the destination account
+     * @param rawAmount The number of tokens to transfer
+     * @param src The address of the source account
+     * @returns Whether or not the transfer succeeded
+     */
+    "transferFrom(address,address,uint256)"(
+      src: string,
+      dst: string,
+      rawAmount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    undelegate(delegatee: string, amount: BigNumberish): Promise<BigNumber>;
+    /**
+     * Delegate votes from `msg.sender` to `delegatee`
+     * @param delegatee The address to delegate votes to
+     */
+    delegate(
+      delegatee: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
+    /**
+     * Delegate votes from `msg.sender` to `delegatee`
+     * @param delegatee The address to delegate votes to
+     */
+    "delegate(address,uint96)"(
+      delegatee: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    undelegate(
+      delegatee: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    "undelegate(address,uint96)"(
+      delegatee: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Delegates votes from signatory to `delegatee`
+     * @param delegatee The address to delegate votes to
+     * @param expiry The time at which to expire the signature
+     * @param nonce The contract state required to match the signature
+     * @param r Half of the ECDSA signature pair
+     * @param s Half of the ECDSA signature pair
+     * @param v The recovery byte of the signature
+     */
     delegateBySig(
       delegatee: string,
       nonce: BigNumberish,
@@ -592,7 +1271,28 @@ export class MPond extends Contract {
       v: BigNumberish,
       r: Arrayish,
       s: Arrayish,
-      amount: BigNumberish
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Delegates votes from signatory to `delegatee`
+     * @param delegatee The address to delegate votes to
+     * @param expiry The time at which to expire the signature
+     * @param nonce The contract state required to match the signature
+     * @param r Half of the ECDSA signature pair
+     * @param s Half of the ECDSA signature pair
+     * @param v The recovery byte of the signature
+     */
+    "delegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
+      delegatee: string,
+      nonce: BigNumberish,
+      expiry: BigNumberish,
+      v: BigNumberish,
+      r: Arrayish,
+      s: Arrayish,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
     undelegateBySig(
@@ -602,14 +1302,65 @@ export class MPond extends Contract {
       v: BigNumberish,
       r: Arrayish,
       s: Arrayish,
-      amount: BigNumberish
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    getCurrentVotes(account: string): Promise<BigNumber>;
+    "undelegateBySig(address,uint256,uint256,uint8,bytes32,bytes32,uint96)"(
+      delegatee: string,
+      nonce: BigNumberish,
+      expiry: BigNumberish,
+      v: BigNumberish,
+      r: Arrayish,
+      s: Arrayish,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
+    /**
+     * Gets the current votes balance for `account`
+     * @param account The address to get votes balance
+     * @returns The number of current votes for `account`
+     */
+    getCurrentVotes(
+      account: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Gets the current votes balance for `account`
+     * @param account The address to get votes balance
+     * @returns The number of current votes for `account`
+     */
+    "getCurrentVotes(address)"(
+      account: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Block number must be a finalized block or else this function will revert to prevent misinformation.
+     * Determine the prior number of votes for an account as of a block number
+     * @param account The address of the account to check
+     * @param blockNumber The block number to get the vote balance at
+     * @returns The number of votes the account had as of the given block
+     */
     getPriorVotes(
       account: string,
-      blockNumber: BigNumberish
+      blockNumber: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Block number must be a finalized block or else this function will revert to prevent misinformation.
+     * Determine the prior number of votes for an account as of a block number
+     * @param account The address of the account to check
+     * @param blockNumber The block number to get the vote balance at
+     * @returns The number of votes the account had as of the given block
+     */
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 }

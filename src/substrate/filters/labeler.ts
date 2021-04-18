@@ -55,6 +55,8 @@ const getDenom = (chain: EventSupportingChainT): string => {
     case 'moloch-local': return 'tShares';
     case 'marlin': return 'MPond';
     case 'marlin-local': return 'tMPond';
+    case 'compoundalpha': return 'Uni';
+    case 'compoundalpha-local': return 'tUni';
     default: {
       const _dummy: never = chain;
       throw new Error('invalid chain');

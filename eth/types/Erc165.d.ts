@@ -37,17 +37,53 @@ export class Erc165 extends Contract {
     /**
      * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
      */
-    supportsInterface(interfaceId: Arrayish): Promise<boolean>;
+    supportsInterface(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    /**
+     * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
+     */
+    "supportsInterface(bytes4)"(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
   };
 
   /**
    * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
    */
-  supportsInterface(interfaceId: Arrayish): Promise<boolean>;
+  supportsInterface(
+    interfaceId: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  /**
+   * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
+   */
+  "supportsInterface(bytes4)"(
+    interfaceId: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
 
   filters: {};
 
   estimate: {
-    supportsInterface(interfaceId: Arrayish): Promise<BigNumber>;
+    /**
+     * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
+     */
+    supportsInterface(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC165-supportsInterface}.     * Time complexity O(1), guaranteed to always use less than 30 000 gas.
+     */
+    "supportsInterface(bytes4)"(
+      interfaceId: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
   };
 }

@@ -173,37 +173,83 @@ export class Erc777 extends Contract {
     /**
      * See {IERC777-name}.
      */
-    name(): Promise<string>;
+    name(overrides?: TransactionOverrides): Promise<string>;
+
+    /**
+     * See {IERC777-name}.
+     */
+    "name()"(overrides?: TransactionOverrides): Promise<string>;
 
     /**
      * See {IERC777-symbol}.
      */
-    symbol(): Promise<string>;
+    symbol(overrides?: TransactionOverrides): Promise<string>;
+
+    /**
+     * See {IERC777-symbol}.
+     */
+    "symbol()"(overrides?: TransactionOverrides): Promise<string>;
 
     /**
      * See {ERC20Detailed-decimals}.     * Always returns 18, as per the [ERC777 EIP](https://eips.ethereum.org/EIPS/eip-777#backward-compatibility).
      */
-    decimals(): Promise<number>;
+    decimals(overrides?: TransactionOverrides): Promise<number>;
+
+    /**
+     * See {ERC20Detailed-decimals}.     * Always returns 18, as per the [ERC777 EIP](https://eips.ethereum.org/EIPS/eip-777#backward-compatibility).
+     */
+    "decimals()"(overrides?: TransactionOverrides): Promise<number>;
 
     /**
      * See {IERC777-granularity}.     * This implementation always returns `1`.
      */
-    granularity(): Promise<BigNumber>;
+    granularity(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-granularity}.     * This implementation always returns `1`.
+     */
+    "granularity()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     /**
      * See {IERC777-totalSupply}.
      */
-    totalSupply(): Promise<BigNumber>;
+    totalSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-totalSupply}.
+     */
+    "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
     /**
      * Returns the amount of tokens owned by an account (`tokenHolder`).
      */
-    balanceOf(tokenHolder: string): Promise<BigNumber>;
+    balanceOf(
+      tokenHolder: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Returns the amount of tokens owned by an account (`tokenHolder`).
+     */
+    "balanceOf(address)"(
+      tokenHolder: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * See {IERC777-send}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
      */
     send(
+      recipient: string,
+      amount: BigNumberish,
+      data: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * See {IERC777-send}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
+     */
+    "send(address,uint256,bytes)"(
       recipient: string,
       amount: BigNumberish,
       data: Arrayish,
@@ -220,6 +266,15 @@ export class Erc777 extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * See {IERC20-transfer}.     * Unlike `send`, `recipient` is _not_ required to implement the {IERC777Recipient} interface if it is a contract.     * Also emits a {Sent} event.
+     */
+    "transfer(address,uint256)"(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * See {IERC777-burn}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
      */
     burn(
@@ -229,14 +284,44 @@ export class Erc777 extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * See {IERC777-burn}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
+     */
+    "burn(uint256,bytes)"(
+      amount: BigNumberish,
+      data: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * See {IERC777-isOperatorFor}.
      */
-    isOperatorFor(operator: string, tokenHolder: string): Promise<boolean>;
+    isOperatorFor(
+      operator: string,
+      tokenHolder: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
+
+    /**
+     * See {IERC777-isOperatorFor}.
+     */
+    "isOperatorFor(address,address)"(
+      operator: string,
+      tokenHolder: string,
+      overrides?: TransactionOverrides
+    ): Promise<boolean>;
 
     /**
      * See {IERC777-authorizeOperator}.
      */
     authorizeOperator(
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * See {IERC777-authorizeOperator}.
+     */
+    "authorizeOperator(address)"(
       operator: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -250,14 +335,39 @@ export class Erc777 extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * See {IERC777-revokeOperator}.
+     */
+    "revokeOperator(address)"(
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * See {IERC777-defaultOperators}.
      */
-    defaultOperators(): Promise<string[]>;
+    defaultOperators(overrides?: TransactionOverrides): Promise<string[]>;
+
+    /**
+     * See {IERC777-defaultOperators}.
+     */
+    "defaultOperators()"(overrides?: TransactionOverrides): Promise<string[]>;
 
     /**
      * See {IERC777-operatorSend}.     * Emits {Sent} and {IERC20-Transfer} events.
      */
     operatorSend(
+      sender: string,
+      recipient: string,
+      amount: BigNumberish,
+      data: Arrayish,
+      operatorData: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * See {IERC777-operatorSend}.     * Emits {Sent} and {IERC20-Transfer} events.
+     */
+    "operatorSend(address,address,uint256,bytes,bytes)"(
       sender: string,
       recipient: string,
       amount: BigNumberish,
@@ -278,14 +388,47 @@ export class Erc777 extends Contract {
     ): Promise<ContractTransaction>;
 
     /**
+     * See {IERC777-operatorBurn}.     * Emits {Burned} and {IERC20-Transfer} events.
+     */
+    "operatorBurn(address,uint256,bytes,bytes)"(
+      account: string,
+      amount: BigNumberish,
+      data: Arrayish,
+      operatorData: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
      * See {IERC20-allowance}.     * Note that operator and allowance concepts are orthogonal: operators may not have allowance, and accounts with allowance may not be operators themselves.
      */
-    allowance(holder: string, spender: string): Promise<BigNumber>;
+    allowance(
+      holder: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC20-allowance}.     * Note that operator and allowance concepts are orthogonal: operators may not have allowance, and accounts with allowance may not be operators themselves.
+     */
+    "allowance(address,address)"(
+      holder: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
     /**
      * See {IERC20-approve}.     * Note that accounts cannot have allowance issued by their operators.
      */
     approve(
+      spender: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    /**
+     * See {IERC20-approve}.     * Note that accounts cannot have allowance issued by their operators.
+     */
+    "approve(address,uint256)"(
       spender: string,
       value: BigNumberish,
       overrides?: TransactionOverrides
@@ -300,42 +443,98 @@ export class Erc777 extends Contract {
       amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
+
+    /**
+     * See {IERC20-transferFrom}.    * Note that operator and allowance concepts are orthogonal: operators cannot call `transferFrom` (unless they have allowance), and accounts with allowance cannot call `operatorSend` (unless they are operators).    * Emits {Sent}, {IERC20-Transfer} and {IERC20-Approval} events.
+     */
+    "transferFrom(address,address,uint256)"(
+      holder: string,
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
   };
 
   /**
    * See {IERC777-name}.
    */
-  name(): Promise<string>;
+  name(overrides?: TransactionOverrides): Promise<string>;
+
+  /**
+   * See {IERC777-name}.
+   */
+  "name()"(overrides?: TransactionOverrides): Promise<string>;
 
   /**
    * See {IERC777-symbol}.
    */
-  symbol(): Promise<string>;
+  symbol(overrides?: TransactionOverrides): Promise<string>;
+
+  /**
+   * See {IERC777-symbol}.
+   */
+  "symbol()"(overrides?: TransactionOverrides): Promise<string>;
 
   /**
    * See {ERC20Detailed-decimals}.     * Always returns 18, as per the [ERC777 EIP](https://eips.ethereum.org/EIPS/eip-777#backward-compatibility).
    */
-  decimals(): Promise<number>;
+  decimals(overrides?: TransactionOverrides): Promise<number>;
+
+  /**
+   * See {ERC20Detailed-decimals}.     * Always returns 18, as per the [ERC777 EIP](https://eips.ethereum.org/EIPS/eip-777#backward-compatibility).
+   */
+  "decimals()"(overrides?: TransactionOverrides): Promise<number>;
 
   /**
    * See {IERC777-granularity}.     * This implementation always returns `1`.
    */
-  granularity(): Promise<BigNumber>;
+  granularity(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  /**
+   * See {IERC777-granularity}.     * This implementation always returns `1`.
+   */
+  "granularity()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   /**
    * See {IERC777-totalSupply}.
    */
-  totalSupply(): Promise<BigNumber>;
+  totalSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+  /**
+   * See {IERC777-totalSupply}.
+   */
+  "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
   /**
    * Returns the amount of tokens owned by an account (`tokenHolder`).
    */
-  balanceOf(tokenHolder: string): Promise<BigNumber>;
+  balanceOf(
+    tokenHolder: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * Returns the amount of tokens owned by an account (`tokenHolder`).
+   */
+  "balanceOf(address)"(
+    tokenHolder: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   /**
    * See {IERC777-send}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
    */
   send(
+    recipient: string,
+    amount: BigNumberish,
+    data: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * See {IERC777-send}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
+   */
+  "send(address,uint256,bytes)"(
     recipient: string,
     amount: BigNumberish,
     data: Arrayish,
@@ -352,6 +551,15 @@ export class Erc777 extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * See {IERC20-transfer}.     * Unlike `send`, `recipient` is _not_ required to implement the {IERC777Recipient} interface if it is a contract.     * Also emits a {Sent} event.
+   */
+  "transfer(address,uint256)"(
+    recipient: string,
+    amount: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * See {IERC777-burn}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
    */
   burn(
@@ -361,14 +569,44 @@ export class Erc777 extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * See {IERC777-burn}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
+   */
+  "burn(uint256,bytes)"(
+    amount: BigNumberish,
+    data: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * See {IERC777-isOperatorFor}.
    */
-  isOperatorFor(operator: string, tokenHolder: string): Promise<boolean>;
+  isOperatorFor(
+    operator: string,
+    tokenHolder: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
+
+  /**
+   * See {IERC777-isOperatorFor}.
+   */
+  "isOperatorFor(address,address)"(
+    operator: string,
+    tokenHolder: string,
+    overrides?: TransactionOverrides
+  ): Promise<boolean>;
 
   /**
    * See {IERC777-authorizeOperator}.
    */
   authorizeOperator(
+    operator: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * See {IERC777-authorizeOperator}.
+   */
+  "authorizeOperator(address)"(
     operator: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -382,14 +620,39 @@ export class Erc777 extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * See {IERC777-revokeOperator}.
+   */
+  "revokeOperator(address)"(
+    operator: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * See {IERC777-defaultOperators}.
    */
-  defaultOperators(): Promise<string[]>;
+  defaultOperators(overrides?: TransactionOverrides): Promise<string[]>;
+
+  /**
+   * See {IERC777-defaultOperators}.
+   */
+  "defaultOperators()"(overrides?: TransactionOverrides): Promise<string[]>;
 
   /**
    * See {IERC777-operatorSend}.     * Emits {Sent} and {IERC20-Transfer} events.
    */
   operatorSend(
+    sender: string,
+    recipient: string,
+    amount: BigNumberish,
+    data: Arrayish,
+    operatorData: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * See {IERC777-operatorSend}.     * Emits {Sent} and {IERC20-Transfer} events.
+   */
+  "operatorSend(address,address,uint256,bytes,bytes)"(
     sender: string,
     recipient: string,
     amount: BigNumberish,
@@ -410,9 +673,33 @@ export class Erc777 extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * See {IERC777-operatorBurn}.     * Emits {Burned} and {IERC20-Transfer} events.
+   */
+  "operatorBurn(address,uint256,bytes,bytes)"(
+    account: string,
+    amount: BigNumberish,
+    data: Arrayish,
+    operatorData: Arrayish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * See {IERC20-allowance}.     * Note that operator and allowance concepts are orthogonal: operators may not have allowance, and accounts with allowance may not be operators themselves.
    */
-  allowance(holder: string, spender: string): Promise<BigNumber>;
+  allowance(
+    holder: string,
+    spender: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
+
+  /**
+   * See {IERC20-allowance}.     * Note that operator and allowance concepts are orthogonal: operators may not have allowance, and accounts with allowance may not be operators themselves.
+   */
+  "allowance(address,address)"(
+    holder: string,
+    spender: string,
+    overrides?: TransactionOverrides
+  ): Promise<BigNumber>;
 
   /**
    * See {IERC20-approve}.     * Note that accounts cannot have allowance issued by their operators.
@@ -424,9 +711,28 @@ export class Erc777 extends Contract {
   ): Promise<ContractTransaction>;
 
   /**
+   * See {IERC20-approve}.     * Note that accounts cannot have allowance issued by their operators.
+   */
+  "approve(address,uint256)"(
+    spender: string,
+    value: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
    * See {IERC20-transferFrom}.    * Note that operator and allowance concepts are orthogonal: operators cannot call `transferFrom` (unless they have allowance), and accounts with allowance cannot call `operatorSend` (unless they are operators).    * Emits {Sent}, {IERC20-Transfer} and {IERC20-Approval} events.
    */
   transferFrom(
+    holder: string,
+    recipient: string,
+    amount: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  /**
+   * See {IERC20-transferFrom}.    * Note that operator and allowance concepts are orthogonal: operators cannot call `transferFrom` (unless they have allowance), and accounts with allowance cannot call `operatorSend` (unless they are operators).    * Emits {Sent}, {IERC20-Transfer} and {IERC20-Approval} events.
+   */
+  "transferFrom(address,address,uint256)"(
     holder: string,
     recipient: string,
     amount: BigNumberish,
@@ -479,59 +785,288 @@ export class Erc777 extends Contract {
   };
 
   estimate: {
-    name(): Promise<BigNumber>;
+    /**
+     * See {IERC777-name}.
+     */
+    name(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    symbol(): Promise<BigNumber>;
+    /**
+     * See {IERC777-name}.
+     */
+    "name()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    decimals(): Promise<BigNumber>;
+    /**
+     * See {IERC777-symbol}.
+     */
+    symbol(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    granularity(): Promise<BigNumber>;
+    /**
+     * See {IERC777-symbol}.
+     */
+    "symbol()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    totalSupply(): Promise<BigNumber>;
+    /**
+     * See {ERC20Detailed-decimals}.     * Always returns 18, as per the [ERC777 EIP](https://eips.ethereum.org/EIPS/eip-777#backward-compatibility).
+     */
+    decimals(overrides?: TransactionOverrides): Promise<BigNumber>;
 
-    balanceOf(tokenHolder: string): Promise<BigNumber>;
+    /**
+     * See {ERC20Detailed-decimals}.     * Always returns 18, as per the [ERC777 EIP](https://eips.ethereum.org/EIPS/eip-777#backward-compatibility).
+     */
+    "decimals()"(overrides?: TransactionOverrides): Promise<BigNumber>;
 
+    /**
+     * See {IERC777-granularity}.     * This implementation always returns `1`.
+     */
+    granularity(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-granularity}.     * This implementation always returns `1`.
+     */
+    "granularity()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-totalSupply}.
+     */
+    totalSupply(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-totalSupply}.
+     */
+    "totalSupply()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * Returns the amount of tokens owned by an account (`tokenHolder`).
+     */
+    balanceOf(
+      tokenHolder: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * Returns the amount of tokens owned by an account (`tokenHolder`).
+     */
+    "balanceOf(address)"(
+      tokenHolder: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-send}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
+     */
     send(
       recipient: string,
       amount: BigNumberish,
-      data: Arrayish
+      data: Arrayish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    transfer(recipient: string, amount: BigNumberish): Promise<BigNumber>;
+    /**
+     * See {IERC777-send}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
+     */
+    "send(address,uint256,bytes)"(
+      recipient: string,
+      amount: BigNumberish,
+      data: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    burn(amount: BigNumberish, data: Arrayish): Promise<BigNumber>;
+    /**
+     * See {IERC20-transfer}.     * Unlike `send`, `recipient` is _not_ required to implement the {IERC777Recipient} interface if it is a contract.     * Also emits a {Sent} event.
+     */
+    transfer(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    isOperatorFor(operator: string, tokenHolder: string): Promise<BigNumber>;
+    /**
+     * See {IERC20-transfer}.     * Unlike `send`, `recipient` is _not_ required to implement the {IERC777Recipient} interface if it is a contract.     * Also emits a {Sent} event.
+     */
+    "transfer(address,uint256)"(
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    authorizeOperator(operator: string): Promise<BigNumber>;
+    /**
+     * See {IERC777-burn}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
+     */
+    burn(
+      amount: BigNumberish,
+      data: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    revokeOperator(operator: string): Promise<BigNumber>;
+    /**
+     * See {IERC777-burn}.     * Also emits a {IERC20-Transfer} event for ERC20 compatibility.
+     */
+    "burn(uint256,bytes)"(
+      amount: BigNumberish,
+      data: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    defaultOperators(): Promise<BigNumber>;
+    /**
+     * See {IERC777-isOperatorFor}.
+     */
+    isOperatorFor(
+      operator: string,
+      tokenHolder: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
+    /**
+     * See {IERC777-isOperatorFor}.
+     */
+    "isOperatorFor(address,address)"(
+      operator: string,
+      tokenHolder: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-authorizeOperator}.
+     */
+    authorizeOperator(
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-authorizeOperator}.
+     */
+    "authorizeOperator(address)"(
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-revokeOperator}.
+     */
+    revokeOperator(
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-revokeOperator}.
+     */
+    "revokeOperator(address)"(
+      operator: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-defaultOperators}.
+     */
+    defaultOperators(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-defaultOperators}.
+     */
+    "defaultOperators()"(overrides?: TransactionOverrides): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-operatorSend}.     * Emits {Sent} and {IERC20-Transfer} events.
+     */
     operatorSend(
       sender: string,
       recipient: string,
       amount: BigNumberish,
       data: Arrayish,
-      operatorData: Arrayish
+      operatorData: Arrayish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
+    /**
+     * See {IERC777-operatorSend}.     * Emits {Sent} and {IERC20-Transfer} events.
+     */
+    "operatorSend(address,address,uint256,bytes,bytes)"(
+      sender: string,
+      recipient: string,
+      amount: BigNumberish,
+      data: Arrayish,
+      operatorData: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC777-operatorBurn}.     * Emits {Burned} and {IERC20-Transfer} events.
+     */
     operatorBurn(
       account: string,
       amount: BigNumberish,
       data: Arrayish,
-      operatorData: Arrayish
+      operatorData: Arrayish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
 
-    allowance(holder: string, spender: string): Promise<BigNumber>;
+    /**
+     * See {IERC777-operatorBurn}.     * Emits {Burned} and {IERC20-Transfer} events.
+     */
+    "operatorBurn(address,uint256,bytes,bytes)"(
+      account: string,
+      amount: BigNumberish,
+      data: Arrayish,
+      operatorData: Arrayish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
-    approve(spender: string, value: BigNumberish): Promise<BigNumber>;
+    /**
+     * See {IERC20-allowance}.     * Note that operator and allowance concepts are orthogonal: operators may not have allowance, and accounts with allowance may not be operators themselves.
+     */
+    allowance(
+      holder: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
 
+    /**
+     * See {IERC20-allowance}.     * Note that operator and allowance concepts are orthogonal: operators may not have allowance, and accounts with allowance may not be operators themselves.
+     */
+    "allowance(address,address)"(
+      holder: string,
+      spender: string,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC20-approve}.     * Note that accounts cannot have allowance issued by their operators.
+     */
+    approve(
+      spender: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC20-approve}.     * Note that accounts cannot have allowance issued by their operators.
+     */
+    "approve(address,uint256)"(
+      spender: string,
+      value: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC20-transferFrom}.    * Note that operator and allowance concepts are orthogonal: operators cannot call `transferFrom` (unless they have allowance), and accounts with allowance cannot call `operatorSend` (unless they are operators).    * Emits {Sent}, {IERC20-Transfer} and {IERC20-Approval} events.
+     */
     transferFrom(
       holder: string,
       recipient: string,
-      amount: BigNumberish
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<BigNumber>;
+
+    /**
+     * See {IERC20-transferFrom}.    * Note that operator and allowance concepts are orthogonal: operators cannot call `transferFrom` (unless they have allowance), and accounts with allowance cannot call `operatorSend` (unless they are operators).    * Emits {Sent}, {IERC20-Transfer} and {IERC20-Approval} events.
+     */
+    "transferFrom(address,address,uint256)"(
+      holder: string,
+      recipient: string,
+      amount: BigNumberish,
+      overrides?: TransactionOverrides
     ): Promise<BigNumber>;
   };
 }
