@@ -44,6 +44,7 @@ export function isSupportedChain(
   return chainSupportedBy(chain, EventSupportingChains);
 }
 
+// eslint-disable-next-line no-shadow
 export enum EntityEventKind {
   Create = 0,
   Update,
@@ -90,6 +91,11 @@ export abstract class IEventSubscriber<Api, RawEvent> {
   public abstract unsubscribe(): void;
 }
 
+export interface IDisconnectedRange {
+  startBlock: number;
+  endBlock?: number;
+}
+
 export interface ISubscribeOptions<Api> {
   chain: EventSupportingChainT;
   api: Api;
@@ -106,11 +112,6 @@ export type SubscribeFunc<
   RawEvent,
   Options extends ISubscribeOptions<Api>
 > = (options: Options) => Promise<IEventSubscriber<Api, RawEvent>>;
-
-export interface IDisconnectedRange {
-  startBlock: number;
-  endBlock?: number;
-}
 
 // synthesizes events from chain storage
 export abstract class IStorageFetcher<Api> {

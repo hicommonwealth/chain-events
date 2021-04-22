@@ -1,5 +1,7 @@
 import { Event } from 'ethers';
+
 import { ISubscribeOptions } from '../interfaces';
+
 import { Moloch1 } from './contractTypes/Moloch1';
 import { Moloch2 } from './contractTypes/Moloch2';
 
@@ -21,10 +23,12 @@ export interface SubscribeOptions extends ISubscribeOptions<Api> {
   contractVersion: 1 | 2;
 }
 
+// eslint-disable-next-line no-shadow
 export enum EntityKind {
   Proposal = 'proposal',
 }
 
+// eslint-disable-next-line no-shadow
 export enum EventKind {
   SubmitProposal = 'submit-proposal',
   SubmitVote = 'submit-vote',

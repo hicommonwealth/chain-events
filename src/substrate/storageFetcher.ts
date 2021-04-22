@@ -23,6 +23,8 @@ import { DeriveProposalImage } from '@polkadot/api-derive/types';
 import { isFunction } from '@polkadot/util';
 
 import { CWEvent, IStorageFetcher } from '../interfaces';
+import { factory, formatFilename } from '../logging';
+
 import {
   EventKind,
   IDemocracyProposed,
@@ -46,8 +48,6 @@ import {
   ITreasuryBountyClaimed,
   ITreasuryBountyEvents,
 } from './types';
-
-import { factory, formatFilename } from '../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 

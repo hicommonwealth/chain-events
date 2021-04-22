@@ -31,6 +31,7 @@ export type BigIntString = string;
 export type BlockNumber = number;
 export type AccountId = string;
 export type RuntimeVersion = number;
+// eslint-disable-next-line no-shadow
 export enum IdentityJudgement {
   Unknown = 'unknown',
   FeePaid = 'fee-paid',
@@ -39,17 +40,6 @@ export enum IdentityJudgement {
   OutOfDate = 'out-of-date',
   LowQuality = 'low-quality',
   Erroneous = 'erroneous',
-}
-export interface BountyStatus {
-  isProposed: boolean;
-  isApproved: boolean;
-  isFunded: boolean;
-  isCuratorProposed: boolean;
-  asCuratorProposed: BountyStatusCuratorProposed;
-  isActive: boolean;
-  asActive: BountyStatusActive;
-  isPendingPayout: boolean;
-  asPendingPayout: BountyStatusPendingPayout;
 }
 
 export interface BountyStatusCuratorProposed {
@@ -65,6 +55,18 @@ export interface BountyStatusPendingPayout {
   curator: AccountId;
   beneficiary: AccountId;
   unlockAt: BlockNumber;
+}
+
+export interface BountyStatus {
+  isProposed: boolean;
+  isApproved: boolean;
+  isFunded: boolean;
+  isCuratorProposed: boolean;
+  asCuratorProposed: BountyStatusCuratorProposed;
+  isActive: boolean;
+  asActive: BountyStatusActive;
+  isPendingPayout: boolean;
+  asPendingPayout: BountyStatusPendingPayout;
 }
 
 export function parseJudgement(j: SubstrateJudgement): IdentityJudgement {
@@ -98,6 +100,7 @@ export interface Validator {
 }
 
 // Used for grouping EventKinds together for archival purposes
+// eslint-disable-next-line no-shadow
 export enum EntityKind {
   DemocracyProposal = 'democracy-proposal',
   DemocracyReferendum = 'democracy-referendum',
@@ -116,6 +119,7 @@ export function isEvent(e: Event | Extrinsic): e is Event {
   return !(e.data instanceof Uint8Array);
 }
 
+// eslint-disable-next-line no-shadow
 export enum EventKind {
   Slash = 'slash',
   Reward = 'reward',

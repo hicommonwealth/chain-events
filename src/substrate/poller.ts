@@ -4,9 +4,9 @@
 import { ApiPromise } from '@polkadot/api';
 
 import { IEventPoller, IDisconnectedRange } from '../interfaces';
-import { Block } from './types';
-
 import { factory, formatFilename } from '../logging';
+
+import { Block } from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -116,7 +116,6 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
       block = Math.min(block + batchSize, range.endBlock)
     ) {
       try {
-        // eslint-disable-next-line no-await-in-loop
         const currentBlocks = await this.poll(
           {
             startBlock: block,
@@ -128,7 +127,6 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
         // process all blocks sequentially
         if (processBlockFn) {
           for (const b of currentBlocks) {
-            // eslint-disable-next-line no-await-in-loop
             await processBlockFn(b);
           }
         }
@@ -140,7 +138,6 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
       }
       // if sync with head then update the endBlock to current header
       if (syncWithHead) {
-        // eslint-disable-next-line no-await-in-loop
         const header = await this._api.rpc.chain.getHeader();
         range.endBlock = +header.number;
       }

@@ -26,8 +26,8 @@ jobs:
       - run:
           name: run tests
           command: yarn test
+      - store_artifacts:
+          path: coverage
       - run:
           name: lint
           command: yarn lint
-      - store_artifacts:
-          path: coverage

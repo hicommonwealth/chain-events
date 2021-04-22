@@ -7,12 +7,12 @@ import {
   SubscribeFunc,
   ISubscribeOptions,
 } from '../interfaces';
+import { factory, formatFilename } from '../logging';
+
 import { Subscriber } from './subscriber';
 import { Poller } from './poller';
 import { Processor } from './processor';
 import { Block, IEventData } from './types';
-
-import { factory, formatFilename } from '../logging';
 import { EnricherConfig } from './filters/enricher';
 
 const log = factory.getLogger(formatFilename(__filename));
@@ -89,7 +89,6 @@ export const subscribeEvents: SubscribeFunc<
     for (const handler of handlers) {
       try {
         // pass result of last handler into next one (chaining db events)
-        /* eslint-disable-next-line no-await-in-loop */
         prevResult = await handler.handle(event, prevResult);
       } catch (err) {
         log.error(`Event handle failure: ${err.message}`);
@@ -106,7 +105,6 @@ export const subscribeEvents: SubscribeFunc<
     const events: CWEvent<IEventData>[] = await processor.process(block);
 
     // send all events through event-handlers in sequence
-    // eslint-disable-next-line no-await-in-loop
     for (const event of events) await handleEventFn(event);
   };
 

@@ -2,11 +2,11 @@
  * Processes Moloch events.
  */
 import { IEventProcessor, CWEvent } from '../interfaces';
+import { factory, formatFilename } from '../logging';
+
 import { ParseType } from './filters/type_parser';
 import { Enrich } from './filters/enricher';
-
 import { IEventData, RawEvent, Api } from './types';
-import { factory, formatFilename } from '../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 

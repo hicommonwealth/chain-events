@@ -6,9 +6,9 @@ import { VoidFn } from '@polkadot/api/types';
 import { Header, RuntimeVersion } from '@polkadot/types/interfaces';
 
 import { IEventSubscriber } from '../interfaces';
-import { Block } from './types';
-
 import { factory, formatFilename } from '../logging';
+
+import { Block } from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
 

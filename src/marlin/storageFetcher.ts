@@ -1,9 +1,9 @@
 import EthDater from 'ethereum-block-by-date';
 
 import { CWEvent, IStorageFetcher, IDisconnectedRange } from '../interfaces';
-import { IEventData, EventKind, Api, Proposal } from './types';
-
 import { factory, formatFilename } from '../logging';
+
+import { IEventData, EventKind, Api, Proposal } from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -136,7 +136,6 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     const queueLength = +(await this._api.governorAlpha.proposalCount());
     const results: CWEvent<IEventData>[] = [];
 
-    /* eslint-disable no-await-in-loop */
     for (let i = 0; i < queueLength; i++) {
       // work backwards through the queue, starting with the most recent
       const queuePosition = queueLength - i - 1;

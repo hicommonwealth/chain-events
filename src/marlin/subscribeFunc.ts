@@ -5,22 +5,21 @@ import { Web3Provider } from 'ethers/providers';
 import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
-import { MPondFactory } from './contractTypes/MPondFactory';
-import { GovernorAlphaFactory } from './contractTypes/GovernorAlphaFactory';
-import { TimelockFactory } from './contractTypes/TimelockFactory';
-
 import {
   IDisconnectedRange,
   CWEvent,
   SubscribeFunc,
   ISubscribeOptions,
 } from '../interfaces';
+import { factory, formatFilename } from '../logging';
+
+import { MPondFactory } from './contractTypes/MPondFactory';
+import { GovernorAlphaFactory } from './contractTypes/GovernorAlphaFactory';
+import { TimelockFactory } from './contractTypes/TimelockFactory';
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
 import { IEventData, RawEvent, Api } from './types';
-
-import { factory, formatFilename } from '../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -121,7 +120,6 @@ export const subscribeEvents: SubscribeFunc<
     for (const handler of handlers) {
       try {
         // pass result of last handler into next one (chaining db events)
-        /* eslint-disable-next-line no-await-in-loop */
         prevResult = await handler.handle(event, prevResult);
       } catch (err) {
         log.error(`Event handle failure: ${err.message}`);
@@ -139,7 +137,6 @@ export const subscribeEvents: SubscribeFunc<
 
     // process events in sequence
     for (const cwEvent of cwEvents) {
-      // eslint-disable-next-line no-await-in-loop
       await handleEventFn(cwEvent);
     }
   };
@@ -182,7 +179,6 @@ export const subscribeEvents: SubscribeFunc<
 
       // process events in sequence
       for (const cwEvent of cwEvents) {
-        // eslint-disable-next-line no-await-in-loop
         await handleEventFn(cwEvent);
       }
     } catch (e) {

@@ -1,4 +1,5 @@
 import { Event } from 'ethers';
+
 import { MPond } from './contractTypes/MPond';
 import { GovernorAlpha } from './contractTypes/GovernorAlpha';
 import { Timelock } from './contractTypes/Timelock';
@@ -26,10 +27,13 @@ export const EventChains = ['marlin', 'marlin-local'] as const;
 
 export type RawEvent = Event;
 
+// eslint-disable-next-line no-shadow
 export enum EntityKind {
+  // eslint-disable-next-line no-shadow
   Proposal = 'proposal',
 }
 
+// eslint-disable-next-line no-shadow
 export enum EventKind {
   // MPond Events
   Approval = 'approval',

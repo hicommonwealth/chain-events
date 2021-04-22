@@ -1,6 +1,10 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable global-require */
+import { EventEmitter } from 'events';
+
 import { providers } from 'ethers';
 import chai from 'chai';
-import { EventEmitter } from 'events';
+
 import { Moloch1Factory } from '../../eth/types/Moloch1Factory';
 import { Moloch1 } from '../../eth/types/Moloch1';
 import { TokenFactory } from '../../eth/types/TokenFactory';
@@ -19,12 +23,12 @@ import {
   CWEvent,
   EventSupportingChainT,
   IDisconnectedRange,
+  IChainEventData,
 } from '../../src/interfaces';
 
 const { assert } = chai;
 
 function getProvider(): providers.Web3Provider {
-  // eslint-disable-next-line global-require
   const web3Provider = require('ganache-cli').provider({
     allowUnlimitedContractSize: true,
     gasLimit: 1000000000,
@@ -56,14 +60,15 @@ async function deployMoloch1(signer, summoner, tokenAddress): Promise<Moloch1> {
   return moloch1;
 }
 
-class MolochEventHandler extends IEventHandler<void> {
+class MolochEventHandler extends IEventHandler<IChainEventData> {
   constructor(public readonly emitter: EventEmitter) {
     super();
   }
 
-  public async handle(event: CWEvent<IEventData>): Promise<void> {
+  public async handle(event: CWEvent<IEventData>): Promise<IChainEventData> {
     this.emitter.emit(event.data.kind.toString(), event);
     this.emitter.emit('*', event);
+    return null;
   }
 }
 

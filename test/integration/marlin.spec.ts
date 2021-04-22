@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable global-require */
 /* eslint-disable no-unused-expressions */
+import { EventEmitter } from 'events';
+import { resolve } from 'path';
+
 import { providers, Signer } from 'ethers';
 import { BigNumberish } from 'ethers/utils';
 import chai, { expect } from 'chai';
-import { EventEmitter } from 'events';
-import { resolve } from 'path';
+
 import { MPondFactory } from '../../eth/types/MPondFactory';
 import { MPond } from '../../eth/types/MPond';
 import { GovernorAlphaFactory } from '../../eth/types/GovernorAlphaFactory';
@@ -28,7 +32,6 @@ import { IEventHandler, CWEvent, IChainEventData } from '../../src/interfaces';
 const { assert } = chai;
 
 function getProvider(): providers.Web3Provider {
-  // eslint-disable-next-line global-require
   const web3Provider = require('ganache-cli').provider({
     allowUnlimitedContractSize: true,
     gasLimit: 1000000000,
@@ -370,7 +373,6 @@ describe('Marlin Event Integration Tests', () => {
       );
       await provider.send('evm_increaseTime', [19500]); // 3 x 6500 (blocks/day)
       for (let i = 0; i < 19500; i++) {
-        // eslint-disable-next-line no-await-in-loop
         await provider.send('evm_mine', []);
       }
       const state = await governorAlpha.state(activeProposals);

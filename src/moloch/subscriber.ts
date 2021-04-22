@@ -4,9 +4,9 @@
 import { Listener } from 'ethers/providers';
 
 import { IEventSubscriber } from '../interfaces';
-import { RawEvent, Api } from './types';
-
 import { factory, formatFilename } from '../logging';
+
+import { RawEvent, Api } from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
 
