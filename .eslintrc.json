@@ -23,7 +23,13 @@
     "@typescript-eslint/interface-name-prefix": "off",
     "import/prefer-default-export": 0,
     "import/extensions": 0,
+    "import/no-cycle": 0,
+    "max-classes-per-file": "off",
+    "no-import-cycles": "off",
+    "no-param-reassign": "off",
     "no-plusplus": "off",
-    "no-underscore-dangle": "off"
+    "no-restricted-syntax": "off",
+    "no-underscore-dangle": "off",
+    "no-useless-constructor": "off"
   }
 }

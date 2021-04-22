@@ -15,6 +15,7 @@ import { StorageFetcher } from './storageFetcher';
 import { IEventData, RawEvent, Api, SubscribeOptions } from './types';
 
 import { factory, formatFilename } from '../logging';
+
 const log = factory.getLogger(formatFilename(__filename));
 
 /**
@@ -26,11 +27,11 @@ export async function createApi(
   ethNetworkUrl: string,
   contractVersion: 1 | 2,
   contractAddress: string,
-  retryTimeMs = 10 * 1000,
+  retryTimeMs = 10 * 1000
 ): Promise<Api> {
   if (ethNetworkUrl.includes('infura')) {
     if (process && process.env) {
-      const INFURA_API_KEY = process.env.INFURA_API_KEY;
+      const { INFURA_API_KEY } = process.env;
       if (!INFURA_API_KEY) {
         throw new Error('no infura key found!');
       }
@@ -40,31 +41,36 @@ export async function createApi(
     }
   }
   try {
-    const web3Provider = new Web3.providers.WebsocketProvider(
-      ethNetworkUrl,
-      {
-        reconnect: {
-          auto: true,
-          delay: retryTimeMs,
-          onTimeout: true,
-        }
-      } as any,
-    );
+    const web3Provider = new Web3.providers.WebsocketProvider(ethNetworkUrl, {
+      reconnect: {
+        auto: true,
+        delay: retryTimeMs,
+        onTimeout: true,
+      },
+    });
     const provider = new providers.Web3Provider(web3Provider);
-    const contract = contractVersion === 1
-      ? Moloch1Factory.connect(contractAddress, provider)
-      : Moloch2Factory.connect(contractAddress, provider);
+    const contract =
+      contractVersion === 1
+        ? Moloch1Factory.connect(contractAddress, provider)
+        : Moloch2Factory.connect(contractAddress, provider);
     await contract.deployed();
 
     // fetch summoning time to guarantee connected
-    const summoningTime = await contract.summoningTime();
+    await contract.summoningTime();
     log.info('Connection successful!');
     return contract;
   } catch (err) {
-    log.error(`Moloch ${contractAddress} at ${ethNetworkUrl} failure: ${err.message}`);
+    log.error(
+      `Moloch ${contractAddress} at ${ethNetworkUrl} failure: ${err.message}`
+    );
     await sleep(retryTimeMs);
     log.error('Retrying connection...');
-    return createApi(ethNetworkUrl, contractVersion, contractAddress, retryTimeMs);
+    return createApi(
+      ethNetworkUrl,
+      contractVersion,
+      contractAddress,
+      retryTimeMs
+    );
   }
 }
 
@@ -79,12 +85,23 @@ export async function createApi(
  * @param discoverReconnectRange A function to determine how long we were offline upon reconnection.
  * @returns An active block subscriber.
  */
-export const subscribeEvents: SubscribeFunc<Api, RawEvent, SubscribeOptions> = async (options) => {
-  const { chain, api, handlers, skipCatchup, discoverReconnectRange, contractVersion, verbose } = options;
+export const subscribeEvents: SubscribeFunc<
+  Api,
+  RawEvent,
+  SubscribeOptions
+> = async (options) => {
+  const {
+    chain,
+    api,
+    handlers,
+    skipCatchup,
+    discoverReconnectRange,
+    contractVersion,
+    verbose,
+  } = options;
   // helper function that sends an event through event handlers
-  const handleEventFn = async (event: CWEvent<IEventData>) => {
+  const handleEventFn = async (event: CWEvent<IEventData>): Promise<void> => {
     let prevResult = null;
-    /* eslint-disable-next-line no-restricted-syntax */
     for (const handler of handlers) {
       try {
         // pass result of last handler into next one (chaining db events)
@@ -100,7 +117,7 @@ export const subscribeEvents: SubscribeFunc<Api, RawEvent, SubscribeOptions> = a
   // helper function that sends a block through the event processor and
   // into the event handlers
   const processor = new Processor(api, contractVersion);
-  const processEventFn = async (event: RawEvent) => {
+  const processEventFn = async (event: RawEvent): Promise<void> => {
     // retrieve events from block
     const cwEvents: CWEvent<IEventData>[] = await processor.process(event);
 
@@ -115,9 +132,11 @@ export const subscribeEvents: SubscribeFunc<Api, RawEvent, SubscribeOptions> = a
 
   // helper function that runs after we've been offline/the server's been down,
   // and attempts to fetch skipped events
-  const pollMissedEventsFn = async () => {
+  const pollMissedEventsFn = async (): Promise<void> => {
     if (!discoverReconnectRange) {
-      log.warn('No function to discover offline time found, skipping event catchup.');
+      log.warn(
+        'No function to discover offline time found, skipping event catchup.'
+      );
       return;
     }
     log.info(`Fetching missed events since last startup of ${chain}...`);
@@ -129,12 +148,16 @@ export const subscribeEvents: SubscribeFunc<Api, RawEvent, SubscribeOptions> = a
         return;
       }
     } catch (e) {
-      log.error(`Could not discover offline range: ${e.message}. Skipping event catchup.`);
+      log.error(
+        `Could not discover offline range: ${e.message}. Skipping event catchup.`
+      );
       return;
     }
 
     // reuse provider interface for dater function
-    const web3 = new Web3((api.provider as Web3Provider)._web3Provider as WebsocketProvider);
+    const web3 = new Web3(
+      (api.provider as Web3Provider)._web3Provider as WebsocketProvider
+    );
     const dater = new EthDater(web3);
     const fetcher = new StorageFetcher(api, contractVersion, dater);
     try {
