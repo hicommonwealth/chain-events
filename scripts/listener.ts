@@ -1,10 +1,10 @@
 import * as yargs from 'yargs';
-
+import fetch from 'node-fetch';
 import { spec as EdgewareSpec } from '@edgeware/node-types';
 import { HydraDXSpec } from './specs/hydraDX';
 import * as CloverSpecTypes from '@clover-network/node-tpye';
 import {
-  chainSupportedBy, IEventHandler, CWEvent, SubstrateEvents, MarlinEvents, MolochEvents, EventSupportingChains
+  chainSupportedBy, IEventHandler, CWEvent, SubstrateEvents, MarlinEvents, MolochEvents, Erc20Events, EventSupportingChains
 } from '../dist/index';
 
 const CloverSpec = {
@@ -102,6 +102,21 @@ class StandaloneEventHandler extends IEventHandler {
 
 const skipCatchup = false;
 
+const tokenListUrls = [
+  "https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokenlist.aave.eth.link",
+  "https://gateway.ipfs.io/ipns/tokens.uniswap.org",
+  "https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link"
+]
+
+async function getTokenLists() {
+  var data : any = await Promise.all(
+    tokenListUrls.map((url)=>fetch(url).then(o=>o.json()).catch(e=>console.error(e)))
+  );
+  data = data.map((o)=>o && o.tokens).flat();
+  data = data.filter(o=>o); //remove undefined
+  return data 
+}
+
 console.log(`Connecting to ${network} on url ${url}...`)
 if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
   SubstrateEvents.createApi(url, spec).then(async (api) => {
@@ -151,4 +166,20 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
       verbose: true,
     })
   })
+} else if (chainSupportedBy(network, Erc20Events.Types.EventChains)) {
+  async function erc20Subscribe() {
+    let tokens = await getTokenLists() // TODO get tokens here
+    Erc20Events.createApi(url, tokens).then((api) => {
+      Erc20Events.subscribeEvents({
+        chain: network,
+        api,
+        handlers: [ new StandaloneEventHandler() ],
+        skipCatchup,
+        verbose: true,
+      })
+    })
+  }
+  erc20Subscribe()
 }
+
+console.log("e")
