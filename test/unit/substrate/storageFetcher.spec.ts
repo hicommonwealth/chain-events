@@ -9,8 +9,9 @@ import {
   Proposal,
   Votes,
   Bounty,
+  OpenTip,
 } from '@polkadot/types/interfaces';
-import { Vec, Data, TypeRegistry } from '@polkadot/types';
+import { Vec, Data, TypeRegistry, Bytes } from '@polkadot/types';
 import { Codec } from '@polkadot/types/types';
 import { stringToHex } from '@polkadot/util';
 import { DeriveReferendum } from '@polkadot/api-derive/democracy/types';
@@ -31,6 +32,9 @@ import {
   IdentityJudgement,
   ITreasuryBountyProposed,
   ITreasuryBountyBecameActive,
+  INewTip,
+  ITipVoted,
+  ITipClosing,
 } from '../../../src/substrate/types';
 import { StorageFetcher } from '../../../src/substrate/storageFetcher';
 
@@ -208,6 +212,44 @@ const api = constructFakeApi({
       } as unknown) as Proposal);
     }
   },
+
+  // tips
+  tipsEntries: async () => [
+    [
+      { args: ['tip-hash-1'] },
+      constructOption(({
+        reason: 'reasonHash1',
+        who: 'alice',
+        finder: 'bob',
+        deposit: '1000',
+        tips: [],
+        findersFee: {
+          valueOf: true,
+        },
+      } as unknown) as OpenTip),
+    ],
+    [
+      { args: ['tip-hash-2'] },
+      constructOption(({
+        reason: 'reasonHash2',
+        who: 'charlie',
+        finder: 'dave',
+        deposit: '999',
+        tips: [
+          ['eve', '3'],
+          ['ferdie', '4'],
+        ],
+        closes: constructOption('123' as any),
+        findersFee: {
+          valueOf: false,
+        },
+      } as unknown) as OpenTip),
+    ],
+  ],
+  tipReasons: async (hash) =>
+    hash === 'reasonHash1'
+      ? constructOption(('hello world!' as unknown) as Bytes)
+      : constructOption(('goodbye world!' as unknown) as Bytes),
 
   // signaling proposals
   inactiveProposals: async () => [['inactive-hash', '100']],
@@ -487,6 +529,56 @@ describe('Edgeware Event Migration Tests', () => {
           kind: 'treasury-bounty-became-active',
           bountyIndex: 0,
         } as ITreasuryBountyBecameActive,
+      },
+      {
+        blockNumber,
+        data: {
+          kind: 'new-tip',
+          proposalHash: 'tip-hash-1',
+          who: 'alice',
+          reason: 'hello world!',
+          finder: 'bob',
+          deposit: '1000',
+          findersFee: true,
+        } as INewTip,
+      },
+      {
+        blockNumber,
+        data: {
+          kind: 'new-tip',
+          proposalHash: 'tip-hash-2',
+          who: 'charlie',
+          reason: 'goodbye world!',
+          finder: 'dave',
+          deposit: '999',
+          findersFee: false,
+        } as INewTip,
+      },
+      {
+        blockNumber,
+        data: {
+          kind: 'tip-voted',
+          proposalHash: 'tip-hash-2',
+          who: 'eve',
+          value: '3',
+        } as ITipVoted,
+      },
+      {
+        blockNumber,
+        data: {
+          kind: 'tip-voted',
+          proposalHash: 'tip-hash-2',
+          who: 'ferdie',
+          value: '4',
+        } as ITipVoted,
+      },
+      {
+        blockNumber,
+        data: {
+          kind: 'tip-closing',
+          proposalHash: 'tip-hash-2',
+          closing: 123,
+        } as ITipClosing,
       },
     ]);
   });

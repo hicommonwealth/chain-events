@@ -47,6 +47,9 @@ import {
   ITreasuryBountyAwarded,
   ITreasuryBountyClaimed,
   ITreasuryBountyEvents,
+  INewTip,
+  ITipVoted,
+  ITipClosing,
 } from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
@@ -483,6 +486,79 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       } votes!`
     );
     return proposedEvents.map((data) => ({ blockNumber, data }));
+  }
+
+  public async fetchTips(
+    blockNumber: number
+  ): Promise<CWEvent<INewTip | ITipVoted | ITipClosing>[]> {
+    if (!this._api.query.tips) {
+      log.info('Tips module not detected.');
+      return [];
+    }
+
+    log.info('Migrating tips...');
+    const openTipEntries = await this._api.query.tips.tips.entries();
+    const results: CWEvent<INewTip | ITipVoted | ITipClosing>[] = [];
+    for (const [storageKey, tip] of openTipEntries) {
+      const hash = storageKey.args[0].toString();
+      if (tip.isSome) {
+        const {
+          reason: reasonHash,
+          who,
+          finder,
+          deposit,
+          closes,
+          tips: tipVotes,
+          findersFee,
+        } = tip.unwrap();
+        const reason = await this._api.query.tips.reasons(reasonHash);
+        if (reason.isSome) {
+          // newtip events
+          results.push({
+            blockNumber,
+            data: {
+              kind: EventKind.NewTip,
+              proposalHash: hash,
+              who: who.toString(),
+              reason: reason.unwrap().toString(),
+              finder: finder.toString(),
+              deposit: deposit.toString(),
+              findersFee: findersFee.valueOf(),
+            },
+          });
+
+          // n tipvoted events
+          for (const [voter, amount] of tipVotes) {
+            results.push({
+              blockNumber,
+              data: {
+                kind: EventKind.TipVoted,
+                proposalHash: hash,
+                who: voter.toString(),
+                value: amount.toString(),
+              },
+            });
+          }
+
+          // tipclosing event
+          if (closes.isSome) {
+            const closesAt = +closes.unwrap();
+            results.push({
+              blockNumber,
+              data: {
+                kind: EventKind.TipClosing,
+                proposalHash: hash,
+                closing: closesAt,
+              },
+            });
+          }
+        }
+      }
+    }
+
+    const newTips = results.filter((v) => v.data.kind === EventKind.NewTip);
+    log.info(`Found ${newTips.length} open tips!`);
+    return results;
   }
 
   public async fetchSignalingProposals(

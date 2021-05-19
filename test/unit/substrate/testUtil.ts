@@ -165,6 +165,11 @@ export function constructFakeApi(callOverrides: {
   };
   bounties.multi = callOverrides['bountiesMulti'];
 
+  const tips = function (...args) {
+    return callOverrides['tips'](...args);
+  };
+  tips.entries = callOverrides['tipsEntries'];
+
   return ({
     createType: (name, value) => value,
     queryMulti: (queries) => {
@@ -242,6 +247,10 @@ export function constructFakeApi(callOverrides: {
         inactiveProposals: callOverrides['inactiveProposals'],
         activeProposals: callOverrides['activeProposals'],
         completedProposals: callOverrides['completedProposals'],
+      },
+      tips: {
+        tips,
+        reasons: callOverrides['tipReasons'],
       },
       voting: {
         voteRecords: callOverrides['voteRecords'],
