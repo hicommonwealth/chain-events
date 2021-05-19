@@ -1,20 +1,19 @@
 import * as yargs from 'yargs';
 import fetch from 'node-fetch';
+import type { RegisteredTypes } from '@polkadot/types/types';
 import { spec as EdgewareSpec } from '@edgeware/node-types';
 import { HydraDXSpec } from './specs/hydraDX';
-import * as CloverSpecTypes from '@clover-network/node-tpye';
+import { KulupuSpec } from './specs/kulupu';
+import { StafiSpec } from './specs/stafi';
+import { CloverSpec } from './specs/clover';
 import {
   chainSupportedBy, IEventHandler, CWEvent, SubstrateEvents, MarlinEvents, MolochEvents, Erc20Events, EventSupportingChains
 } from '../dist/index';
 import EthDater from 'ethereum-block-by-date';
 
 
-const CloverSpec = {
-  types: CloverSpecTypes
-}
-
 const networkUrls = {
-  'clover': 'ws://api.clover.finance',
+  'clover': 'wss://api.clover.finance',
   'hydradx': 'wss://rpc-01.snakenet.hydradx.io',
   'edgeware': 'ws://mainnet1.edgewa.re:9944',
   'edgeware-local': 'ws://localhost:9944',
@@ -31,19 +30,14 @@ const networkUrls = {
   'marlin-local': 'ws://127.0.0.1:9545',
 } as const;
 
-const networkSpecs = {
+const networkSpecs: { [chain: string]: RegisteredTypes } = {
   'clover': CloverSpec,
   'hydradx': HydraDXSpec,
+  'kulupu': KulupuSpec,
   'edgeware': EdgewareSpec,
   'edgeware-local': EdgewareSpec,
   'edgeware-testnet': EdgewareSpec,
-  'stafi': {
-    types: {
-      ChainId: 'u8',
-      DepositNonce: 'u64',
-      ResourceId: '[u8; 32]',
-    }
-  }
+  'stafi': StafiSpec,
 }
 
 const contracts = {
