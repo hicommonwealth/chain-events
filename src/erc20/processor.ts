@@ -1,5 +1,5 @@
 /**
- * Processes Marlin events.
+ * Processes ERC20 events.
  */
 import { IEventProcessor, CWEvent } from '../interfaces';
 import { factory, formatFilename } from '../logging';

@@ -48,10 +48,9 @@ export async function createApi(
     );
 
     await Promise.all(
-      tokenContracts.map((o) => o.deployed().catch((err) => console.error(err)))
+      tokenContracts.map((o) => o.deployed().catch((err) => log.error(err)))
     );
-    tokens = tokens.filter(o => o) // Remove undefined values for the failures to deploy
-    console.log("tokens", tokens )
+    tokens = tokens.filter((o) => o); // Remove undefined values for the failures to deploy
     log.info('Connection successful!');
     return { tokens: tokenContracts, provider };
   } catch (err) {
@@ -120,25 +119,3 @@ export const subscribeEvents: SubscribeFunc<
 
   return subscriber;
 };
-
-export const updateSubscriptionWithToken = async (
-  api: Api,
-  token: { address: string },
-  retryTimeMs = 10 * 1000
-): Promise<null> => {
-  const existingToken = api.tokens.find((o) => {
-    return o.address === token.address;
-  });
-  if (existingToken) {
-    return; // Token is already being monitored
-  }
-  try {
-    const contract = await Erc20Factory.connect(token.address, api.provider);
-    await contract.deployed();
-    api.tokens.push(contract);
-  } catch (e) {
-    await sleep(retryTimeMs);
-    log.error('Retrying connection...');
-    updateSubscriptionWithToken(api, token, retryTimeMs);
-  }
-}

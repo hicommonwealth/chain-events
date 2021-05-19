@@ -9,7 +9,7 @@ const log = factory.getLogger(formatFilename(__filename));
  */
 export function ParseType(name: string): EventKind | null {
   switch (name) {
-    // MPond Events
+    // ERC20 Events
     case 'Approval':
       return EventKind.Approval;
     case 'Transfer':

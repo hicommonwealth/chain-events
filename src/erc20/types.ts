@@ -3,17 +3,6 @@ import { Web3Provider } from 'ethers/providers';
 
 import { Erc20 } from './contractTypes/Erc20';
 
-// Used to unwrap promises returned by contract functions
-/*
-type UnPromisify<T> = T extends Promise<infer U> ? U : T;
-export type Proposal = UnPromisify<
-  ReturnType<GovernorAlpha['functions']['proposals']>
->;
-export type Receipt = UnPromisify<
-  ReturnType<GovernorAlpha['functions']['getReceipt']>
->;
-*/
-
 // API is imported contracts classes
 interface IErc20Contracts {
   tokens: Erc20[];
