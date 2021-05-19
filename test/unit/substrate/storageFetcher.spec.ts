@@ -223,8 +223,9 @@ const api = constructFakeApi({
         finder: 'bob',
         deposit: '1000',
         tips: [],
+        closes: constructOption(),
         findersFee: {
-          valueOf: true,
+          valueOf: () => true,
         },
       } as unknown) as OpenTip),
     ],
@@ -241,7 +242,7 @@ const api = constructFakeApi({
         ],
         closes: constructOption('123' as any),
         findersFee: {
-          valueOf: false,
+          valueOf: () => false,
         },
       } as unknown) as OpenTip),
     ],

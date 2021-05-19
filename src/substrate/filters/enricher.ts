@@ -1274,7 +1274,6 @@ export async function Enrich(
         const voter = extrinsic.signer.toString();
         const [hash, value] = extrinsic.args as [Hash, Compact<BalanceOf>];
         return {
-          excludeAddresses: [voter],
           data: {
             kind,
             proposalHash: hash.toString(),

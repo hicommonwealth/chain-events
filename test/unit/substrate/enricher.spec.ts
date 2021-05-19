@@ -586,7 +586,7 @@ const api = constructFakeApi({
       deposit: '1000',
       closes: constructOption('123' as any),
       findersFee: {
-        valueOf: true,
+        valueOf: () => true,
       },
     } as unknown) as Option<OpenTip>),
   tipReasons: async () => constructOption(('hello world!' as unknown) as Bytes),
