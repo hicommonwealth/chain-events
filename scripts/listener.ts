@@ -6,6 +6,8 @@ import * as CloverSpecTypes from '@clover-network/node-tpye';
 import {
   chainSupportedBy, IEventHandler, CWEvent, SubstrateEvents, MarlinEvents, MolochEvents, Erc20Events, EventSupportingChains
 } from '../dist/index';
+import EthDater from 'ethereum-block-by-date';
+
 
 const CloverSpec = {
   types: CloverSpecTypes
@@ -141,6 +143,7 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
 } else if (chainSupportedBy(network, MolochEvents.Types.EventChains)) {
   const contractVersion = 1;
   if (!contract) throw new Error(`no contract address for ${network}`);
+
   MolochEvents.createApi(url, contractVersion, contract).then((api) => {
     MolochEvents.subscribeEvents({
       chain: network,
@@ -168,7 +171,7 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
   })
 } else if (chainSupportedBy(network, Erc20Events.Types.EventChains)) {
   async function erc20Subscribe() {
-    let tokens = await getTokenLists() // TODO get tokens here
+    let tokens = await getTokenLists()
     Erc20Events.createApi(url, tokens).then((api) => {
       Erc20Events.subscribeEvents({
         chain: network,
@@ -181,5 +184,3 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
   }
   erc20Subscribe()
 }
-
-console.log("e")

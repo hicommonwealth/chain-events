@@ -80,7 +80,7 @@ const getDenom = (chain: EventSupportingChainT): string => {
       return 'MPond';
     case 'marlin-local':
       return 'tMPond';
-    case 'ethereum': 
+    case 'erc20': 
       throw new Error('invalid chain'); //shouldn't happen
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

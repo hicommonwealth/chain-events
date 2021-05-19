@@ -16,7 +16,6 @@ import { factory, formatFilename } from '../logging';
 import { Erc20Factory } from './contractTypes/Erc20Factory';
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
-import { StorageFetcher } from './storageFetcher';
 import { IEventData, RawEvent, Api, Token } from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
@@ -57,6 +56,7 @@ export async function createApi(
       Erc20Factory.connect(o.address, provider)
     )
 
+    await tokenContracts[0].deployed();
     await Promise.all(
       tokenContracts.map(o=>o.deployed().catch(err=>console.error(err)))
     );
@@ -130,55 +130,9 @@ export const subscribeEvents: SubscribeFunc<
 
   // helper function that runs after we've been offline/the server's been down,
   // and attempts to fetch skipped events
-  const pollMissedEventsFn = async (): Promise<void> => {
-    if (!discoverReconnectRange) {
-      log.warn(
-        'No function to discover offline time found, skipping event catchup.'
-      );
-      return;
-    }
-    log.info(`Fetching missed events since last startup of ${chain}...`);
-    let offlineRange: IDisconnectedRange;
-    try {
-      offlineRange = await discoverReconnectRange();
-      if (!offlineRange) {
-        log.warn('No offline range found, skipping event catchup.');
-        return;
-      }
-    } catch (e) {
-      log.error(
-        `Could not discover offline range: ${e.message}. Skipping event catchup.`
-      );
-      return;
-    }
-
-    // reuse provider interface for dater function
-    // defaulting to the first contract provider, though could be any of the contracts
-    const web3 = new Web3(
-      (api.tokens[0].provider as Web3Provider)._web3Provider as WebsocketProvider
-    );
-    const dater = new EthDater(web3);
-    const fetcher = new StorageFetcher(api, dater);
-    try {
-      const cwEvents = await fetcher.fetch(offlineRange);
-
-      // process events in sequence
-      for (const cwEvent of cwEvents) {
-        await handleEventFn(cwEvent);
-      }
-    } catch (e) {
-      log.error(`Unable to fetch events from storage: ${e.message}`);
-    }
-  };
-
-  if (!skipCatchup) {
-    await pollMissedEventsFn();
-  } else {
-    log.info('Skipping event catchup on startup!');
-  }
 
   try {
-    log.info(`Subscribing to Marlin contracts ${chain}...`);
+    log.info(`Subscribing to ERC20 contracts ${chain}...`);
     await subscriber.subscribe(processEventFn);
   } catch (e) {
     log.error(`Subscription error: ${e.message}`);

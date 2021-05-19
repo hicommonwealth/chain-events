@@ -15,21 +15,15 @@ export type Receipt = UnPromisify<
 
 // API is imported contracts classes
 interface IErc20Contracts {
-  // keep arg name same as Compound structure, functions similarly
   tokens: Erc20[];
 }
 
 export type Api = IErc20Contracts;
 
-export const EventChains = ['ethereum'] as const;
+export const EventChains = ['erc20'] as const;
 
 export type RawEvent = Event;
 
-// eslint-disable-next-line no-shadow
-/*export enum EntityKind {
-  // eslint-disable-next-line no-shadow
-  Proposal = 'proposal',
-}*/
 
 // eslint-disable-next-line no-shadow
 export enum EventKind {
