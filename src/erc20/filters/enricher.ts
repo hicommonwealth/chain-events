@@ -31,11 +31,8 @@ export async function Enrich(
 ): Promise<CWEvent<IEventData>> {
   switch (kind) {
     case EventKind.Approval: {
-      const {
-        owner,
-        spender,
-        value
-      } = rawData.args as any;
+      const { owner, spender, value } = rawData.args as any;
+      const contractAddress = rawData.address;
 
       return {
         blockNumber,
@@ -43,24 +40,24 @@ export async function Enrich(
         data: {
           kind,
           owner,
-          spender, 
-          value
+          spender,
+          value,
+          contractAddress,
         },
       };
     }
     case EventKind.Transfer: {
-      const {
-        from,
-        to,
-        value
-      } = rawData.args as any;
+      const { from, to, value } = rawData.args as any;
+      const contractAddress = rawData.address;
+
       return {
         blockNumber,
         data: {
           kind,
-          from, 
-          to, 
-          value
+          from,
+          to,
+          value,
+          contractAddress,
         },
       };
     }

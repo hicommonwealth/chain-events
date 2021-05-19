@@ -20,13 +20,15 @@ export const Label: LabelerFilter = (
     case EventKind.Approval:
       return {
         heading: 'Approval',
-        label: `Owner ${fmtAddr(data.owner)} approved spender ${fmtAddr(data.spender)}
+        label: `Owner ${fmtAddr(data.owner)} approved spender ${fmtAddr(
+          data.spender
+        )}
         to spend ${data.value}`,
       };
     case EventKind.Transfer:
       return {
         heading: 'Transfer',
-        label: `Transfer of ${data.value} from ${data.from} to ${data.to}.`,        
+        label: `Transfer of ${data.value} from ${data.from} to ${data.to}.`,
       };
     default: {
       // ensure exhaustive matching -- gives ts error if missing cases

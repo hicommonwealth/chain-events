@@ -1,16 +1,8 @@
 import { providers } from 'ethers';
 import Web3 from 'web3';
-import { WebsocketProvider } from 'web3-core/types';
-import { Web3Provider } from 'ethers/providers';
-import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
-import {
-  IDisconnectedRange,
-  CWEvent,
-  SubscribeFunc,
-  ISubscribeOptions,
-} from '../interfaces';
+import { CWEvent, SubscribeFunc, ISubscribeOptions } from '../interfaces';
 import { factory, formatFilename } from '../logging';
 
 import { Erc20Factory } from './contractTypes/Erc20Factory';
@@ -27,7 +19,6 @@ const log = factory.getLogger(formatFilename(__filename));
  */
 export async function createApi(
   ethNetworkUrl: string,
-  //TODO, implement adding similar thing like this contractaddresses to erc20
   tokens: Token[],
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
@@ -51,24 +42,20 @@ export async function createApi(
       },
     });
     const provider = new providers.Web3Provider(web3Provider);
-    
-    let tokenContracts = tokens.map((o)=>
+
+    const tokenContracts = tokens.map((o) =>
       Erc20Factory.connect(o.address, provider)
-    )
+    );
 
-    await tokenContracts[0].deployed();
     await Promise.all(
-      tokenContracts.map(o=>o.deployed().catch(err=>console.error(err)))
+      tokenContracts.map((o) => o.deployed().catch((err) => console.error(err)))
     );
-
+    tokens = tokens.filter(o => o) // Remove undefined values for the failures to deploy
+    console.log("tokens", tokens )
     log.info('Connection successful!');
-    return { tokens: tokenContracts };
+    return { tokens: tokenContracts, provider };
   } catch (err) {
-    log.error(
-      `Erc20 at ${ethNetworkUrl} failure: ${
-        err.message
-      }`
-    );
+    log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
     await sleep(retryTimeMs);
     log.error('Retrying connection...');
     return createApi(ethNetworkUrl, tokens, retryTimeMs);
@@ -91,14 +78,7 @@ export const subscribeEvents: SubscribeFunc<
   RawEvent,
   ISubscribeOptions<Api>
 > = async (options) => {
-  const {
-    chain,
-    api,
-    handlers,
-    skipCatchup,
-    discoverReconnectRange,
-    verbose,
-  } = options;
+  const { chain, api, handlers, verbose } = options;
   // helper function that sends an event through event handlers
   const handleEventFn = async (event: CWEvent<IEventData>): Promise<void> => {
     let prevResult = null;
@@ -140,3 +120,25 @@ export const subscribeEvents: SubscribeFunc<
 
   return subscriber;
 };
+
+export const updateSubscriptionWithToken = async (
+  api: Api,
+  token: { address: string },
+  retryTimeMs = 10 * 1000
+): Promise<null> => {
+  const existingToken = api.tokens.find((o) => {
+    return o.address === token.address;
+  });
+  if (existingToken) {
+    return; // Token is already being monitored
+  }
+  try {
+    const contract = await Erc20Factory.connect(token.address, api.provider);
+    await contract.deployed();
+    api.tokens.push(contract);
+  } catch (e) {
+    await sleep(retryTimeMs);
+    log.error('Retrying connection...');
+    updateSubscriptionWithToken(api, token, retryTimeMs);
+  }
+}
