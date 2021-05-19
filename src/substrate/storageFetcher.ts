@@ -156,6 +156,9 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       blockNumber
     );
 
+    /** tips */
+    const tipsEvents = await this.fetchTips(blockNumber);
+
     /** signaling proposals */
     const signalingProposalEvents = await this.fetchSignalingProposals(
       blockNumber
@@ -171,6 +174,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       ...technicalCommitteeProposalEvents,
       ...councilProposalEvents,
       ...signalingProposalEvents,
+      ...tipsEvents,
     ];
   }
 
