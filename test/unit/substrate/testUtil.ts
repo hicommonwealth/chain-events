@@ -168,7 +168,7 @@ export function constructFakeApi(callOverrides: {
   const tips = function (...args) {
     return callOverrides['tips'](...args);
   };
-  tips.entries = callOverrides['tipsEntries'];
+  tips.keys = callOverrides['tipsKeys'];
 
   return ({
     createType: (name, value) => value,
@@ -190,6 +190,7 @@ export function constructFakeApi(callOverrides: {
         getBlockHash: callOverrides['getBlockHash'],
       },
       state: {
+        getStorage: callOverrides['getStorage'],
         getRuntimeVersion: callOverrides['getRuntimeVersion'],
         subscribeRuntimeVersion: callOverrides['subscribeRuntimeVersion'],
       },

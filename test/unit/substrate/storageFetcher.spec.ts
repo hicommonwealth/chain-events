@@ -214,10 +214,14 @@ const api = constructFakeApi({
   },
 
   // tips
-  tipsEntries: async () => [
-    [
-      { args: ['tip-hash-1'] },
-      constructOption(({
+  tipsKeys: async () => [
+    { args: ['tip-hash-1'] },
+    { args: ['tip-hash-2'] },
+    { args: ['tip-hash-3'] },
+  ],
+  getStorage: async (key) => {
+    if (key?.args[0] === 'tip-hash-1') {
+      return constructOption(({
         reason: 'reasonHash1',
         who: 'alice',
         finder: 'bob',
@@ -227,11 +231,10 @@ const api = constructFakeApi({
         findersFee: {
           valueOf: () => true,
         },
-      } as unknown) as OpenTip),
-    ],
-    [
-      { args: ['tip-hash-2'] },
-      constructOption(({
+      } as unknown) as OpenTip);
+    }
+    if (key?.args[0] === 'tip-hash-2') {
+      return constructOption(({
         reason: 'reasonHash2',
         who: 'charlie',
         finder: 'dave',
@@ -244,9 +247,10 @@ const api = constructFakeApi({
         findersFee: {
           valueOf: () => false,
         },
-      } as unknown) as OpenTip),
-    ],
-  ],
+      } as unknown) as OpenTip);
+    }
+    throw new Error('UNKNOWN STORAGE ITEM');
+  },
   tipReasons: async (hash) =>
     hash === 'reasonHash1'
       ? constructOption(('hello world!' as unknown) as Bytes)

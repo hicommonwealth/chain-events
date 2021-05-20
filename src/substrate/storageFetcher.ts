@@ -17,6 +17,7 @@ import {
   TreasuryProposal,
   Proposal,
   Votes,
+  OpenTip,
 } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 import { DeriveProposalImage } from '@polkadot/api-derive/types';
@@ -501,62 +502,67 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     }
 
     log.info('Migrating tips...');
-    const openTipEntries = await this._api.query.tips.tips.entries();
+    const openTipKeys = await this._api.query.tips.tips.keys();
     const results: CWEvent<INewTip | ITipVoted | ITipClosing>[] = [];
-    for (const [storageKey, tip] of openTipEntries) {
-      const hash = storageKey.args[0].toString();
-      if (tip.isSome) {
-        const {
-          reason: reasonHash,
-          who,
-          finder,
-          deposit,
-          closes,
-          tips: tipVotes,
-          findersFee,
-        } = tip.unwrap();
-        const reason = await this._api.query.tips.reasons(reasonHash);
-        if (reason.isSome) {
-          // newtip events
-          results.push({
-            blockNumber,
-            data: {
-              kind: EventKind.NewTip,
-              proposalHash: hash,
-              who: who.toString(),
-              reason: reason.unwrap().toString(),
-              finder: finder.toString(),
-              deposit: deposit.toString(),
-              findersFee: findersFee.valueOf(),
-            },
-          });
-
-          // n tipvoted events
-          for (const [voter, amount] of tipVotes) {
+    for (const key of openTipKeys) {
+      const hash = key.args[0].toString();
+      try {
+        const tip = await this._api.rpc.state.getStorage<Option<OpenTip>>(key);
+        if (tip.isSome) {
+          const {
+            reason: reasonHash,
+            who,
+            finder,
+            deposit,
+            closes,
+            tips: tipVotes,
+            findersFee,
+          } = tip.unwrap();
+          const reason = await this._api.query.tips.reasons(reasonHash);
+          if (reason.isSome) {
+            // newtip events
             results.push({
               blockNumber,
               data: {
-                kind: EventKind.TipVoted,
+                kind: EventKind.NewTip,
                 proposalHash: hash,
-                who: voter.toString(),
-                value: amount.toString(),
+                who: who.toString(),
+                reason: reason.unwrap().toString(),
+                finder: finder.toString(),
+                deposit: deposit.toString(),
+                findersFee: findersFee.valueOf(),
               },
             });
-          }
 
-          // tipclosing event
-          if (closes.isSome) {
-            const closesAt = +closes.unwrap();
-            results.push({
-              blockNumber,
-              data: {
-                kind: EventKind.TipClosing,
-                proposalHash: hash,
-                closing: closesAt,
-              },
-            });
+            // n tipvoted events
+            for (const [voter, amount] of tipVotes) {
+              results.push({
+                blockNumber,
+                data: {
+                  kind: EventKind.TipVoted,
+                  proposalHash: hash,
+                  who: voter.toString(),
+                  value: amount.toString(),
+                },
+              });
+            }
+
+            // tipclosing event
+            if (closes.isSome) {
+              const closesAt = +closes.unwrap();
+              results.push({
+                blockNumber,
+                data: {
+                  kind: EventKind.TipClosing,
+                  proposalHash: hash,
+                  closing: closesAt,
+                },
+              });
+            }
           }
         }
+      } catch (e) {
+        log.error(`Unable to fetch tip "${key.args[0]}"!`);
       }
     }
 
