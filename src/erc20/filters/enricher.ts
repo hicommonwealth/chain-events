@@ -36,7 +36,6 @@ export async function Enrich(
 
       return {
         blockNumber,
-        // TODO put contract address in here as well
         data: {
           kind,
           owner,

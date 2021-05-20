@@ -19,7 +19,7 @@ const log = factory.getLogger(formatFilename(__filename));
  */
 export async function createApi(
   ethNetworkUrl: string,
-  tokens: Token[],
+  tokenAddresses: string[],
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
   if (ethNetworkUrl.includes('infura')) {
@@ -43,21 +43,21 @@ export async function createApi(
     });
     const provider = new providers.Web3Provider(web3Provider);
 
-    const tokenContracts = tokens.map((o) =>
-      Erc20Factory.connect(o.address, provider)
+    const tokenContracts = tokenAddresses.map((o) =>
+      Erc20Factory.connect(o, provider)
     );
 
     await Promise.all(
       tokenContracts.map((o) => o.deployed().catch((err) => log.error(err)))
     );
-    tokens = tokens.filter((o) => o); // Remove undefined values for the failures to deploy
+
     log.info('Connection successful!');
     return { tokens: tokenContracts, provider };
   } catch (err) {
     log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
     await sleep(retryTimeMs);
     log.error('Retrying connection...');
-    return createApi(ethNetworkUrl, tokens, retryTimeMs);
+    return createApi(ethNetworkUrl, tokenAddresses, retryTimeMs);
   }
 }
 
