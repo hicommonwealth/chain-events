@@ -589,7 +589,8 @@ const api = constructFakeApi({
         valueOf: () => true,
       },
     } as unknown) as Option<OpenTip>),
-  tipReasons: async () => constructOption(('hello world!' as unknown) as Bytes),
+  tipReasons: async () =>
+    constructOption((stringToHex('hello world!') as unknown) as Bytes),
 });
 
 class FakeEventData extends Array {

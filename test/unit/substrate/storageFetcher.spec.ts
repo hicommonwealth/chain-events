@@ -253,8 +253,8 @@ const api = constructFakeApi({
   },
   tipReasons: async (hash) =>
     hash === 'reasonHash1'
-      ? constructOption(('hello world!' as unknown) as Bytes)
-      : constructOption(('goodbye world!' as unknown) as Bytes),
+      ? constructOption((stringToHex('hello world!') as unknown) as Bytes)
+      : constructOption((stringToHex('goodbye world!') as unknown) as Bytes),
 
   // signaling proposals
   inactiveProposals: async () => [['inactive-hash', '100']],

@@ -32,6 +32,7 @@ import {
   StorageKey,
 } from '@polkadot/types';
 import { Codec, AnyTuple } from '@polkadot/types/types';
+import { hexToString } from '@polkadot/util';
 import { filter } from 'lodash';
 import {
   Kind,
@@ -643,7 +644,7 @@ export async function Enrich(
             kind,
             proposalHash: hash.toString(),
             // TODO: verify this reason string unmarshals correctly
-            reason: reasonOpt.unwrap().toString(),
+            reason: hexToString(reasonOpt.unwrap().toString()),
             who: who.toString(),
             finder: finder.toString(),
             deposit: deposit.toString(),

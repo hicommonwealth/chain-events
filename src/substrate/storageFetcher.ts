@@ -21,7 +21,7 @@ import {
 } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 import { DeriveProposalImage } from '@polkadot/api-derive/types';
-import { isFunction } from '@polkadot/util';
+import { isFunction, hexToString } from '@polkadot/util';
 
 import { CWEvent, IStorageFetcher } from '../interfaces';
 import { factory, formatFilename } from '../logging';
@@ -527,7 +527,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
                 kind: EventKind.NewTip,
                 proposalHash: hash,
                 who: who.toString(),
-                reason: reason.unwrap().toString(),
+                reason: hexToString(reason.unwrap().toString()),
                 finder: finder.toString(),
                 deposit: deposit.toString(),
                 findersFee: findersFee.valueOf(),
