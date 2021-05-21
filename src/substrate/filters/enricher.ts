@@ -1179,6 +1179,16 @@ export async function Enrich(
         };
       }
 
+      case EventKind.TreasuryBountyBecameActive: {
+        const [idx] = extrinsic.args as [BountyIndex];
+        return {
+          data: {
+            kind,
+            bountyIndex: +idx,
+          },
+        };
+      }
+
       case EventKind.TreasuryBountyExtended: {
         const [idx, remark] = extrinsic.args as [BountyIndex, any];
         return {
