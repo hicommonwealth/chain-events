@@ -1190,6 +1190,17 @@ export async function Enrich(
         };
       }
 
+      case EventKind.TreasuryBountyAwarded: {
+        const [idx, beneficiary] = extrinsic.args as [BountyIndex, AccountId];
+        return {
+          data: {
+            kind,
+            bountyIndex: +idx,
+            beneficiary: beneficiary.toString(),
+          },
+        };
+      }
+
       default: {
         throw new Error(`unknown event type: ${kind}`);
       }
