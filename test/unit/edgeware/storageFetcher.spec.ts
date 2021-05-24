@@ -10,7 +10,7 @@ import {
   Votes,
   Bounty,
 } from '@polkadot/types/interfaces';
-import { Vec, Data, TypeRegistry } from '@polkadot/types';
+import { Vec, Data, TypeRegistry, Bytes } from '@polkadot/types';
 import { Codec } from '@polkadot/types/types';
 import { stringToHex } from '@polkadot/util';
 import { DeriveReferendum } from '@polkadot/api-derive/democracy/types';
@@ -185,6 +185,8 @@ const api = constructFakeApi({
       proposals: [{}],
     } as unknown) as DeriveBounty,
   ],
+  bountyDescriptions: async () =>
+    constructOption((stringToHex('hello') as unknown) as Bytes),
 
   // collective proposals
   collectiveProposals: async () => ['council-hash2', 'council-hash'],
@@ -479,6 +481,7 @@ describe('Edgeware Event Migration Tests', () => {
           fee: '10',
           curatorDeposit: '10',
           bond: '10',
+          description: 'hello',
         } as ITreasuryBountyProposed,
       },
       {
