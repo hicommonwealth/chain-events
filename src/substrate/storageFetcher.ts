@@ -367,11 +367,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
           : undefined,
       } as ITreasuryBountyProposed);
 
-      if (
-        !b.bounty.status.isProposed &&
-        !b.bounty.status.isNone &&
-        !b.bounty.status.isCuratorProposed
-      ) {
+      if (b.bounty.status.isActive || b.bounty.status.isPendingPayout) {
         events.push({
           kind: EventKind.TreasuryBountyBecameActive,
           bountyIndex: +b.index,
