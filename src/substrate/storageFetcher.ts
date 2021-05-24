@@ -351,9 +351,6 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     const bounties = await this._api.derive.bounties.bounties();
     const events = [];
     for (const b of bounties) {
-      const description = await this._api.query.bounties.bountyDescriptions(
-        b.index
-      );
       events.push({
         kind: EventKind.TreasuryBountyProposed,
         bountyIndex: +b.index,
@@ -362,9 +359,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         fee: b.bounty.fee.toString(),
         curatorDeposit: b.bounty.curatorDeposit.toString(),
         bond: b.bounty.bond.toString(),
-        description: description?.isSome
-          ? hexToString(description.unwrap().toString())
-          : undefined,
+        description: b.description,
       } as ITreasuryBountyProposed);
 
       if (b.bounty.status.isActive || b.bounty.status.isPendingPayout) {

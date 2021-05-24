@@ -180,13 +180,11 @@ const api = constructFakeApi({
         bond: 10,
         status: 'Proposed',
       },
-      description: 'test bounty description',
+      description: 'hello',
       index: 0,
       proposals: [{}],
     } as unknown) as DeriveBounty,
   ],
-  bountyDescriptions: async () =>
-    constructOption((stringToHex('hello') as unknown) as Bytes),
 
   // collective proposals
   collectiveProposals: async () => ['council-hash2', 'council-hash'],
@@ -483,13 +481,6 @@ describe('Edgeware Event Migration Tests', () => {
           bond: '10',
           description: 'hello',
         } as ITreasuryBountyProposed,
-      },
-      {
-        blockNumber,
-        data: {
-          kind: 'treasury-bounty-became-active',
-          bountyIndex: 0,
-        } as ITreasuryBountyBecameActive,
       },
     ]);
   });
