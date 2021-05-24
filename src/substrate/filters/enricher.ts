@@ -688,9 +688,6 @@ export async function Enrich(
         if (!bounty) {
           throw new Error(`could not fetch bounty`);
         }
-        const description = await api.query.bounties.bountyDescriptions(
-          bountyIndex
-        );
         return {
           data: {
             kind,
@@ -700,9 +697,7 @@ export async function Enrich(
             fee: bounty.bounty.fee.toString(),
             curatorDeposit: bounty.bounty.curatorDeposit.toString(),
             bond: bounty.bounty.bond.toString(),
-            description: description?.isSome
-              ? hexToString(description.unwrap().toString())
-              : undefined,
+            description: bounty.description,
           },
         };
       }
