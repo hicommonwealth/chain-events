@@ -445,6 +445,7 @@ export interface ITreasuryBountyProposed extends IEvent {
   fee: BalanceString;
   curatorDeposit: BalanceString;
   bond: BalanceString;
+  description?: string;
 }
 
 export interface ITreasuryBountyAwarded extends IEvent {

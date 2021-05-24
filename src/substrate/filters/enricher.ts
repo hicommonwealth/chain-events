@@ -29,8 +29,10 @@ import {
   u64,
   Compact,
   StorageKey,
+  Bytes,
 } from '@polkadot/types';
 import { Codec, AnyTuple } from '@polkadot/types/types';
+import { hexToString } from '@polkadot/util';
 import { filter } from 'lodash';
 import {
   Kind,
@@ -686,6 +688,9 @@ export async function Enrich(
         if (!bounty) {
           throw new Error(`could not fetch bounty`);
         }
+        const description = await api.query.bounties.bountyDescriptions(
+          bountyIndex
+        );
         return {
           data: {
             kind,
@@ -695,6 +700,9 @@ export async function Enrich(
             fee: bounty.bounty.fee.toString(),
             curatorDeposit: bounty.bounty.curatorDeposit.toString(),
             bond: bounty.bounty.bond.toString(),
+            description: description?.isSome
+              ? hexToString(description.unwrap().toString())
+              : undefined,
           },
         };
       }
@@ -725,17 +733,6 @@ export async function Enrich(
             kind,
             bountyIndex: +bountyIndex,
             bond: bond.toString(),
-          },
-        };
-      }
-
-      case EventKind.TreasuryBountyExtended: {
-        const [bountyIndex, remark] = (event.data as unknown) as [BountyIndex, any];
-        return {
-          data: {
-            kind,
-            bountyIndex: +bountyIndex,
-            remark: remark?.toHuman(),
           },
         };
       }
@@ -1179,34 +1176,13 @@ export async function Enrich(
         };
       }
 
-      case EventKind.TreasuryBountyBecameActive: {
-        const [idx] = extrinsic.args as [BountyIndex];
-        return {
-          data: {
-            kind,
-            bountyIndex: +idx,
-          },
-        };
-      }
-
       case EventKind.TreasuryBountyExtended: {
-        const [idx, remark] = extrinsic.args as [BountyIndex, any];
+        const [idx, remark] = extrinsic.args as [BountyIndex, Bytes];
         return {
           data: {
             kind,
             bountyIndex: +idx,
-            remark: remark?.toHuman(),
-          },
-        };
-      }
-
-      case EventKind.TreasuryBountyAwarded: {
-        const [idx, beneficiary] = extrinsic.args as [BountyIndex, AccountId];
-        return {
-          data: {
-            kind,
-            bountyIndex: +idx,
-            beneficiary: beneficiary.toString(),
+            remark: hexToString(remark.toString()),
           },
         };
       }
