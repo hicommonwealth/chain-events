@@ -201,7 +201,7 @@ export function ParseType(
         case 'extendBountyExpiry':
           return EventKind.TreasuryBountyExtended;
         default:
-          throw new Error('invalid case');
+          return null;
       }
     }
     default:
