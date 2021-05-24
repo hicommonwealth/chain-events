@@ -8,9 +8,14 @@ import { factory, formatFilename } from '../logging';
 import { Erc20Factory } from './contractTypes/Erc20Factory';
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
-import { IEventData, RawEvent, Api, Token } from './types';
+import { IEventData, RawEvent, Api } from './types';
+import { EnricherConfig } from './filters/enricher';
 
 const log = factory.getLogger(formatFilename(__filename));
+
+export interface IErc20SubscribeOptions extends ISubscribeOptions<Api> {
+  enricherConfig?: EnricherConfig;
+}
 
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
@@ -75,7 +80,7 @@ export async function createApi(
 export const subscribeEvents: SubscribeFunc<
   Api,
   RawEvent,
-  ISubscribeOptions<Api>
+  IErc20SubscribeOptions
 > = async (options) => {
   const { chain, api, handlers, verbose } = options;
   // helper function that sends an event through event handlers
