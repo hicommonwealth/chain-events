@@ -376,22 +376,18 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
           kind: EventKind.TreasuryBountyBecameActive,
           bountyIndex: +b.index,
         } as ITreasuryBountyBecameActive);
-        if (!b.bounty.status.isActive && b.bounty.status.isPendingPayout) {
+
+        if (b.bounty.status.isPendingPayout) {
           events.push({
             kind: EventKind.TreasuryBountyAwarded,
             bountyIndex: +b.index,
             value: b.bounty.value.toString(),
             beneficiary: b.bounty.status.asPendingPayout.beneficiary.toString(),
           } as ITreasuryBountyAwarded);
-          events.push({
-            kind: EventKind.TreasuryBountyClaimed,
-            bountyIndex: +b.index,
-            payout: b.bounty.value.toString(),
-            beneficiary: b.bounty.status.asPendingPayout.beneficiary.toString(),
-          } as ITreasuryBountyClaimed);
         }
       }
-      // No other events can be extracted from a derivable bounty itself
+      // We don't belive any other events can be extracted from a
+      // derivable bounty itself, but we might be wrong
     }
 
     log.info(`Found ${bounties.length} bounties!`);
