@@ -1,11 +1,7 @@
 import BN from 'bn.js';
 
-import {
-  IEventLabel,
-  LabelerFilter,
-  EventSupportingChainT,
-} from '../../interfaces';
-import { BalanceString, EventKind, IEventData } from '../types';
+import { IEventLabel, LabelerFilter } from '../../interfaces';
+import { BalanceString, EventKind, IEventData, EventChains } from '../types';
 
 function fmtAddr(addr: string) {
   if (!addr) return '';
@@ -49,7 +45,7 @@ function formatNumberShort(num: number) {
     : num.toString();
 }
 
-const getDenom = (chain: EventSupportingChainT): string => {
+const getDenom = (chain: typeof EventChains[number]): string => {
   switch (chain) {
     case 'clover':
       return 'CLV';
@@ -72,14 +68,6 @@ const getDenom = (chain: EventSupportingChainT): string => {
       return 'DOT';
     case 'polkadot-local':
       return 'tDOT';
-    case 'moloch':
-      return 'Shares';
-    case 'moloch-local':
-      return 'tShares';
-    case 'marlin':
-      return 'MPond';
-    case 'marlin-local':
-      return 'tMPond';
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _dummy: never = chain;

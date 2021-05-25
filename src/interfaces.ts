@@ -5,29 +5,35 @@
 import * as SubstrateTypes from './substrate/types';
 import * as MolochTypes from './moloch/types';
 import * as MarlinTypes from './marlin/types';
+import * as AaveTypes from './aave/types';
 
 // add other events here as union types
 export type IChainEntityKind =
   | SubstrateTypes.EntityKind
   | MolochTypes.EntityKind
-  | MarlinTypes.EntityKind;
+  | MarlinTypes.EntityKind
+  | AaveTypes.EntityKind;
 export type IChainEventData =
   | SubstrateTypes.IEventData
   | MolochTypes.IEventData
-  | MarlinTypes.IEventData;
+  | MarlinTypes.IEventData
+  | AaveTypes.IEventData;
 export type IChainEventKind =
   | SubstrateTypes.EventKind
   | MolochTypes.EventKind
-  | MarlinTypes.EventKind;
+  | MarlinTypes.EventKind
+  | AaveTypes.EventKind;
 export const ChainEventKinds = [
   ...SubstrateTypes.EventKinds,
   ...MolochTypes.EventKinds,
   ...MarlinTypes.EventKinds,
+  ...AaveTypes.EventKinds,
 ];
 export const EventSupportingChains = [
   ...SubstrateTypes.EventChains,
   ...MolochTypes.EventChains,
   ...MarlinTypes.EventChains,
+  ...AaveTypes.EventChains,
 ] as const;
 export type EventSupportingChainT = typeof EventSupportingChains[number];
 
@@ -180,6 +186,9 @@ export function entityToFieldName(entity: IChainEntityKind): string | null {
       return 'proposalIndex';
     }
     case MarlinTypes.EntityKind.Proposal: {
+      return 'id';
+    }
+    case AaveTypes.EntityKind.Proposal: {
       return 'id';
     }
     default: {
@@ -398,6 +407,18 @@ export function eventToEntity(
       return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
     }
 
+    // Aave Events
+    case AaveTypes.EventKind.ProposalCreated: {
+      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
+    }
+    case AaveTypes.EventKind.VoteEmitted:
+    case AaveTypes.EventKind.ProposalQueued: {
+      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
+    }
+    case AaveTypes.EventKind.ProposalExecuted:
+    case AaveTypes.EventKind.ProposalCanceled: {
+      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+    }
     default: {
       return null;
     }
