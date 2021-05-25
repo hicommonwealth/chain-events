@@ -11,6 +11,7 @@ import {
   PopulatedTransaction,
   Contract,
   ContractTransaction,
+  PayableOverrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -18,26 +19,27 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface IGovernancePowerDelegationTokenInterface
+interface InitializableUpgradeabilityProxyInterface
   extends ethers.utils.Interface {
   functions: {
-    "getPowerAtBlock(address,uint256,uint8)": FunctionFragment;
+    "initialize(address,bytes)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "getPowerAtBlock",
-    values: [string, BigNumberish, BigNumberish]
+    functionFragment: "initialize",
+    values: [string, BytesLike]
   ): string;
 
-  decodeFunctionResult(
-    functionFragment: "getPowerAtBlock",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
 
-  events: {};
+  events: {
+    "Upgraded(address)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "Upgraded"): EventFragment;
 }
 
-export class IGovernancePowerDelegationToken extends Contract {
+export class InitializableUpgradeabilityProxy extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -78,85 +80,79 @@ export class IGovernancePowerDelegationToken extends Contract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IGovernancePowerDelegationTokenInterface;
+  interface: InitializableUpgradeabilityProxyInterface;
 
   functions: {
-    getPowerAtBlock(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    initialize(
+      _logic: string,
+      _data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    "initialize(address,bytes)"(
+      _logic: string,
+      _data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
-  getPowerAtBlock(
-    user: string,
-    blockNumber: BigNumberish,
-    delegationType: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  initialize(
+    _logic: string,
+    _data: BytesLike,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
-  "getPowerAtBlock(address,uint256,uint8)"(
-    user: string,
-    blockNumber: BigNumberish,
-    delegationType: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  "initialize(address,bytes)"(
+    _logic: string,
+    _data: BytesLike,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
-    getPowerAtBlock(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
+    initialize(
+      _logic: string,
+      _data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<void>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
+    "initialize(address,bytes)"(
+      _logic: string,
+      _data: BytesLike,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<void>;
   };
 
-  filters: {};
+  filters: {
+    Upgraded(
+      implementation: string | null
+    ): TypedEventFilter<[string], { implementation: string }>;
+  };
 
   estimateGas: {
-    getPowerAtBlock(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
+    initialize(
+      _logic: string,
+      _data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
+    "initialize(address,bytes)"(
+      _logic: string,
+      _data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    getPowerAtBlock(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
+    initialize(
+      _logic: string,
+      _data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
+    "initialize(address,bytes)"(
+      _logic: string,
+      _data: BytesLike,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -63,7 +63,7 @@ export async function createApi(
     };
   } catch (err) {
     log.error(
-      `Marlin ${contractAddresses.toString()} at ${ethNetworkUrl} failure: ${
+      `Aave ${contractAddresses.toString()} at ${ethNetworkUrl} failure: ${
         err.message
       }`
     );
@@ -170,7 +170,7 @@ export const subscribeEvents: SubscribeFunc<
   }
 
   try {
-    log.info(`Subscribing to Marlin contracts ${chain}...`);
+    log.info(`Subscribing to Aave contracts ${chain}...`);
     await subscriber.subscribe(processEventFn);
   } catch (e) {
     log.error(`Subscription error: ${e.message}`);

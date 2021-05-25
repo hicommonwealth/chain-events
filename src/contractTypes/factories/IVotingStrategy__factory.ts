@@ -5,18 +5,14 @@
 import { Contract, Signer } from "ethers";
 import { Provider } from "@ethersproject/providers";
 
-import type { IGovernancePowerDelegationToken } from "../IGovernancePowerDelegationToken";
+import type { IVotingStrategy } from "../IVotingStrategy";
 
-export class IGovernancePowerDelegationToken__factory {
+export class IVotingStrategy__factory {
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): IGovernancePowerDelegationToken {
-    return new Contract(
-      address,
-      _abi,
-      signerOrProvider
-    ) as IGovernancePowerDelegationToken;
+  ): IVotingStrategy {
+    return new Contract(address, _abi, signerOrProvider) as IVotingStrategy;
   }
 }
 
@@ -33,13 +29,8 @@ const _abi = [
         name: "blockNumber",
         type: "uint256",
       },
-      {
-        internalType: "enum IGovernancePowerDelegationToken.DelegationType",
-        name: "delegationType",
-        type: "uint8",
-      },
     ],
-    name: "getPowerAtBlock",
+    name: "getVotingPowerAt",
     outputs: [
       {
         internalType: "uint256",

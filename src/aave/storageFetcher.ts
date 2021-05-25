@@ -128,7 +128,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       range.endBlock = this._currentBlock;
     }
     log.info(
-      `Fetching Marlin entities for range: ${range.startBlock}-${range.endBlock}.`
+      `Fetching Aave entities for range: ${range.startBlock}-${range.endBlock}.`
     );
 
     const queueLength = +(await this._api.governance.getProposalsCount());

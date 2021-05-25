@@ -11,6 +11,7 @@ import {
   PopulatedTransaction,
   Contract,
   ContractTransaction,
+  PayableOverrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -18,26 +19,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface IGovernancePowerDelegationTokenInterface
-  extends ethers.utils.Interface {
+interface SelfdestructTransferInterface extends ethers.utils.Interface {
   functions: {
-    "getPowerAtBlock(address,uint256,uint8)": FunctionFragment;
+    "destroyAndTransfer(address)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "getPowerAtBlock",
-    values: [string, BigNumberish, BigNumberish]
+    functionFragment: "destroyAndTransfer",
+    values: [string]
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "getPowerAtBlock",
+    functionFragment: "destroyAndTransfer",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export class IGovernancePowerDelegationToken extends Contract {
+export class SelfdestructTransfer extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -78,85 +78,62 @@ export class IGovernancePowerDelegationToken extends Contract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IGovernancePowerDelegationTokenInterface;
+  interface: SelfdestructTransferInterface;
 
   functions: {
-    getPowerAtBlock(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    destroyAndTransfer(
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    "destroyAndTransfer(address)"(
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
-  getPowerAtBlock(
-    user: string,
-    blockNumber: BigNumberish,
-    delegationType: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  destroyAndTransfer(
+    to: string,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
-  "getPowerAtBlock(address,uint256,uint8)"(
-    user: string,
-    blockNumber: BigNumberish,
-    delegationType: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  "destroyAndTransfer(address)"(
+    to: string,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   callStatic: {
-    getPowerAtBlock(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    destroyAndTransfer(to: string, overrides?: CallOverrides): Promise<void>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
+    "destroyAndTransfer(address)"(
+      to: string,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<void>;
   };
 
   filters: {};
 
   estimateGas: {
-    getPowerAtBlock(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
+    destroyAndTransfer(
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
+    "destroyAndTransfer(address)"(
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    getPowerAtBlock(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
+    destroyAndTransfer(
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
-      user: string,
-      blockNumber: BigNumberish,
-      delegationType: BigNumberish,
-      overrides?: CallOverrides
+    "destroyAndTransfer(address)"(
+      to: string,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
 }

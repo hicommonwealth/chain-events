@@ -87,16 +87,12 @@ async function deployTimelock(
 }
 
 class MarlinEventHandler extends IEventHandler {
-  public readonly events: CWEvent<IEventData>[] = [];
-
   constructor(public readonly emitter: EventEmitter) {
     super();
   }
 
   public async handle(event: CWEvent<IEventData>): Promise<IChainEventData> {
     this.emitter.emit(event.data.kind.toString(), event);
-    // this.emitter.emit('*', event);
-    this.events.push(event);
     return null;
   }
 }
@@ -141,11 +137,11 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
     member
   );
 
+  // TODO: Adminship seems messed up, can't do queue() calls
   // await governorAlpha.__executeSetTimelockPendingAdmin(member, 0);
-  console.log('member: ', member);
-  console.log('timelock admin address: ', await timelock.admin());
-  console.log('governorAlpha guardian:', await governorAlpha.guardian());
-  // TODO: Fix this somehow, need to make governorAlpha admin of timelock... :le-penseur:
+  // console.log('member: ', member);
+  // console.log('timelock admin address: ', await timelock.admin());
+  // console.log('governorAlpha guardian:', await governorAlpha.guardian());
   const api = { comp, governorAlpha, timelock };
   const emitter = new EventEmitter();
   const handler = new MarlinEventHandler(emitter);

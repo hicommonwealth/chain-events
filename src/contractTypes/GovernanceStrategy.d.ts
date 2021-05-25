@@ -18,14 +18,18 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface IGovernanceStrategyInterface extends ethers.utils.Interface {
+interface GovernanceStrategyInterface extends ethers.utils.Interface {
   functions: {
+    "AAVE()": FunctionFragment;
+    "STK_AAVE()": FunctionFragment;
     "getPropositionPowerAt(address,uint256)": FunctionFragment;
     "getTotalPropositionSupplyAt(uint256)": FunctionFragment;
     "getTotalVotingSupplyAt(uint256)": FunctionFragment;
     "getVotingPowerAt(address,uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "AAVE", values?: undefined): string;
+  encodeFunctionData(functionFragment: "STK_AAVE", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getPropositionPowerAt",
     values: [string, BigNumberish]
@@ -43,6 +47,8 @@ interface IGovernanceStrategyInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
 
+  decodeFunctionResult(functionFragment: "AAVE", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "STK_AAVE", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getPropositionPowerAt",
     data: BytesLike
@@ -63,7 +69,7 @@ interface IGovernanceStrategyInterface extends ethers.utils.Interface {
   events: {};
 }
 
-export class IGovernanceStrategy extends Contract {
+export class GovernanceStrategy extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -104,9 +110,17 @@ export class IGovernanceStrategy extends Contract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IGovernanceStrategyInterface;
+  interface: GovernanceStrategyInterface;
 
   functions: {
+    AAVE(overrides?: CallOverrides): Promise<[string]>;
+
+    "AAVE()"(overrides?: CallOverrides): Promise<[string]>;
+
+    STK_AAVE(overrides?: CallOverrides): Promise<[string]>;
+
+    "STK_AAVE()"(overrides?: CallOverrides): Promise<[string]>;
+
     getPropositionPowerAt(
       user: string,
       blockNumber: BigNumberish,
@@ -151,6 +165,14 @@ export class IGovernanceStrategy extends Contract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
   };
+
+  AAVE(overrides?: CallOverrides): Promise<string>;
+
+  "AAVE()"(overrides?: CallOverrides): Promise<string>;
+
+  STK_AAVE(overrides?: CallOverrides): Promise<string>;
+
+  "STK_AAVE()"(overrides?: CallOverrides): Promise<string>;
 
   getPropositionPowerAt(
     user: string,
@@ -197,6 +219,14 @@ export class IGovernanceStrategy extends Contract {
   ): Promise<BigNumber>;
 
   callStatic: {
+    AAVE(overrides?: CallOverrides): Promise<string>;
+
+    "AAVE()"(overrides?: CallOverrides): Promise<string>;
+
+    STK_AAVE(overrides?: CallOverrides): Promise<string>;
+
+    "STK_AAVE()"(overrides?: CallOverrides): Promise<string>;
+
     getPropositionPowerAt(
       user: string,
       blockNumber: BigNumberish,
@@ -245,6 +275,14 @@ export class IGovernanceStrategy extends Contract {
   filters: {};
 
   estimateGas: {
+    AAVE(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "AAVE()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    STK_AAVE(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "STK_AAVE()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     getPropositionPowerAt(
       user: string,
       blockNumber: BigNumberish,
@@ -291,6 +329,14 @@ export class IGovernanceStrategy extends Contract {
   };
 
   populateTransaction: {
+    AAVE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "AAVE()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    STK_AAVE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "STK_AAVE()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     getPropositionPowerAt(
       user: string,
       blockNumber: BigNumberish,

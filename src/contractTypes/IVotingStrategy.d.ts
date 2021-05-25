@@ -18,26 +18,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface IGovernancePowerDelegationTokenInterface
-  extends ethers.utils.Interface {
+interface IVotingStrategyInterface extends ethers.utils.Interface {
   functions: {
-    "getPowerAtBlock(address,uint256,uint8)": FunctionFragment;
+    "getVotingPowerAt(address,uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "getPowerAtBlock",
-    values: [string, BigNumberish, BigNumberish]
+    functionFragment: "getVotingPowerAt",
+    values: [string, BigNumberish]
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "getPowerAtBlock",
+    functionFragment: "getVotingPowerAt",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export class IGovernancePowerDelegationToken extends Contract {
+export class IVotingStrategy extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -78,50 +77,44 @@ export class IGovernancePowerDelegationToken extends Contract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IGovernancePowerDelegationTokenInterface;
+  interface: IVotingStrategyInterface;
 
   functions: {
-    getPowerAtBlock(
+    getVotingPowerAt(
       user: string,
       blockNumber: BigNumberish,
-      delegationType: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
+    "getVotingPowerAt(address,uint256)"(
       user: string,
       blockNumber: BigNumberish,
-      delegationType: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
   };
 
-  getPowerAtBlock(
+  getVotingPowerAt(
     user: string,
     blockNumber: BigNumberish,
-    delegationType: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  "getPowerAtBlock(address,uint256,uint8)"(
+  "getVotingPowerAt(address,uint256)"(
     user: string,
     blockNumber: BigNumberish,
-    delegationType: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   callStatic: {
-    getPowerAtBlock(
+    getVotingPowerAt(
       user: string,
       blockNumber: BigNumberish,
-      delegationType: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
+    "getVotingPowerAt(address,uint256)"(
       user: string,
       blockNumber: BigNumberish,
-      delegationType: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
@@ -129,33 +122,29 @@ export class IGovernancePowerDelegationToken extends Contract {
   filters: {};
 
   estimateGas: {
-    getPowerAtBlock(
+    getVotingPowerAt(
       user: string,
       blockNumber: BigNumberish,
-      delegationType: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
+    "getVotingPowerAt(address,uint256)"(
       user: string,
       blockNumber: BigNumberish,
-      delegationType: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    getPowerAtBlock(
+    getVotingPowerAt(
       user: string,
       blockNumber: BigNumberish,
-      delegationType: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "getPowerAtBlock(address,uint256,uint8)"(
+    "getVotingPowerAt(address,uint256)"(
       user: string,
       blockNumber: BigNumberish,
-      delegationType: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

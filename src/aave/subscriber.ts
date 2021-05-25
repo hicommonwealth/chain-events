@@ -1,5 +1,5 @@
 /**
- * Fetches events from Marlin contract in real time.
+ * Fetches events from Aave contract in real time.
  */
 import { Listener } from '@ethersproject/providers';
 

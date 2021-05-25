@@ -3,6 +3,7 @@ import { TypedEventFilter } from '../../contractTypes/commons';
 import { IAaveGovernanceV2 } from '../../contractTypes';
 import { CWEvent } from '../../interfaces';
 import { EventKind, RawEvent, IEventData, Api } from '../types';
+import { BigNumber } from '@ethersproject/bignumber';
 
 type GetEventArgs<T> = T extends TypedEventFilter<any, infer Y> ? Y : never;
 type GetArgType<Name extends keyof IAaveGovernanceV2['filters']> = GetEventArgs<
@@ -33,8 +34,6 @@ export async function Enrich(
         creator,
         executor,
         targets,
-        // TODO: ensure this is on the received object, cf. Marlin
-        values,
         signatures,
         calldatas,
         startBlock,
@@ -42,6 +41,10 @@ export async function Enrich(
         strategy,
         ipfsHash,
       } = rawData.args as GetArgType<'ProposalCreated'>;
+
+      // values doesn't appear on the object version, hack around it by accessing the
+      // argument array instead
+      const values = rawData.args[4] as BigNumber[];
 
       return {
         blockNumber,

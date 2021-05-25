@@ -1,5 +1,5 @@
 /**
- * Processes Marlin events.
+ * Processes Aave events.
  */
 import { IEventProcessor, CWEvent } from '../interfaces';
 import { factory, formatFilename } from '../logging';
