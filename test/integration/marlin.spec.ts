@@ -4,16 +4,17 @@
 import { EventEmitter } from 'events';
 import { resolve } from 'path';
 
-import { providers, Signer } from 'ethers';
-import { BigNumberish } from 'ethers/utils';
+import { providers, Signer, BigNumberish } from 'ethers';
 import chai, { expect } from 'chai';
 
-import { MPondFactory } from '../../eth/types/MPondFactory';
-import { MPond } from '../../eth/types/MPond';
-import { GovernorAlphaFactory } from '../../eth/types/GovernorAlphaFactory';
-import { GovernorAlpha } from '../../eth/types/GovernorAlpha';
-import { TimelockFactory } from '../../eth/types/TimelockFactory';
-import { Timelock } from '../../eth/types/Timelock';
+import {
+  MPond__factory as MPondFactory,
+  MPond,
+  GovernorAlpha__factory as GovernorAlphaFactory,
+  GovernorAlpha,
+  Timelock__factory as TimelockFactory,
+  Timelock,
+} from '../../src/contractTypes';
 import {
   Api,
   IEventData,

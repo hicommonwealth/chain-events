@@ -1,15 +1,15 @@
 import { providers } from 'ethers';
 import Web3 from 'web3';
-import { WebsocketProvider } from 'web3-core/types';
-import { Web3Provider } from 'ethers/providers';
 import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
+import {
+  Moloch1__factory as Moloch1Factory,
+  Moloch2__factory as Moloch2Factory,
+} from '../contractTypes';
 import { IDisconnectedRange, CWEvent, SubscribeFunc } from '../interfaces';
 import { factory, formatFilename } from '../logging';
 
-import { Moloch1Factory } from './contractTypes/Moloch1Factory';
-import { Moloch2Factory } from './contractTypes/Moloch2Factory';
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
@@ -152,10 +152,7 @@ export const subscribeEvents: SubscribeFunc<
     }
 
     // reuse provider interface for dater function
-    const web3 = new Web3(
-      (api.provider as Web3Provider)._web3Provider as WebsocketProvider
-    );
-    const dater = new EthDater(web3);
+    const dater = new EthDater(api.provider);
     const fetcher = new StorageFetcher(api, contractVersion, dater);
     try {
       const cwEvents = await fetcher.fetch(offlineRange);

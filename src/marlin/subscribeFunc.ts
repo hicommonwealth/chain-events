@@ -1,7 +1,5 @@
 import { providers } from 'ethers';
 import Web3 from 'web3';
-import { WebsocketProvider } from 'web3-core/types';
-import { Web3Provider } from 'ethers/providers';
 import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
@@ -12,10 +10,12 @@ import {
   ISubscribeOptions,
 } from '../interfaces';
 import { factory, formatFilename } from '../logging';
+import {
+  MPond__factory as MPondFactory,
+  GovernorAlpha__factory as GovernorAlphaFactory,
+  Timelock__factory as TimelockFactory,
+} from '../contractTypes';
 
-import { MPondFactory } from './contractTypes/MPondFactory';
-import { GovernorAlphaFactory } from './contractTypes/GovernorAlphaFactory';
-import { TimelockFactory } from './contractTypes/TimelockFactory';
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
@@ -167,12 +167,8 @@ export const subscribeEvents: SubscribeFunc<
       return;
     }
 
-    // reuse provider interface for dater function
     // defaulting to the comp contract provider, though could be any of the contracts
-    const web3 = new Web3(
-      (api.comp.provider as Web3Provider)._web3Provider as WebsocketProvider
-    );
-    const dater = new EthDater(web3);
+    const dater = new EthDater(api.comp.provider);
     const fetcher = new StorageFetcher(api, dater);
     try {
       const cwEvents = await fetcher.fetch(offlineRange);

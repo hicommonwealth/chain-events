@@ -1,8 +1,6 @@
 import { Event } from 'ethers';
 
-import { MPond } from './contractTypes/MPond';
-import { GovernorAlpha } from './contractTypes/GovernorAlpha';
-import { Timelock } from './contractTypes/Timelock';
+import { MPond, GovernorAlpha, Timelock } from '../contractTypes';
 
 // Used to unwrap promises returned by contract functions
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;

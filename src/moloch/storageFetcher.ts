@@ -2,9 +2,9 @@ import EthDater from 'ethereum-block-by-date';
 
 import { CWEvent, IStorageFetcher, IDisconnectedRange } from '../interfaces';
 import { factory, formatFilename } from '../logging';
+import { Moloch1, Moloch2 } from '../contractTypes';
 
 import { IEventData, EventKind, Api, ProposalV1, ProposalV2 } from './types';
-import { Moloch2 } from './contractTypes/Moloch2';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -155,7 +155,9 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     this._summoningTime = +(await this._api.summoningTime());
     this._votingPeriod = +(await this._api.votingPeriodLength());
     this._gracePeriod = +(await this._api.gracePeriodLength());
-    this._abortPeriod = +(await this._api.abortWindow());
+    if (this._version === 1) {
+      this._abortPeriod = +(await (this._api as Moloch1).abortWindow());
+    }
     this._currentBlock = +(await this._api.provider.getBlockNumber());
     log.info(`Current block: ${this._currentBlock}.`);
     this._currentTimestamp = (
@@ -203,8 +205,8 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       // fetch actual proposal
       const proposal: ProposalV1 | ProposalV2 =
         this._version === 1
-          ? await this._api.proposalQueue(proposalIndex)
-          : await this._api.proposals(proposalIndex);
+          ? await (this._api as Moloch1).proposalQueue(proposalIndex)
+          : await (this._api as Moloch2).proposals(proposalIndex);
       log.debug(`Fetched Moloch proposal ${proposalIndex} from storage.`);
 
       // compute starting time and derive closest block number

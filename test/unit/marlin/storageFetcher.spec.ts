@@ -1,11 +1,9 @@
 import chai from 'chai';
-import { BigNumber } from 'ethers/utils';
+import { BigNumber } from 'ethers';
 
 import { StorageFetcher } from '../../../src/marlin/storageFetcher';
 import { EventKind, Proposal } from '../../../src/marlin/types';
-import { MPond } from '../../../eth/types/MPond';
-import { GovernorAlpha } from '../../../eth/types/GovernorAlpha';
-import { Timelock } from '../../../eth/types/Timelock';
+import { MPond, GovernorAlpha, Timelock } from '../../../src/contractTypes';
 
 const { assert } = chai;
 
@@ -65,13 +63,13 @@ describe('Marlin Storage Fetcher Tests', () => {
   it('should handle a creation event from the contract', async () => {
     const proposals: Proposal[] = [
       ({
-        id: new BigNumber(1),
+        id: BigNumber.from(1),
         proposer: '',
-        eta: new BigNumber(3),
-        startBlock: new BigNumber(0),
-        endBlock: new BigNumber(3 * 172),
-        forVotes: new BigNumber(0),
-        againstVotes: new BigNumber(0),
+        eta: BigNumber.from(3),
+        startBlock: BigNumber.from(0),
+        endBlock: BigNumber.from(3 * 172),
+        forVotes: BigNumber.from(0),
+        againstVotes: BigNumber.from(0),
         canceled: false,
         executed: false,
         description: '',

@@ -1,9 +1,7 @@
 import { Event } from 'ethers';
 
 import { ISubscribeOptions } from '../interfaces';
-
-import { Moloch1 } from './contractTypes/Moloch1';
-import { Moloch2 } from './contractTypes/Moloch2';
+import { Moloch1, Moloch2 } from '../contractTypes';
 
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 export type ProposalV1 = UnPromisify<
