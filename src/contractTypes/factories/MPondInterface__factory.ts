@@ -2,16 +2,22 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
+import { Contract, Signer } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type {
-  MPondInterface,
-  MPondInterfaceInterface,
-} from "../MPondInterface";
+
+import type { MPondInterface } from "../MPondInterface";
+
+export class MPondInterface__factory {
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): MPondInterface {
+    return new Contract(address, _abi, signerOrProvider) as MPondInterface;
+  }
+}
 
 const _abi = [
   {
-    constant: true,
     inputs: [
       {
         internalType: "address",
@@ -32,21 +38,7 @@ const _abi = [
         type: "uint96",
       },
     ],
-    payable: false,
     stateMutability: "view",
     type: "function",
   },
 ];
-
-export class MPondInterface__factory {
-  static readonly abi = _abi;
-  static createInterface(): MPondInterfaceInterface {
-    return new utils.Interface(_abi) as MPondInterfaceInterface;
-  }
-  static connect(
-    address: string,
-    signerOrProvider: Signer | Provider
-  ): MPondInterface {
-    return new Contract(address, _abi, signerOrProvider) as MPondInterface;
-  }
-}

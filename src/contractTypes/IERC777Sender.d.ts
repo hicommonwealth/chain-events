@@ -9,7 +9,7 @@ import {
   BigNumber,
   BigNumberish,
   PopulatedTransaction,
-  BaseContract,
+  Contract,
   ContractTransaction,
   Overrides,
   CallOverrides,
@@ -37,7 +37,7 @@ interface IERC777SenderInterface extends ethers.utils.Interface {
   events: {};
 }
 
-export class IERC777Sender extends BaseContract {
+export class IERC777Sender extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -81,10 +81,17 @@ export class IERC777Sender extends BaseContract {
   interface: IERC777SenderInterface;
 
   functions: {
-    /**
-     * Called by an {IERC777} token contract whenever a registered holder's (`from`) tokens are about to be moved or destroyed. The type of operation is conveyed by `to` being the zero address or not.     * This call occurs _before_ the token contract's state is updated, so {IERC777-balanceOf}, etc., can be used to query the pre-operation state.     * This function may revert to prevent the operation from being executed.
-     */
     tokensToSend(
+      operator: string,
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      userData: BytesLike,
+      operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "tokensToSend(address,address,address,uint256,bytes,bytes)"(
       operator: string,
       from: string,
       to: string,
@@ -95,9 +102,6 @@ export class IERC777Sender extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  /**
-   * Called by an {IERC777} token contract whenever a registered holder's (`from`) tokens are about to be moved or destroyed. The type of operation is conveyed by `to` being the zero address or not.     * This call occurs _before_ the token contract's state is updated, so {IERC777-balanceOf}, etc., can be used to query the pre-operation state.     * This function may revert to prevent the operation from being executed.
-   */
   tokensToSend(
     operator: string,
     from: string,
@@ -108,11 +112,28 @@ export class IERC777Sender extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  "tokensToSend(address,address,address,uint256,bytes,bytes)"(
+    operator: string,
+    from: string,
+    to: string,
+    amount: BigNumberish,
+    userData: BytesLike,
+    operatorData: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
-    /**
-     * Called by an {IERC777} token contract whenever a registered holder's (`from`) tokens are about to be moved or destroyed. The type of operation is conveyed by `to` being the zero address or not.     * This call occurs _before_ the token contract's state is updated, so {IERC777-balanceOf}, etc., can be used to query the pre-operation state.     * This function may revert to prevent the operation from being executed.
-     */
     tokensToSend(
+      operator: string,
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      userData: BytesLike,
+      operatorData: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "tokensToSend(address,address,address,uint256,bytes,bytes)"(
       operator: string,
       from: string,
       to: string,
@@ -126,10 +147,17 @@ export class IERC777Sender extends BaseContract {
   filters: {};
 
   estimateGas: {
-    /**
-     * Called by an {IERC777} token contract whenever a registered holder's (`from`) tokens are about to be moved or destroyed. The type of operation is conveyed by `to` being the zero address or not.     * This call occurs _before_ the token contract's state is updated, so {IERC777-balanceOf}, etc., can be used to query the pre-operation state.     * This function may revert to prevent the operation from being executed.
-     */
     tokensToSend(
+      operator: string,
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      userData: BytesLike,
+      operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "tokensToSend(address,address,address,uint256,bytes,bytes)"(
       operator: string,
       from: string,
       to: string,
@@ -141,10 +169,17 @@ export class IERC777Sender extends BaseContract {
   };
 
   populateTransaction: {
-    /**
-     * Called by an {IERC777} token contract whenever a registered holder's (`from`) tokens are about to be moved or destroyed. The type of operation is conveyed by `to` being the zero address or not.     * This call occurs _before_ the token contract's state is updated, so {IERC777-balanceOf}, etc., can be used to query the pre-operation state.     * This function may revert to prevent the operation from being executed.
-     */
     tokensToSend(
+      operator: string,
+      from: string,
+      to: string,
+      amount: BigNumberish,
+      userData: BytesLike,
+      operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "tokensToSend(address,address,address,uint256,bytes,bytes)"(
       operator: string,
       from: string,
       to: string,

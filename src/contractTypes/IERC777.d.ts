@@ -9,7 +9,7 @@ import {
   BigNumber,
   BigNumberish,
   PopulatedTransaction,
-  BaseContract,
+  Contract,
   ContractTransaction,
   Overrides,
   CallOverrides,
@@ -21,84 +21,91 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface IERC777Interface extends ethers.utils.Interface {
   functions: {
-    "name()": FunctionFragment;
-    "symbol()": FunctionFragment;
-    "granularity()": FunctionFragment;
-    "totalSupply()": FunctionFragment;
-    "balanceOf(address)": FunctionFragment;
-    "send(address,uint256,bytes)": FunctionFragment;
-    "burn(uint256,bytes)": FunctionFragment;
-    "isOperatorFor(address,address)": FunctionFragment;
-    "authorizeOperator(address)": FunctionFragment;
-    "revokeOperator(address)": FunctionFragment;
     "defaultOperators()": FunctionFragment;
+    "name()": FunctionFragment;
+    "totalSupply()": FunctionFragment;
+    "granularity()": FunctionFragment;
     "operatorSend(address,address,uint256,bytes,bytes)": FunctionFragment;
+    "balanceOf(address)": FunctionFragment;
+    "authorizeOperator(address)": FunctionFragment;
+    "symbol()": FunctionFragment;
+    "send(address,uint256,bytes)": FunctionFragment;
+    "isOperatorFor(address,address)": FunctionFragment;
+    "revokeOperator(address)": FunctionFragment;
     "operatorBurn(address,uint256,bytes,bytes)": FunctionFragment;
+    "burn(uint256,bytes)": FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: "name", values?: undefined): string;
-  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "granularity",
+    functionFragment: "defaultOperators",
     values?: undefined
   ): string;
+  encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "send",
-    values: [string, BigNumberish, BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "burn",
-    values: [BigNumberish, BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "isOperatorFor",
-    values: [string, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "authorizeOperator",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "revokeOperator",
-    values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "defaultOperators",
+    functionFragment: "granularity",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "operatorSend",
     values: [string, string, BigNumberish, BytesLike, BytesLike]
   ): string;
+  encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "authorizeOperator",
+    values: [string]
+  ): string;
+  encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "send",
+    values: [string, BigNumberish, BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isOperatorFor",
+    values: [string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "revokeOperator",
+    values: [string]
+  ): string;
   encodeFunctionData(
     functionFragment: "operatorBurn",
     values: [string, BigNumberish, BytesLike, BytesLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "burn",
+    values: [BigNumberish, BytesLike]
+  ): string;
 
+  decodeFunctionResult(
+    functionFragment: "defaultOperators",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupply",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "granularity",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "totalSupply",
+    functionFragment: "operatorSend",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "send", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "isOperatorFor",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "authorizeOperator",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "send", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "isOperatorFor",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -106,34 +113,27 @@ interface IERC777Interface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "defaultOperators",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "operatorSend",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "operatorBurn",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
 
   events: {
-    "AuthorizedOperator(address,address)": EventFragment;
-    "Burned(address,address,uint256,bytes,bytes)": EventFragment;
-    "Minted(address,address,uint256,bytes,bytes)": EventFragment;
-    "RevokedOperator(address,address)": EventFragment;
     "Sent(address,address,address,uint256,bytes,bytes)": EventFragment;
+    "Minted(address,address,uint256,bytes,bytes)": EventFragment;
+    "Burned(address,address,uint256,bytes,bytes)": EventFragment;
+    "AuthorizedOperator(address,address)": EventFragment;
+    "RevokedOperator(address,address)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "AuthorizedOperator"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Burned"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Minted"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RevokedOperator"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Sent"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Minted"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Burned"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "AuthorizedOperator"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RevokedOperator"): EventFragment;
 }
 
-export class IERC777 extends BaseContract {
+export class IERC777 extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -177,83 +177,22 @@ export class IERC777 extends BaseContract {
   interface: IERC777Interface;
 
   functions: {
-    /**
-     * Returns the name of the token.
-     */
-    name(overrides?: CallOverrides): Promise<[string]>;
-
-    /**
-     * Returns the symbol of the token, usually a shorter version of the name.
-     */
-    symbol(overrides?: CallOverrides): Promise<[string]>;
-
-    /**
-     * Returns the smallest part of the token that is not divisible. This means all token operations (creation, movement and destruction) must have amounts that are a multiple of this number.     * For most token contracts, this value will equal 1.
-     */
-    granularity(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    /**
-     * Returns the amount of tokens in existence.
-     */
-    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    /**
-     * Returns the amount of tokens owned by an account (`owner`).
-     */
-    balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    /**
-     * Moves `amount` tokens from the caller's account to `recipient`.     * If send or receive hooks are registered for the caller and `recipient`, the corresponding functions will be called with `data` and empty `operatorData`. See {IERC777Sender} and {IERC777Recipient}.     * Emits a {Sent} event.     * Requirements     * - the caller must have at least `amount` tokens. - `recipient` cannot be the zero address. - if `recipient` is a contract, it must implement the {IERC777Recipient} interface.
-     */
-    send(
-      recipient: string,
-      amount: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    /**
-     * Destroys `amount` tokens from the caller's account, reducing the total supply.     * If a send hook is registered for the caller, the corresponding function will be called with `data` and empty `operatorData`. See {IERC777Sender}.     * Emits a {Burned} event.     * Requirements     * - the caller must have at least `amount` tokens.
-     */
-    burn(
-      amount: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    /**
-     * Returns true if an account is an operator of `tokenHolder`. Operators can send and burn tokens on behalf of their owners. All accounts are their own operator.     * See {operatorSend} and {operatorBurn}.
-     */
-    isOperatorFor(
-      operator: string,
-      tokenHolder: string,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    /**
-     * Make an account an operator of the caller.     * See {isOperatorFor}.     * Emits an {AuthorizedOperator} event.     * Requirements     * - `operator` cannot be calling address.
-     */
-    authorizeOperator(
-      operator: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    /**
-     * Make an account an operator of the caller.     * See {isOperatorFor} and {defaultOperators}.     * Emits a {RevokedOperator} event.     * Requirements     * - `operator` cannot be calling address.
-     */
-    revokeOperator(
-      operator: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    /**
-     * Returns the list of default operators. These accounts are operators for all token holders, even if {authorizeOperator} was never called on them.     * This list is immutable, but individual holders may revoke these via {revokeOperator}, in which case {isOperatorFor} will return false.
-     */
     defaultOperators(overrides?: CallOverrides): Promise<[string[]]>;
 
-    /**
-     * Moves `amount` tokens from `sender` to `recipient`. The caller must be an operator of `sender`.     * If send or receive hooks are registered for `sender` and `recipient`, the corresponding functions will be called with `data` and `operatorData`. See {IERC777Sender} and {IERC777Recipient}.     * Emits a {Sent} event.     * Requirements     * - `sender` cannot be the zero address. - `sender` must have at least `amount` tokens. - the caller must be an operator for `sender`. - `recipient` cannot be the zero address. - if `recipient` is a contract, it must implement the {IERC777Recipient} interface.
-     */
+    "defaultOperators()"(overrides?: CallOverrides): Promise<[string[]]>;
+
+    name(overrides?: CallOverrides): Promise<[string]>;
+
+    "name()"(overrides?: CallOverrides): Promise<[string]>;
+
+    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    granularity(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "granularity()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     operatorSend(
       sender: string,
       recipient: string,
@@ -263,9 +202,72 @@ export class IERC777 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    /**
-     * Destoys `amount` tokens from `account`, reducing the total supply. The caller must be an operator of `account`.     * If a send hook is registered for `account`, the corresponding function will be called with `data` and `operatorData`. See {IERC777Sender}.     * Emits a {Burned} event.     * Requirements     * - `account` cannot be the zero address. - `account` must have at least `amount` tokens. - the caller must be an operator for `account`.
-     */
+    "operatorSend(address,address,uint256,bytes,bytes)"(
+      sender: string,
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    authorizeOperator(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "authorizeOperator(address)"(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    symbol(overrides?: CallOverrides): Promise<[string]>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<[string]>;
+
+    send(
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "send(address,uint256,bytes)"(
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    isOperatorFor(
+      operator: string,
+      tokenHolder: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    "isOperatorFor(address,address)"(
+      operator: string,
+      tokenHolder: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    revokeOperator(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "revokeOperator(address)"(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     operatorBurn(
       account: string,
       amount: BigNumberish,
@@ -273,85 +275,44 @@ export class IERC777 extends BaseContract {
       operatorData: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    "operatorBurn(address,uint256,bytes,bytes)"(
+      account: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    burn(
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "burn(uint256,bytes)"(
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
-  /**
-   * Returns the name of the token.
-   */
-  name(overrides?: CallOverrides): Promise<string>;
-
-  /**
-   * Returns the symbol of the token, usually a shorter version of the name.
-   */
-  symbol(overrides?: CallOverrides): Promise<string>;
-
-  /**
-   * Returns the smallest part of the token that is not divisible. This means all token operations (creation, movement and destruction) must have amounts that are a multiple of this number.     * For most token contracts, this value will equal 1.
-   */
-  granularity(overrides?: CallOverrides): Promise<BigNumber>;
-
-  /**
-   * Returns the amount of tokens in existence.
-   */
-  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-  /**
-   * Returns the amount of tokens owned by an account (`owner`).
-   */
-  balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  /**
-   * Moves `amount` tokens from the caller's account to `recipient`.     * If send or receive hooks are registered for the caller and `recipient`, the corresponding functions will be called with `data` and empty `operatorData`. See {IERC777Sender} and {IERC777Recipient}.     * Emits a {Sent} event.     * Requirements     * - the caller must have at least `amount` tokens. - `recipient` cannot be the zero address. - if `recipient` is a contract, it must implement the {IERC777Recipient} interface.
-   */
-  send(
-    recipient: string,
-    amount: BigNumberish,
-    data: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  /**
-   * Destroys `amount` tokens from the caller's account, reducing the total supply.     * If a send hook is registered for the caller, the corresponding function will be called with `data` and empty `operatorData`. See {IERC777Sender}.     * Emits a {Burned} event.     * Requirements     * - the caller must have at least `amount` tokens.
-   */
-  burn(
-    amount: BigNumberish,
-    data: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  /**
-   * Returns true if an account is an operator of `tokenHolder`. Operators can send and burn tokens on behalf of their owners. All accounts are their own operator.     * See {operatorSend} and {operatorBurn}.
-   */
-  isOperatorFor(
-    operator: string,
-    tokenHolder: string,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  /**
-   * Make an account an operator of the caller.     * See {isOperatorFor}.     * Emits an {AuthorizedOperator} event.     * Requirements     * - `operator` cannot be calling address.
-   */
-  authorizeOperator(
-    operator: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  /**
-   * Make an account an operator of the caller.     * See {isOperatorFor} and {defaultOperators}.     * Emits a {RevokedOperator} event.     * Requirements     * - `operator` cannot be calling address.
-   */
-  revokeOperator(
-    operator: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  /**
-   * Returns the list of default operators. These accounts are operators for all token holders, even if {authorizeOperator} was never called on them.     * This list is immutable, but individual holders may revoke these via {revokeOperator}, in which case {isOperatorFor} will return false.
-   */
   defaultOperators(overrides?: CallOverrides): Promise<string[]>;
 
-  /**
-   * Moves `amount` tokens from `sender` to `recipient`. The caller must be an operator of `sender`.     * If send or receive hooks are registered for `sender` and `recipient`, the corresponding functions will be called with `data` and `operatorData`. See {IERC777Sender} and {IERC777Recipient}.     * Emits a {Sent} event.     * Requirements     * - `sender` cannot be the zero address. - `sender` must have at least `amount` tokens. - the caller must be an operator for `sender`. - `recipient` cannot be the zero address. - if `recipient` is a contract, it must implement the {IERC777Recipient} interface.
-   */
+  "defaultOperators()"(overrides?: CallOverrides): Promise<string[]>;
+
+  name(overrides?: CallOverrides): Promise<string>;
+
+  "name()"(overrides?: CallOverrides): Promise<string>;
+
+  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  granularity(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "granularity()"(overrides?: CallOverrides): Promise<BigNumber>;
+
   operatorSend(
     sender: string,
     recipient: string,
@@ -361,9 +322,72 @@ export class IERC777 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  /**
-   * Destoys `amount` tokens from `account`, reducing the total supply. The caller must be an operator of `account`.     * If a send hook is registered for `account`, the corresponding function will be called with `data` and `operatorData`. See {IERC777Sender}.     * Emits a {Burned} event.     * Requirements     * - `account` cannot be the zero address. - `account` must have at least `amount` tokens. - the caller must be an operator for `account`.
-   */
+  "operatorSend(address,address,uint256,bytes,bytes)"(
+    sender: string,
+    recipient: string,
+    amount: BigNumberish,
+    data: BytesLike,
+    operatorData: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  "balanceOf(address)"(
+    owner: string,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  authorizeOperator(
+    operator: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "authorizeOperator(address)"(
+    operator: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  symbol(overrides?: CallOverrides): Promise<string>;
+
+  "symbol()"(overrides?: CallOverrides): Promise<string>;
+
+  send(
+    recipient: string,
+    amount: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "send(address,uint256,bytes)"(
+    recipient: string,
+    amount: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  isOperatorFor(
+    operator: string,
+    tokenHolder: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  "isOperatorFor(address,address)"(
+    operator: string,
+    tokenHolder: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  revokeOperator(
+    operator: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "revokeOperator(address)"(
+    operator: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   operatorBurn(
     account: string,
     amount: BigNumberish,
@@ -372,81 +396,43 @@ export class IERC777 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  "operatorBurn(address,uint256,bytes,bytes)"(
+    account: string,
+    amount: BigNumberish,
+    data: BytesLike,
+    operatorData: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  burn(
+    amount: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "burn(uint256,bytes)"(
+    amount: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
-    /**
-     * Returns the name of the token.
-     */
-    name(overrides?: CallOverrides): Promise<string>;
-
-    /**
-     * Returns the symbol of the token, usually a shorter version of the name.
-     */
-    symbol(overrides?: CallOverrides): Promise<string>;
-
-    /**
-     * Returns the smallest part of the token that is not divisible. This means all token operations (creation, movement and destruction) must have amounts that are a multiple of this number.     * For most token contracts, this value will equal 1.
-     */
-    granularity(overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Returns the amount of tokens in existence.
-     */
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Returns the amount of tokens owned by an account (`owner`).
-     */
-    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Moves `amount` tokens from the caller's account to `recipient`.     * If send or receive hooks are registered for the caller and `recipient`, the corresponding functions will be called with `data` and empty `operatorData`. See {IERC777Sender} and {IERC777Recipient}.     * Emits a {Sent} event.     * Requirements     * - the caller must have at least `amount` tokens. - `recipient` cannot be the zero address. - if `recipient` is a contract, it must implement the {IERC777Recipient} interface.
-     */
-    send(
-      recipient: string,
-      amount: BigNumberish,
-      data: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    /**
-     * Destroys `amount` tokens from the caller's account, reducing the total supply.     * If a send hook is registered for the caller, the corresponding function will be called with `data` and empty `operatorData`. See {IERC777Sender}.     * Emits a {Burned} event.     * Requirements     * - the caller must have at least `amount` tokens.
-     */
-    burn(
-      amount: BigNumberish,
-      data: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    /**
-     * Returns true if an account is an operator of `tokenHolder`. Operators can send and burn tokens on behalf of their owners. All accounts are their own operator.     * See {operatorSend} and {operatorBurn}.
-     */
-    isOperatorFor(
-      operator: string,
-      tokenHolder: string,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    /**
-     * Make an account an operator of the caller.     * See {isOperatorFor}.     * Emits an {AuthorizedOperator} event.     * Requirements     * - `operator` cannot be calling address.
-     */
-    authorizeOperator(
-      operator: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    /**
-     * Make an account an operator of the caller.     * See {isOperatorFor} and {defaultOperators}.     * Emits a {RevokedOperator} event.     * Requirements     * - `operator` cannot be calling address.
-     */
-    revokeOperator(operator: string, overrides?: CallOverrides): Promise<void>;
-
-    /**
-     * Returns the list of default operators. These accounts are operators for all token holders, even if {authorizeOperator} was never called on them.     * This list is immutable, but individual holders may revoke these via {revokeOperator}, in which case {isOperatorFor} will return false.
-     */
     defaultOperators(overrides?: CallOverrides): Promise<string[]>;
 
-    /**
-     * Moves `amount` tokens from `sender` to `recipient`. The caller must be an operator of `sender`.     * If send or receive hooks are registered for `sender` and `recipient`, the corresponding functions will be called with `data` and `operatorData`. See {IERC777Sender} and {IERC777Recipient}.     * Emits a {Sent} event.     * Requirements     * - `sender` cannot be the zero address. - `sender` must have at least `amount` tokens. - the caller must be an operator for `sender`. - `recipient` cannot be the zero address. - if `recipient` is a contract, it must implement the {IERC777Recipient} interface.
-     */
+    "defaultOperators()"(overrides?: CallOverrides): Promise<string[]>;
+
+    name(overrides?: CallOverrides): Promise<string>;
+
+    "name()"(overrides?: CallOverrides): Promise<string>;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    granularity(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "granularity()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     operatorSend(
       sender: string,
       recipient: string,
@@ -456,9 +442,69 @@ export class IERC777 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    /**
-     * Destoys `amount` tokens from `account`, reducing the total supply. The caller must be an operator of `account`.     * If a send hook is registered for `account`, the corresponding function will be called with `data` and `operatorData`. See {IERC777Sender}.     * Emits a {Burned} event.     * Requirements     * - `account` cannot be the zero address. - `account` must have at least `amount` tokens. - the caller must be an operator for `account`.
-     */
+    "operatorSend(address,address,uint256,bytes,bytes)"(
+      sender: string,
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      operatorData: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    authorizeOperator(
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "authorizeOperator(address)"(
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    symbol(overrides?: CallOverrides): Promise<string>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<string>;
+
+    send(
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "send(address,uint256,bytes)"(
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    isOperatorFor(
+      operator: string,
+      tokenHolder: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "isOperatorFor(address,address)"(
+      operator: string,
+      tokenHolder: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    revokeOperator(operator: string, overrides?: CallOverrides): Promise<void>;
+
+    "revokeOperator(address)"(
+      operator: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     operatorBurn(
       account: string,
       amount: BigNumberish,
@@ -466,66 +512,36 @@ export class IERC777 extends BaseContract {
       operatorData: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    "operatorBurn(address,uint256,bytes,bytes)"(
+      account: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      operatorData: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    burn(
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "burn(uint256,bytes)"(
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
-    AuthorizedOperator(
-      operator?: string | null,
-      tokenHolder?: string | null
-    ): TypedEventFilter<
-      [string, string],
-      { operator: string; tokenHolder: string }
-    >;
-
-    Burned(
-      operator?: string | null,
-      from?: string | null,
-      amount?: null,
-      data?: null,
-      operatorData?: null
-    ): TypedEventFilter<
-      [string, string, BigNumber, string, string],
-      {
-        operator: string;
-        from: string;
-        amount: BigNumber;
-        data: string;
-        operatorData: string;
-      }
-    >;
-
-    Minted(
-      operator?: string | null,
-      to?: string | null,
-      amount?: null,
-      data?: null,
-      operatorData?: null
-    ): TypedEventFilter<
-      [string, string, BigNumber, string, string],
-      {
-        operator: string;
-        to: string;
-        amount: BigNumber;
-        data: string;
-        operatorData: string;
-      }
-    >;
-
-    RevokedOperator(
-      operator?: string | null,
-      tokenHolder?: string | null
-    ): TypedEventFilter<
-      [string, string],
-      { operator: string; tokenHolder: string }
-    >;
-
     Sent(
-      operator?: string | null,
-      from?: string | null,
-      to?: string | null,
-      amount?: null,
-      data?: null,
-      operatorData?: null
+      operator: string | null,
+      from: string | null,
+      to: string | null,
+      amount: null,
+      data: null,
+      operatorData: null
     ): TypedEventFilter<
       [string, string, string, BigNumber, string, string],
       {
@@ -537,86 +553,75 @@ export class IERC777 extends BaseContract {
         operatorData: string;
       }
     >;
+
+    Minted(
+      operator: string | null,
+      to: string | null,
+      amount: null,
+      data: null,
+      operatorData: null
+    ): TypedEventFilter<
+      [string, string, BigNumber, string, string],
+      {
+        operator: string;
+        to: string;
+        amount: BigNumber;
+        data: string;
+        operatorData: string;
+      }
+    >;
+
+    Burned(
+      operator: string | null,
+      from: string | null,
+      amount: null,
+      data: null,
+      operatorData: null
+    ): TypedEventFilter<
+      [string, string, BigNumber, string, string],
+      {
+        operator: string;
+        from: string;
+        amount: BigNumber;
+        data: string;
+        operatorData: string;
+      }
+    >;
+
+    AuthorizedOperator(
+      operator: string | null,
+      tokenHolder: string | null
+    ): TypedEventFilter<
+      [string, string],
+      { operator: string; tokenHolder: string }
+    >;
+
+    RevokedOperator(
+      operator: string | null,
+      tokenHolder: string | null
+    ): TypedEventFilter<
+      [string, string],
+      { operator: string; tokenHolder: string }
+    >;
   };
 
   estimateGas: {
-    /**
-     * Returns the name of the token.
-     */
-    name(overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Returns the symbol of the token, usually a shorter version of the name.
-     */
-    symbol(overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Returns the smallest part of the token that is not divisible. This means all token operations (creation, movement and destruction) must have amounts that are a multiple of this number.     * For most token contracts, this value will equal 1.
-     */
-    granularity(overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Returns the amount of tokens in existence.
-     */
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Returns the amount of tokens owned by an account (`owner`).
-     */
-    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Moves `amount` tokens from the caller's account to `recipient`.     * If send or receive hooks are registered for the caller and `recipient`, the corresponding functions will be called with `data` and empty `operatorData`. See {IERC777Sender} and {IERC777Recipient}.     * Emits a {Sent} event.     * Requirements     * - the caller must have at least `amount` tokens. - `recipient` cannot be the zero address. - if `recipient` is a contract, it must implement the {IERC777Recipient} interface.
-     */
-    send(
-      recipient: string,
-      amount: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    /**
-     * Destroys `amount` tokens from the caller's account, reducing the total supply.     * If a send hook is registered for the caller, the corresponding function will be called with `data` and empty `operatorData`. See {IERC777Sender}.     * Emits a {Burned} event.     * Requirements     * - the caller must have at least `amount` tokens.
-     */
-    burn(
-      amount: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    /**
-     * Returns true if an account is an operator of `tokenHolder`. Operators can send and burn tokens on behalf of their owners. All accounts are their own operator.     * See {operatorSend} and {operatorBurn}.
-     */
-    isOperatorFor(
-      operator: string,
-      tokenHolder: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    /**
-     * Make an account an operator of the caller.     * See {isOperatorFor}.     * Emits an {AuthorizedOperator} event.     * Requirements     * - `operator` cannot be calling address.
-     */
-    authorizeOperator(
-      operator: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    /**
-     * Make an account an operator of the caller.     * See {isOperatorFor} and {defaultOperators}.     * Emits a {RevokedOperator} event.     * Requirements     * - `operator` cannot be calling address.
-     */
-    revokeOperator(
-      operator: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    /**
-     * Returns the list of default operators. These accounts are operators for all token holders, even if {authorizeOperator} was never called on them.     * This list is immutable, but individual holders may revoke these via {revokeOperator}, in which case {isOperatorFor} will return false.
-     */
     defaultOperators(overrides?: CallOverrides): Promise<BigNumber>;
 
-    /**
-     * Moves `amount` tokens from `sender` to `recipient`. The caller must be an operator of `sender`.     * If send or receive hooks are registered for `sender` and `recipient`, the corresponding functions will be called with `data` and `operatorData`. See {IERC777Sender} and {IERC777Recipient}.     * Emits a {Sent} event.     * Requirements     * - `sender` cannot be the zero address. - `sender` must have at least `amount` tokens. - the caller must be an operator for `sender`. - `recipient` cannot be the zero address. - if `recipient` is a contract, it must implement the {IERC777Recipient} interface.
-     */
+    "defaultOperators()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    name(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "name()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    granularity(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "granularity()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     operatorSend(
       sender: string,
       recipient: string,
@@ -626,99 +631,120 @@ export class IERC777 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    /**
-     * Destoys `amount` tokens from `account`, reducing the total supply. The caller must be an operator of `account`.     * If a send hook is registered for `account`, the corresponding function will be called with `data` and `operatorData`. See {IERC777Sender}.     * Emits a {Burned} event.     * Requirements     * - `account` cannot be the zero address. - `account` must have at least `amount` tokens. - the caller must be an operator for `account`.
-     */
+    "operatorSend(address,address,uint256,bytes,bytes)"(
+      sender: string,
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    authorizeOperator(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "authorizeOperator(address)"(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    symbol(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    send(
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "send(address,uint256,bytes)"(
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    isOperatorFor(
+      operator: string,
+      tokenHolder: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "isOperatorFor(address,address)"(
+      operator: string,
+      tokenHolder: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    revokeOperator(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "revokeOperator(address)"(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     operatorBurn(
       account: string,
       amount: BigNumberish,
       data: BytesLike,
       operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "operatorBurn(address,uint256,bytes,bytes)"(
+      account: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    burn(
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "burn(uint256,bytes)"(
+      amount: BigNumberish,
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    /**
-     * Returns the name of the token.
-     */
-    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    /**
-     * Returns the symbol of the token, usually a shorter version of the name.
-     */
-    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    /**
-     * Returns the smallest part of the token that is not divisible. This means all token operations (creation, movement and destruction) must have amounts that are a multiple of this number.     * For most token contracts, this value will equal 1.
-     */
-    granularity(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    /**
-     * Returns the amount of tokens in existence.
-     */
-    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    /**
-     * Returns the amount of tokens owned by an account (`owner`).
-     */
-    balanceOf(
-      owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    /**
-     * Moves `amount` tokens from the caller's account to `recipient`.     * If send or receive hooks are registered for the caller and `recipient`, the corresponding functions will be called with `data` and empty `operatorData`. See {IERC777Sender} and {IERC777Recipient}.     * Emits a {Sent} event.     * Requirements     * - the caller must have at least `amount` tokens. - `recipient` cannot be the zero address. - if `recipient` is a contract, it must implement the {IERC777Recipient} interface.
-     */
-    send(
-      recipient: string,
-      amount: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    /**
-     * Destroys `amount` tokens from the caller's account, reducing the total supply.     * If a send hook is registered for the caller, the corresponding function will be called with `data` and empty `operatorData`. See {IERC777Sender}.     * Emits a {Burned} event.     * Requirements     * - the caller must have at least `amount` tokens.
-     */
-    burn(
-      amount: BigNumberish,
-      data: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    /**
-     * Returns true if an account is an operator of `tokenHolder`. Operators can send and burn tokens on behalf of their owners. All accounts are their own operator.     * See {operatorSend} and {operatorBurn}.
-     */
-    isOperatorFor(
-      operator: string,
-      tokenHolder: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    /**
-     * Make an account an operator of the caller.     * See {isOperatorFor}.     * Emits an {AuthorizedOperator} event.     * Requirements     * - `operator` cannot be calling address.
-     */
-    authorizeOperator(
-      operator: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    /**
-     * Make an account an operator of the caller.     * See {isOperatorFor} and {defaultOperators}.     * Emits a {RevokedOperator} event.     * Requirements     * - `operator` cannot be calling address.
-     */
-    revokeOperator(
-      operator: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    /**
-     * Returns the list of default operators. These accounts are operators for all token holders, even if {authorizeOperator} was never called on them.     * This list is immutable, but individual holders may revoke these via {revokeOperator}, in which case {isOperatorFor} will return false.
-     */
     defaultOperators(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    /**
-     * Moves `amount` tokens from `sender` to `recipient`. The caller must be an operator of `sender`.     * If send or receive hooks are registered for `sender` and `recipient`, the corresponding functions will be called with `data` and `operatorData`. See {IERC777Sender} and {IERC777Recipient}.     * Emits a {Sent} event.     * Requirements     * - `sender` cannot be the zero address. - `sender` must have at least `amount` tokens. - the caller must be an operator for `sender`. - `recipient` cannot be the zero address. - if `recipient` is a contract, it must implement the {IERC777Recipient} interface.
-     */
+    "defaultOperators()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "name()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "totalSupply()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    granularity(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "granularity()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     operatorSend(
       sender: string,
       recipient: string,
@@ -728,14 +754,100 @@ export class IERC777 extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    /**
-     * Destoys `amount` tokens from `account`, reducing the total supply. The caller must be an operator of `account`.     * If a send hook is registered for `account`, the corresponding function will be called with `data` and `operatorData`. See {IERC777Sender}.     * Emits a {Burned} event.     * Requirements     * - `account` cannot be the zero address. - `account` must have at least `amount` tokens. - the caller must be an operator for `account`.
-     */
+    "operatorSend(address,address,uint256,bytes,bytes)"(
+      sender: string,
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    balanceOf(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "balanceOf(address)"(
+      owner: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    authorizeOperator(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "authorizeOperator(address)"(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "symbol()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    send(
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "send(address,uint256,bytes)"(
+      recipient: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    isOperatorFor(
+      operator: string,
+      tokenHolder: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "isOperatorFor(address,address)"(
+      operator: string,
+      tokenHolder: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    revokeOperator(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "revokeOperator(address)"(
+      operator: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     operatorBurn(
       account: string,
       amount: BigNumberish,
       data: BytesLike,
       operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "operatorBurn(address,uint256,bytes,bytes)"(
+      account: string,
+      amount: BigNumberish,
+      data: BytesLike,
+      operatorData: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    burn(
+      amount: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "burn(uint256,bytes)"(
+      amount: BigNumberish,
+      data: BytesLike,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

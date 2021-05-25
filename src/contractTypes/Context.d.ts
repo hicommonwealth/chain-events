@@ -9,7 +9,7 @@ import {
   BigNumber,
   BigNumberish,
   PopulatedTransaction,
-  BaseContract,
+  Contract,
   ContractTransaction,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -23,7 +23,7 @@ interface ContextInterface extends ethers.utils.Interface {
   events: {};
 }
 
-export class Context extends BaseContract {
+export class Context extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;

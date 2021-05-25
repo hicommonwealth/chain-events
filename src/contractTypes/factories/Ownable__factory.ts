@@ -2,35 +2,29 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
+import { Contract, Signer } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { Ownable, OwnableInterface } from "../Ownable";
+
+import type { Ownable } from "../Ownable";
+
+export class Ownable__factory {
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): Ownable {
+    return new Contract(address, _abi, signerOrProvider) as Ownable;
+  }
+}
 
 const _abi = [
   {
+    constant: false,
     inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
     payable: false,
     stateMutability: "nonpayable",
-    type: "constructor",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "previousOwner",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "newOwner",
-        type: "address",
-      },
-    ],
-    name: "OwnershipTransferred",
-    type: "event",
+    type: "function",
   },
   {
     constant: true,
@@ -38,7 +32,6 @@ const _abi = [
     name: "owner",
     outputs: [
       {
-        internalType: "address",
         name: "",
         type: "address",
       },
@@ -53,7 +46,6 @@ const _abi = [
     name: "isOwner",
     outputs: [
       {
-        internalType: "bool",
         name: "",
         type: "bool",
       },
@@ -64,18 +56,8 @@ const _abi = [
   },
   {
     constant: false,
-    inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    payable: false,
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    constant: false,
     inputs: [
       {
-        internalType: "address",
         name: "newOwner",
         type: "address",
       },
@@ -86,17 +68,27 @@ const _abi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    inputs: [],
+    payable: false,
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        name: "previousOwner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "OwnershipTransferred",
+    type: "event",
+  },
 ];
-
-export class Ownable__factory {
-  static readonly abi = _abi;
-  static createInterface(): OwnableInterface {
-    return new utils.Interface(_abi) as OwnableInterface;
-  }
-  static connect(
-    address: string,
-    signerOrProvider: Signer | Provider
-  ): Ownable {
-    return new Contract(address, _abi, signerOrProvider) as Ownable;
-  }
-}

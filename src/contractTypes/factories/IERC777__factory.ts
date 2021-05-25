@@ -2,165 +2,34 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
+import { Contract, Signer } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { IERC777, IERC777Interface } from "../IERC777";
+
+import type { IERC777 } from "../IERC777";
+
+export class IERC777__factory {
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): IERC777 {
+    return new Contract(address, _abi, signerOrProvider) as IERC777;
+  }
+}
 
 const _abi = [
   {
-    anonymous: false,
-    inputs: [
+    constant: true,
+    inputs: [],
+    name: "defaultOperators",
+    outputs: [
       {
-        indexed: true,
-        internalType: "address",
-        name: "operator",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "tokenHolder",
-        type: "address",
+        name: "",
+        type: "address[]",
       },
     ],
-    name: "AuthorizedOperator",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "operator",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "operatorData",
-        type: "bytes",
-      },
-    ],
-    name: "Burned",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "operator",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "operatorData",
-        type: "bytes",
-      },
-    ],
-    name: "Minted",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "operator",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "tokenHolder",
-        type: "address",
-      },
-    ],
-    name: "RevokedOperator",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "operator",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
-        internalType: "address",
-        name: "to",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-      {
-        indexed: false,
-        internalType: "bytes",
-        name: "operatorData",
-        type: "bytes",
-      },
-    ],
-    name: "Sent",
-    type: "event",
+    payable: false,
+    stateMutability: "view",
+    type: "function",
   },
   {
     constant: true,
@@ -168,39 +37,8 @@ const _abi = [
     name: "name",
     outputs: [
       {
-        internalType: "string",
         name: "",
         type: "string",
-      },
-    ],
-    payable: false,
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: "symbol",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    payable: false,
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: "granularity",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
       },
     ],
     payable: false,
@@ -213,7 +51,6 @@ const _abi = [
     name: "totalSupply",
     outputs: [
       {
-        internalType: "uint256",
         name: "",
         type: "uint256",
       },
@@ -224,17 +61,10 @@ const _abi = [
   },
   {
     constant: true,
-    inputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-    ],
-    name: "balanceOf",
+    inputs: [],
+    name: "granularity",
     outputs: [
       {
-        internalType: "uint256",
         name: "",
         type: "uint256",
       },
@@ -247,17 +77,91 @@ const _abi = [
     constant: false,
     inputs: [
       {
-        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
+      {
         name: "recipient",
         type: "address",
       },
       {
-        internalType: "uint256",
         name: "amount",
         type: "uint256",
       },
       {
-        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+      {
+        name: "operatorData",
+        type: "bytes",
+      },
+    ],
+    name: "operatorSend",
+    outputs: [],
+    payable: false,
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        name: "owner",
+        type: "address",
+      },
+    ],
+    name: "balanceOf",
+    outputs: [
+      {
+        name: "",
+        type: "uint256",
+      },
+    ],
+    payable: false,
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    constant: false,
+    inputs: [
+      {
+        name: "operator",
+        type: "address",
+      },
+    ],
+    name: "authorizeOperator",
+    outputs: [],
+    payable: false,
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    constant: true,
+    inputs: [],
+    name: "symbol",
+    outputs: [
+      {
+        name: "",
+        type: "string",
+      },
+    ],
+    payable: false,
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    constant: false,
+    inputs: [
+      {
+        name: "recipient",
+        type: "address",
+      },
+      {
+        name: "amount",
+        type: "uint256",
+      },
+      {
         name: "data",
         type: "bytes",
       },
@@ -269,35 +173,13 @@ const _abi = [
     type: "function",
   },
   {
-    constant: false,
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-    ],
-    name: "burn",
-    outputs: [],
-    payable: false,
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
     constant: true,
     inputs: [
       {
-        internalType: "address",
         name: "operator",
         type: "address",
       },
       {
-        internalType: "address",
         name: "tokenHolder",
         type: "address",
       },
@@ -305,7 +187,6 @@ const _abi = [
     name: "isOperatorFor",
     outputs: [
       {
-        internalType: "bool",
         name: "",
         type: "bool",
       },
@@ -318,22 +199,6 @@ const _abi = [
     constant: false,
     inputs: [
       {
-        internalType: "address",
-        name: "operator",
-        type: "address",
-      },
-    ],
-    name: "authorizeOperator",
-    outputs: [],
-    payable: false,
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    constant: false,
-    inputs: [
-      {
-        internalType: "address",
         name: "operator",
         type: "address",
       },
@@ -345,75 +210,21 @@ const _abi = [
     type: "function",
   },
   {
-    constant: true,
-    inputs: [],
-    name: "defaultOperators",
-    outputs: [
-      {
-        internalType: "address[]",
-        name: "",
-        type: "address[]",
-      },
-    ],
-    payable: false,
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     constant: false,
     inputs: [
       {
-        internalType: "address",
-        name: "sender",
-        type: "address",
-      },
-      {
-        internalType: "address",
-        name: "recipient",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-      {
-        internalType: "bytes",
-        name: "operatorData",
-        type: "bytes",
-      },
-    ],
-    name: "operatorSend",
-    outputs: [],
-    payable: false,
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    constant: false,
-    inputs: [
-      {
-        internalType: "address",
         name: "account",
         type: "address",
       },
       {
-        internalType: "uint256",
         name: "amount",
         type: "uint256",
       },
       {
-        internalType: "bytes",
         name: "data",
         type: "bytes",
       },
       {
-        internalType: "bytes",
         name: "operatorData",
         type: "bytes",
       },
@@ -424,17 +235,157 @@ const _abi = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    constant: false,
+    inputs: [
+      {
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        name: "data",
+        type: "bytes",
+      },
+    ],
+    name: "burn",
+    outputs: [],
+    payable: false,
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        name: "operator",
+        type: "address",
+      },
+      {
+        indexed: true,
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: true,
+        name: "to",
+        type: "address",
+      },
+      {
+        indexed: false,
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        name: "data",
+        type: "bytes",
+      },
+      {
+        indexed: false,
+        name: "operatorData",
+        type: "bytes",
+      },
+    ],
+    name: "Sent",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        name: "operator",
+        type: "address",
+      },
+      {
+        indexed: true,
+        name: "to",
+        type: "address",
+      },
+      {
+        indexed: false,
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        name: "data",
+        type: "bytes",
+      },
+      {
+        indexed: false,
+        name: "operatorData",
+        type: "bytes",
+      },
+    ],
+    name: "Minted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        name: "operator",
+        type: "address",
+      },
+      {
+        indexed: true,
+        name: "from",
+        type: "address",
+      },
+      {
+        indexed: false,
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        name: "data",
+        type: "bytes",
+      },
+      {
+        indexed: false,
+        name: "operatorData",
+        type: "bytes",
+      },
+    ],
+    name: "Burned",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        name: "operator",
+        type: "address",
+      },
+      {
+        indexed: true,
+        name: "tokenHolder",
+        type: "address",
+      },
+    ],
+    name: "AuthorizedOperator",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        name: "operator",
+        type: "address",
+      },
+      {
+        indexed: true,
+        name: "tokenHolder",
+        type: "address",
+      },
+    ],
+    name: "RevokedOperator",
+    type: "event",
+  },
 ];
-
-export class IERC777__factory {
-  static readonly abi = _abi;
-  static createInterface(): IERC777Interface {
-    return new utils.Interface(_abi) as IERC777Interface;
-  }
-  static connect(
-    address: string,
-    signerOrProvider: Signer | Provider
-  ): IERC777 {
-    return new Contract(address, _abi, signerOrProvider) as IERC777;
-  }
-}

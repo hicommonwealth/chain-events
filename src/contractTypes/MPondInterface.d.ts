@@ -9,7 +9,7 @@ import {
   BigNumber,
   BigNumberish,
   PopulatedTransaction,
-  BaseContract,
+  Contract,
   ContractTransaction,
   CallOverrides,
 } from "ethers";
@@ -36,7 +36,7 @@ interface MPondInterfaceInterface extends ethers.utils.Interface {
   events: {};
 }
 
-export class MPondInterface extends BaseContract {
+export class MPondInterface extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -85,6 +85,12 @@ export class MPondInterface extends BaseContract {
       blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
   };
 
   getPriorVotes(
@@ -93,8 +99,20 @@ export class MPondInterface extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  "getPriorVotes(address,uint256)"(
+    account: string,
+    blockNumber: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   callStatic: {
     getPriorVotes(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getPriorVotes(address,uint256)"(
       account: string,
       blockNumber: BigNumberish,
       overrides?: CallOverrides
@@ -109,10 +127,22 @@ export class MPondInterface extends BaseContract {
       blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
     getPriorVotes(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getPriorVotes(address,uint256)"(
       account: string,
       blockNumber: BigNumberish,
       overrides?: CallOverrides

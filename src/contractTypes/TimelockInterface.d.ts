@@ -9,7 +9,7 @@ import {
   BigNumber,
   BigNumberish,
   PopulatedTransaction,
-  BaseContract,
+  Contract,
   ContractTransaction,
   Overrides,
   PayableOverrides,
@@ -22,16 +22,15 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface TimelockInterfaceInterface extends ethers.utils.Interface {
   functions: {
-    "delay()": FunctionFragment;
     "GRACE_PERIOD()": FunctionFragment;
     "acceptAdmin()": FunctionFragment;
-    "queuedTransactions(bytes32)": FunctionFragment;
-    "queueTransaction(address,uint256,string,bytes,uint256)": FunctionFragment;
     "cancelTransaction(address,uint256,string,bytes,uint256)": FunctionFragment;
+    "delay()": FunctionFragment;
     "executeTransaction(address,uint256,string,bytes,uint256)": FunctionFragment;
+    "queueTransaction(address,uint256,string,bytes,uint256)": FunctionFragment;
+    "queuedTransactions(bytes32)": FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: "delay", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "GRACE_PERIOD",
     values?: undefined
@@ -39,25 +38,25 @@ interface TimelockInterfaceInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "acceptAdmin",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "cancelTransaction",
+    values: [string, BigNumberish, string, BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(functionFragment: "delay", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "executeTransaction",
+    values: [string, BigNumberish, string, BytesLike, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "queueTransaction",
+    values: [string, BigNumberish, string, BytesLike, BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "queuedTransactions",
     values: [BytesLike]
   ): string;
-  encodeFunctionData(
-    functionFragment: "queueTransaction",
-    values: [string, BigNumberish, string, BytesLike, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "cancelTransaction",
-    values: [string, BigNumberish, string, BytesLike, BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "executeTransaction",
-    values: [string, BigNumberish, string, BytesLike, BigNumberish]
-  ): string;
 
-  decodeFunctionResult(functionFragment: "delay", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "GRACE_PERIOD",
     data: BytesLike
@@ -67,7 +66,12 @@ interface TimelockInterfaceInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "queuedTransactions",
+    functionFragment: "cancelTransaction",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "delay", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "executeTransaction",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -75,18 +79,14 @@ interface TimelockInterfaceInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "cancelTransaction",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "executeTransaction",
+    functionFragment: "queuedTransactions",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export class TimelockInterface extends BaseContract {
+export class TimelockInterface extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -130,25 +130,15 @@ export class TimelockInterface extends BaseContract {
   interface: TimelockInterfaceInterface;
 
   functions: {
-    delay(overrides?: CallOverrides): Promise<[BigNumber]>;
-
     GRACE_PERIOD(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "GRACE_PERIOD()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     acceptAdmin(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    queuedTransactions(
-      hash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    queueTransaction(
-      target: string,
-      value: BigNumberish,
-      signature: string,
-      data: BytesLike,
-      eta: BigNumberish,
+    "acceptAdmin()"(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -161,6 +151,19 @@ export class TimelockInterface extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    "cancelTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    delay(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "delay()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
     executeTransaction(
       target: string,
       value: BigNumberish,
@@ -169,27 +172,54 @@ export class TimelockInterface extends BaseContract {
       eta: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    "executeTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    queueTransaction(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "queueTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    queuedTransactions(
+      hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    "queuedTransactions(bytes32)"(
+      hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
   };
 
-  delay(overrides?: CallOverrides): Promise<BigNumber>;
-
   GRACE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "GRACE_PERIOD()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   acceptAdmin(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  queuedTransactions(
-    hash: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  queueTransaction(
-    target: string,
-    value: BigNumberish,
-    signature: string,
-    data: BytesLike,
-    eta: BigNumberish,
+  "acceptAdmin()"(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -202,6 +232,19 @@ export class TimelockInterface extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  "cancelTransaction(address,uint256,string,bytes,uint256)"(
+    target: string,
+    value: BigNumberish,
+    signature: string,
+    data: BytesLike,
+    eta: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  delay(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "delay()"(overrides?: CallOverrides): Promise<BigNumber>;
+
   executeTransaction(
     target: string,
     value: BigNumberish,
@@ -211,26 +254,51 @@ export class TimelockInterface extends BaseContract {
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  callStatic: {
-    delay(overrides?: CallOverrides): Promise<BigNumber>;
+  "executeTransaction(address,uint256,string,bytes,uint256)"(
+    target: string,
+    value: BigNumberish,
+    signature: string,
+    data: BytesLike,
+    eta: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
+  queueTransaction(
+    target: string,
+    value: BigNumberish,
+    signature: string,
+    data: BytesLike,
+    eta: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "queueTransaction(address,uint256,string,bytes,uint256)"(
+    target: string,
+    value: BigNumberish,
+    signature: string,
+    data: BytesLike,
+    eta: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  queuedTransactions(
+    hash: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  "queuedTransactions(bytes32)"(
+    hash: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  callStatic: {
     GRACE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "GRACE_PERIOD()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     acceptAdmin(overrides?: CallOverrides): Promise<void>;
 
-    queuedTransactions(
-      hash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    queueTransaction(
-      target: string,
-      value: BigNumberish,
-      signature: string,
-      data: BytesLike,
-      eta: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
+    "acceptAdmin()"(overrides?: CallOverrides): Promise<void>;
 
     cancelTransaction(
       target: string,
@@ -241,6 +309,19 @@ export class TimelockInterface extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    "cancelTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    delay(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "delay()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     executeTransaction(
       target: string,
       value: BigNumberish,
@@ -249,30 +330,57 @@ export class TimelockInterface extends BaseContract {
       eta: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    "executeTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    queueTransaction(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    "queueTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    queuedTransactions(
+      hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    "queuedTransactions(bytes32)"(
+      hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
   };
 
   filters: {};
 
   estimateGas: {
-    delay(overrides?: CallOverrides): Promise<BigNumber>;
-
     GRACE_PERIOD(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "GRACE_PERIOD()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     acceptAdmin(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    queuedTransactions(
-      hash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    queueTransaction(
-      target: string,
-      value: BigNumberish,
-      signature: string,
-      data: BytesLike,
-      eta: BigNumberish,
+    "acceptAdmin()"(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -285,6 +393,19 @@ export class TimelockInterface extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    "cancelTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    delay(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "delay()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     executeTransaction(
       target: string,
       value: BigNumberish,
@@ -292,29 +413,56 @@ export class TimelockInterface extends BaseContract {
       data: BytesLike,
       eta: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "executeTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    queueTransaction(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "queueTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    queuedTransactions(
+      hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "queuedTransactions(bytes32)"(
+      hash: BytesLike,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    delay(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     GRACE_PERIOD(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "GRACE_PERIOD()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     acceptAdmin(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    queuedTransactions(
-      hash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    queueTransaction(
-      target: string,
-      value: BigNumberish,
-      signature: string,
-      data: BytesLike,
-      eta: BigNumberish,
+    "acceptAdmin()"(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -327,6 +475,19 @@ export class TimelockInterface extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    "cancelTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    delay(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "delay()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
     executeTransaction(
       target: string,
       value: BigNumberish,
@@ -334,6 +495,43 @@ export class TimelockInterface extends BaseContract {
       data: BytesLike,
       eta: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "executeTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    queueTransaction(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "queueTransaction(address,uint256,string,bytes,uint256)"(
+      target: string,
+      value: BigNumberish,
+      signature: string,
+      data: BytesLike,
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    queuedTransactions(
+      hash: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "queuedTransactions(bytes32)"(
+      hash: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -2,31 +2,22 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
+import { Contract, Signer } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type {
-  TimelockInterface,
-  TimelockInterfaceInterface,
-} from "../TimelockInterface";
+
+import type { TimelockInterface } from "../TimelockInterface";
+
+export class TimelockInterface__factory {
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): TimelockInterface {
+    return new Contract(address, _abi, signerOrProvider) as TimelockInterface;
+  }
+}
 
 const _abi = [
   {
-    constant: true,
-    inputs: [],
-    name: "delay",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    payable: false,
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    constant: true,
     inputs: [],
     name: "GRACE_PERIOD",
     outputs: [
@@ -36,83 +27,17 @@ const _abi = [
         type: "uint256",
       },
     ],
-    payable: false,
     stateMutability: "view",
     type: "function",
   },
   {
-    constant: false,
     inputs: [],
     name: "acceptAdmin",
     outputs: [],
-    payable: false,
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    constant: true,
-    inputs: [
-      {
-        internalType: "bytes32",
-        name: "hash",
-        type: "bytes32",
-      },
-    ],
-    name: "queuedTransactions",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    payable: false,
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    constant: false,
-    inputs: [
-      {
-        internalType: "address",
-        name: "target",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "signature",
-        type: "string",
-      },
-      {
-        internalType: "bytes",
-        name: "data",
-        type: "bytes",
-      },
-      {
-        internalType: "uint256",
-        name: "eta",
-        type: "uint256",
-      },
-    ],
-    name: "queueTransaction",
-    outputs: [
-      {
-        internalType: "bytes32",
-        name: "",
-        type: "bytes32",
-      },
-    ],
-    payable: false,
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    constant: false,
     inputs: [
       {
         internalType: "address",
@@ -142,12 +67,23 @@ const _abi = [
     ],
     name: "cancelTransaction",
     outputs: [],
-    payable: false,
     stateMutability: "nonpayable",
     type: "function",
   },
   {
-    constant: false,
+    inputs: [],
+    name: "delay",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address",
@@ -183,21 +119,65 @@ const _abi = [
         type: "bytes",
       },
     ],
-    payable: true,
     stateMutability: "payable",
     type: "function",
   },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "target",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+      {
+        internalType: "string",
+        name: "signature",
+        type: "string",
+      },
+      {
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
+      {
+        internalType: "uint256",
+        name: "eta",
+        type: "uint256",
+      },
+    ],
+    name: "queueTransaction",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "hash",
+        type: "bytes32",
+      },
+    ],
+    name: "queuedTransactions",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
 ];
-
-export class TimelockInterface__factory {
-  static readonly abi = _abi;
-  static createInterface(): TimelockInterfaceInterface {
-    return new utils.Interface(_abi) as TimelockInterfaceInterface;
-  }
-  static connect(
-    address: string,
-    signerOrProvider: Signer | Provider
-  ): TimelockInterface {
-    return new Contract(address, _abi, signerOrProvider) as TimelockInterface;
-  }
-}

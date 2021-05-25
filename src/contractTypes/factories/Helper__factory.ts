@@ -2,21 +2,10 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Signer, utils, Contract, ContractFactory, Overrides } from "ethers";
+import { Signer, Contract, ContractFactory, Overrides } from "ethers";
 import { Provider, TransactionRequest } from "@ethersproject/providers";
-import type { Helper, HelperInterface } from "../Helper";
 
-const _abi = [
-  {
-    inputs: [],
-    payable: false,
-    stateMutability: "nonpayable",
-    type: "constructor",
-  },
-];
-
-const _bytecode =
-  "0x6080604052348015600f57600080fd5b50603e80601d6000396000f3fe6080604052600080fdfea265627a7a7231582008daf7fdae0ec552a83b8cf3730164be7b3cf24750f2aab7d71d33b77fa8839864736f6c63430005100032";
+import type { Helper } from "../Helper";
 
 export class Helper__factory extends ContractFactory {
   constructor(signer?: Signer) {
@@ -39,12 +28,19 @@ export class Helper__factory extends ContractFactory {
   connect(signer: Signer): Helper__factory {
     return super.connect(signer) as Helper__factory;
   }
-  static readonly bytecode = _bytecode;
-  static readonly abi = _abi;
-  static createInterface(): HelperInterface {
-    return new utils.Interface(_abi) as HelperInterface;
-  }
   static connect(address: string, signerOrProvider: Signer | Provider): Helper {
     return new Contract(address, _abi, signerOrProvider) as Helper;
   }
 }
+
+const _abi = [
+  {
+    inputs: [],
+    payable: false,
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+];
+
+const _bytecode =
+  "0x6080604052348015600f57600080fd5b50603580601d6000396000f3fe6080604052600080fdfea165627a7a7230582012bdfa55750e8d50ee5c61870a520ffdf9a44b7c6e6d46540b5266e9123502590029";

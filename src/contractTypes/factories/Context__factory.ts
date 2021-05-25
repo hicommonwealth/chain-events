@@ -2,9 +2,19 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import { Contract, Signer, utils } from "ethers";
+import { Contract, Signer } from "ethers";
 import { Provider } from "@ethersproject/providers";
-import type { Context, ContextInterface } from "../Context";
+
+import type { Context } from "../Context";
+
+export class Context__factory {
+  static connect(
+    address: string,
+    signerOrProvider: Signer | Provider
+  ): Context {
+    return new Contract(address, _abi, signerOrProvider) as Context;
+  }
+}
 
 const _abi = [
   {
@@ -14,16 +24,3 @@ const _abi = [
     type: "constructor",
   },
 ];
-
-export class Context__factory {
-  static readonly abi = _abi;
-  static createInterface(): ContextInterface {
-    return new utils.Interface(_abi) as ContextInterface;
-  }
-  static connect(
-    address: string,
-    signerOrProvider: Signer | Provider
-  ): Context {
-    return new Contract(address, _abi, signerOrProvider) as Context;
-  }
-}

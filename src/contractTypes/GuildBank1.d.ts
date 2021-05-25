@@ -9,7 +9,7 @@ import {
   BigNumber,
   BigNumberish,
   PopulatedTransaction,
-  BaseContract,
+  Contract,
   ContractTransaction,
   Overrides,
   CallOverrides,
@@ -21,59 +21,59 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface GuildBank1Interface extends ethers.utils.Interface {
   functions: {
-    "approvedToken()": FunctionFragment;
-    "isOwner()": FunctionFragment;
-    "owner()": FunctionFragment;
     "renounceOwnership()": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
+    "owner()": FunctionFragment;
+    "isOwner()": FunctionFragment;
     "withdraw(address,uint256,uint256)": FunctionFragment;
+    "approvedToken()": FunctionFragment;
+    "transferOwnership(address)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "approvedToken",
+    functionFragment: "renounceOwnership",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "isOwner", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(functionFragment: "isOwner", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "renounceOwnership",
+    functionFragment: "withdraw",
+    values: [string, BigNumberish, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "approvedToken",
     values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "transferOwnership",
     values: [string]
   ): string;
-  encodeFunctionData(
-    functionFragment: "withdraw",
-    values: [string, BigNumberish, BigNumberish]
-  ): string;
 
   decodeFunctionResult(
-    functionFragment: "approvedToken",
+    functionFragment: "renounceOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "isOwner", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "isOwner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "renounceOwnership",
+    functionFragment: "approvedToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
-    "OwnershipTransferred(address,address)": EventFragment;
     "Withdrawal(address,uint256)": EventFragment;
+    "OwnershipTransferred(address,address)": EventFragment;
   };
 
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Withdrawal"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
 }
 
-export class GuildBank1 extends BaseContract {
+export class GuildBank1 extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -117,32 +117,21 @@ export class GuildBank1 extends BaseContract {
   interface: GuildBank1Interface;
 
   functions: {
-    approvedToken(overrides?: CallOverrides): Promise<[string]>;
-
-    /**
-     * Returns true if the caller is the current owner.
-     */
-    isOwner(overrides?: CallOverrides): Promise<[boolean]>;
-
-    /**
-     * Returns the address of the current owner.
-     */
-    owner(overrides?: CallOverrides): Promise<[string]>;
-
-    /**
-     * Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner.     * NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.
-     */
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    /**
-     * Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
-     */
-    transferOwnership(
-      newOwner: string,
+    "renounceOwnership()"(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<[string]>;
+
+    "owner()"(overrides?: CallOverrides): Promise<[string]>;
+
+    isOwner(overrides?: CallOverrides): Promise<[boolean]>;
+
+    "isOwner()"(overrides?: CallOverrides): Promise<[boolean]>;
 
     withdraw(
       receiver: string,
@@ -150,34 +139,44 @@ export class GuildBank1 extends BaseContract {
       totalShares: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    "withdraw(address,uint256,uint256)"(
+      receiver: string,
+      shares: BigNumberish,
+      totalShares: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    approvedToken(overrides?: CallOverrides): Promise<[string]>;
+
+    "approvedToken()"(overrides?: CallOverrides): Promise<[string]>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "transferOwnership(address)"(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
 
-  approvedToken(overrides?: CallOverrides): Promise<string>;
-
-  /**
-   * Returns true if the caller is the current owner.
-   */
-  isOwner(overrides?: CallOverrides): Promise<boolean>;
-
-  /**
-   * Returns the address of the current owner.
-   */
-  owner(overrides?: CallOverrides): Promise<string>;
-
-  /**
-   * Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner.     * NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.
-   */
   renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  /**
-   * Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
-   */
-  transferOwnership(
-    newOwner: string,
+  "renounceOwnership()"(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  owner(overrides?: CallOverrides): Promise<string>;
+
+  "owner()"(overrides?: CallOverrides): Promise<string>;
+
+  isOwner(overrides?: CallOverrides): Promise<boolean>;
+
+  "isOwner()"(overrides?: CallOverrides): Promise<boolean>;
 
   withdraw(
     receiver: string,
@@ -186,31 +185,39 @@ export class GuildBank1 extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  "withdraw(address,uint256,uint256)"(
+    receiver: string,
+    shares: BigNumberish,
+    totalShares: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  approvedToken(overrides?: CallOverrides): Promise<string>;
+
+  "approvedToken()"(overrides?: CallOverrides): Promise<string>;
+
+  transferOwnership(
+    newOwner: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "transferOwnership(address)"(
+    newOwner: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
-    approvedToken(overrides?: CallOverrides): Promise<string>;
-
-    /**
-     * Returns true if the caller is the current owner.
-     */
-    isOwner(overrides?: CallOverrides): Promise<boolean>;
-
-    /**
-     * Returns the address of the current owner.
-     */
-    owner(overrides?: CallOverrides): Promise<string>;
-
-    /**
-     * Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner.     * NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.
-     */
     renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
-    /**
-     * Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
-     */
-    transferOwnership(
-      newOwner: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    "renounceOwnership()"(overrides?: CallOverrides): Promise<void>;
+
+    owner(overrides?: CallOverrides): Promise<string>;
+
+    "owner()"(overrides?: CallOverrides): Promise<string>;
+
+    isOwner(overrides?: CallOverrides): Promise<boolean>;
+
+    "isOwner()"(overrides?: CallOverrides): Promise<boolean>;
 
     withdraw(
       receiver: string,
@@ -218,94 +225,135 @@ export class GuildBank1 extends BaseContract {
       totalShares: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    "withdraw(address,uint256,uint256)"(
+      receiver: string,
+      shares: BigNumberish,
+      totalShares: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    approvedToken(overrides?: CallOverrides): Promise<string>;
+
+    "approvedToken()"(overrides?: CallOverrides): Promise<string>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "transferOwnership(address)"(
+      newOwner: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
-    OwnershipTransferred(
-      previousOwner?: string | null,
-      newOwner?: string | null
-    ): TypedEventFilter<
-      [string, string],
-      { previousOwner: string; newOwner: string }
-    >;
-
     Withdrawal(
-      receiver?: string | null,
-      amount?: null
+      receiver: string | null,
+      amount: null
     ): TypedEventFilter<
       [string, BigNumber],
       { receiver: string; amount: BigNumber }
     >;
+
+    OwnershipTransferred(
+      previousOwner: string | null,
+      newOwner: string | null
+    ): TypedEventFilter<
+      [string, string],
+      { previousOwner: string; newOwner: string }
+    >;
   };
 
   estimateGas: {
-    approvedToken(overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Returns true if the caller is the current owner.
-     */
-    isOwner(overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Returns the address of the current owner.
-     */
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
-
-    /**
-     * Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner.     * NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.
-     */
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    /**
-     * Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
-     */
-    transferOwnership(
-      newOwner: string,
+    "renounceOwnership()"(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    owner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "owner()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    isOwner(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "isOwner()"(overrides?: CallOverrides): Promise<BigNumber>;
 
     withdraw(
       receiver: string,
       shares: BigNumberish,
       totalShares: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "withdraw(address,uint256,uint256)"(
+      receiver: string,
+      shares: BigNumberish,
+      totalShares: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    approvedToken(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "approvedToken()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "transferOwnership(address)"(
+      newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    approvedToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    /**
-     * Returns true if the caller is the current owner.
-     */
-    isOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    /**
-     * Returns the address of the current owner.
-     */
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    /**
-     * Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner.     * NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner.
-     */
     renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    /**
-     * Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
-     */
-    transferOwnership(
-      newOwner: string,
+    "renounceOwnership()"(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
+
+    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "owner()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    isOwner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "isOwner()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     withdraw(
       receiver: string,
       shares: BigNumberish,
       totalShares: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "withdraw(address,uint256,uint256)"(
+      receiver: string,
+      shares: BigNumberish,
+      totalShares: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    approvedToken(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "approvedToken()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    transferOwnership(
+      newOwner: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "transferOwnership(address)"(
+      newOwner: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

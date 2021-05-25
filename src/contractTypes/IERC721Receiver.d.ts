@@ -9,7 +9,7 @@ import {
   BigNumber,
   BigNumberish,
   PopulatedTransaction,
-  BaseContract,
+  Contract,
   ContractTransaction,
   Overrides,
   CallOverrides,
@@ -37,7 +37,7 @@ interface IERC721ReceiverInterface extends ethers.utils.Interface {
   events: {};
 }
 
-export class IERC721Receiver extends BaseContract {
+export class IERC721Receiver extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -81,16 +81,15 @@ export class IERC721Receiver extends BaseContract {
   interface: IERC721ReceiverInterface;
 
   functions: {
-    /**
-     * The ERC721 smart contract calls this function on the recipient after a {IERC721-safeTransferFrom}. This function MUST return the function selector, otherwise the caller will revert the transaction. The selector to be returned can be obtained as `this.onERC721Received.selector`. This function MAY throw to revert and reject the transfer. Note: the ERC721 contract address is always the message sender.
-     * Handle the receipt of an NFT
-     * @param data Additional data with no specified format
-     * @param from The address which previously owned the token
-     * @param operator The address which called `safeTransferFrom` function
-     * @param tokenId The NFT identifier which is being transferred
-     * @returns bytes4 `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
-     */
     onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "onERC721Received(address,address,uint256,bytes)"(
       operator: string,
       from: string,
       tokenId: BigNumberish,
@@ -99,15 +98,6 @@ export class IERC721Receiver extends BaseContract {
     ): Promise<ContractTransaction>;
   };
 
-  /**
-   * The ERC721 smart contract calls this function on the recipient after a {IERC721-safeTransferFrom}. This function MUST return the function selector, otherwise the caller will revert the transaction. The selector to be returned can be obtained as `this.onERC721Received.selector`. This function MAY throw to revert and reject the transfer. Note: the ERC721 contract address is always the message sender.
-   * Handle the receipt of an NFT
-   * @param data Additional data with no specified format
-   * @param from The address which previously owned the token
-   * @param operator The address which called `safeTransferFrom` function
-   * @param tokenId The NFT identifier which is being transferred
-   * @returns bytes4 `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
-   */
   onERC721Received(
     operator: string,
     from: string,
@@ -116,17 +106,24 @@ export class IERC721Receiver extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  "onERC721Received(address,address,uint256,bytes)"(
+    operator: string,
+    from: string,
+    tokenId: BigNumberish,
+    data: BytesLike,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
-    /**
-     * The ERC721 smart contract calls this function on the recipient after a {IERC721-safeTransferFrom}. This function MUST return the function selector, otherwise the caller will revert the transaction. The selector to be returned can be obtained as `this.onERC721Received.selector`. This function MAY throw to revert and reject the transfer. Note: the ERC721 contract address is always the message sender.
-     * Handle the receipt of an NFT
-     * @param data Additional data with no specified format
-     * @param from The address which previously owned the token
-     * @param operator The address which called `safeTransferFrom` function
-     * @param tokenId The NFT identifier which is being transferred
-     * @returns bytes4 `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
-     */
     onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    "onERC721Received(address,address,uint256,bytes)"(
       operator: string,
       from: string,
       tokenId: BigNumberish,
@@ -138,16 +135,15 @@ export class IERC721Receiver extends BaseContract {
   filters: {};
 
   estimateGas: {
-    /**
-     * The ERC721 smart contract calls this function on the recipient after a {IERC721-safeTransferFrom}. This function MUST return the function selector, otherwise the caller will revert the transaction. The selector to be returned can be obtained as `this.onERC721Received.selector`. This function MAY throw to revert and reject the transfer. Note: the ERC721 contract address is always the message sender.
-     * Handle the receipt of an NFT
-     * @param data Additional data with no specified format
-     * @param from The address which previously owned the token
-     * @param operator The address which called `safeTransferFrom` function
-     * @param tokenId The NFT identifier which is being transferred
-     * @returns bytes4 `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
-     */
     onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "onERC721Received(address,address,uint256,bytes)"(
       operator: string,
       from: string,
       tokenId: BigNumberish,
@@ -157,16 +153,15 @@ export class IERC721Receiver extends BaseContract {
   };
 
   populateTransaction: {
-    /**
-     * The ERC721 smart contract calls this function on the recipient after a {IERC721-safeTransferFrom}. This function MUST return the function selector, otherwise the caller will revert the transaction. The selector to be returned can be obtained as `this.onERC721Received.selector`. This function MAY throw to revert and reject the transfer. Note: the ERC721 contract address is always the message sender.
-     * Handle the receipt of an NFT
-     * @param data Additional data with no specified format
-     * @param from The address which previously owned the token
-     * @param operator The address which called `safeTransferFrom` function
-     * @param tokenId The NFT identifier which is being transferred
-     * @returns bytes4 `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
-     */
     onERC721Received(
+      operator: string,
+      from: string,
+      tokenId: BigNumberish,
+      data: BytesLike,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "onERC721Received(address,address,uint256,bytes)"(
       operator: string,
       from: string,
       tokenId: BigNumberish,
