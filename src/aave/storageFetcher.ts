@@ -41,6 +41,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
         proposer: proposal.creator,
         executor: proposal.executor,
         targets: proposal.targets,
+        // TODO: ensure this is on the fetched object, cf. Marlin
         values: proposal.values.map((v) => v.toString()),
         signatures: proposal.signatures,
         calldatas: proposal.calldatas,

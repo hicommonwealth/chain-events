@@ -322,7 +322,7 @@ describe('Marlin Event Integration Tests', () => {
     it('should create a proposal', async () => {
       // ProposalCreated Event
       const targets = ['0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b'];
-      const values = [0];
+      const values = ['1'];
       const signatures = ['_setCollateralFactor(address,uint256)'];
       const calldatas = [
         '0x000000000000000000000000C11B1268C1A384E55C48C2391D8D480264A3A7F40000000000000000000000000000000000000000000000000853A0D2313C0000',

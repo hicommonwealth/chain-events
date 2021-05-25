@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Contract } from 'ethers';
+import { BigNumber, Contract } from 'ethers';
 
 import { Timelock, MPond, GovernorAlpha } from '../../contractTypes';
 import { TypedEventFilter } from '../../contractTypes/commons';
@@ -110,13 +110,16 @@ export async function Enrich(
         id,
         proposer,
         targets,
-        values,
         signatures,
         calldatas,
         startBlock,
         endBlock,
         description,
       } = rawData.args as GetArgType<GovernorAlpha, 'ProposalCreated'>;
+
+      // values doesn't appear on the object version, hack around it by accessing the
+      // argument array instead
+      const values = rawData.args[3] as BigNumber[];
 
       return {
         blockNumber,
