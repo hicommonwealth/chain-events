@@ -1,21 +1,9 @@
 import { CWEvent, IStorageFetcher, IDisconnectedRange } from '../interfaces';
 import { factory, formatFilename } from '../logging';
 
-import { IEventData, EventKind, Api, Proposal } from './types';
+import { IEventData, EventKind, Api, Proposal, ProposalState } from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
-
-// eslint-disable-next-line no-shadow
-enum ProposalState {
-  PENDING = 0,
-  CANCELED = 1,
-  ACTIVE = 2,
-  FAILED = 3,
-  SUCCEEDED = 4,
-  QUEUED = 5,
-  EXPIRED = 6,
-  EXECUTED = 7,
-}
 
 export class StorageFetcher extends IStorageFetcher<Api> {
   constructor(protected readonly _api: Api) {

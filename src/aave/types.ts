@@ -42,6 +42,18 @@ interface IEvent {
 type Address = string;
 type Balance = string;
 
+// eslint-disable-next-line no-shadow
+export enum ProposalState {
+  PENDING = 0,
+  CANCELED = 1,
+  ACTIVE = 2,
+  FAILED = 3,
+  SUCCEEDED = 4,
+  QUEUED = 5,
+  EXPIRED = 6,
+  EXECUTED = 7,
+}
+
 // GovernorAlpha Event Interfaces
 export interface IProposalCanceled extends IEvent {
   kind: EventKind.ProposalCanceled;

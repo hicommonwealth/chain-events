@@ -37,6 +37,7 @@ export type { IGovernanceStrategy } from "./IGovernanceStrategy";
 export type { IProposalValidator } from "./IProposalValidator";
 export type { IVotingStrategy } from "./IVotingStrategy";
 export type { AaveTokenV1Mock } from "./AaveTokenV1Mock";
+export type { AaveTokenV2Mock } from "./AaveTokenV2Mock";
 export type { FlashAttacks } from "./FlashAttacks";
 export type { SelfdestructTransfer } from "./SelfdestructTransfer";
 export type { GovernorAlpha } from "./GovernorAlpha";
@@ -90,6 +91,7 @@ export { IGovernanceStrategy__factory } from "./factories/IGovernanceStrategy__f
 export { IProposalValidator__factory } from "./factories/IProposalValidator__factory";
 export { IVotingStrategy__factory } from "./factories/IVotingStrategy__factory";
 export { AaveTokenV1Mock__factory } from "./factories/AaveTokenV1Mock__factory";
+export { AaveTokenV2Mock__factory } from "./factories/AaveTokenV2Mock__factory";
 export { FlashAttacks__factory } from "./factories/FlashAttacks__factory";
 export { SelfdestructTransfer__factory } from "./factories/SelfdestructTransfer__factory";
 export { GovernorAlpha__factory } from "./factories/GovernorAlpha__factory";
