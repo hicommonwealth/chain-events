@@ -20,6 +20,9 @@ import { KulupuSpec } from './specs/kulupu';
 import { StafiSpec } from './specs/stafi';
 import { CloverSpec } from './specs/clover';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+require('dotenv').config();
+
 const networkUrls = {
   clover: 'wss://api.clover.finance',
   hydradx: 'wss://rpc-01.snakenet.hydradx.io',
@@ -170,9 +173,17 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
   });
 } else if (chainSupportedBy(network, AaveEvents.Types.EventChains)) {
   const aaveContracts = {
-    governance: '', // TODO
+    governance: '0xEC568fffba86c094cf06b22134B23074DFE2252c',
   };
-  AaveEvents.createApi(url, aaveContracts).then((api) => {
+  AaveEvents.createApi(url, aaveContracts).then(async (api) => {
+    const fetcher = new AaveEvents.StorageFetcher(api);
+    try {
+      const fetched = await fetcher.fetch({ startBlock: 12300000 }, true);
+      console.log(fetched.map((f) => f.data));
+    } catch (err) {
+      console.log(err);
+      console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
+    }
     AaveEvents.subscribeEvents({
       chain: network,
       api,
