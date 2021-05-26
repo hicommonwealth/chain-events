@@ -166,7 +166,8 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
 } else if (chainSupportedBy(network, Erc20Events.Types.EventChains)) {
   async function erc20Subscribe() {
     let tokens = await getTokenLists()
-    Erc20Events.createApi(url, tokens).then((api) => {
+    let tokenAddresses = tokens.map(o=>o.address) 
+    Erc20Events.createApi(url, tokenAddresses).then((api) => {
       Erc20Events.subscribeEvents({
         chain: network,
         api,
