@@ -51,13 +51,24 @@ export async function createApi(
     const tokenContracts = tokenAddresses.map((o) =>
       Erc20Factory.connect(o, provider)
     );
-
-    await Promise.all(
-      tokenContracts.map((o) => o.deployed().catch((err) => log.error(err)))
+    const deployResults = await Promise.all(
+      tokenContracts.map((o) =>
+        o
+          .deployed()
+          .then((_) => {
+            return { token: o, deployed: true };
+          })
+          .catch((err) => {
+            log.error('Failed to deploy', err);
+            return { token: o, deployed: false };
+          })
+      )
     );
 
+    const result = deployResults.filter((o) => o.deployed).map((o) => o.token);
+
     log.info('Connection successful!');
-    return { tokens: tokenContracts, provider };
+    return { tokens: result, provider };
   } catch (err) {
     log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
     await sleep(retryTimeMs);
@@ -86,7 +97,7 @@ export const subscribeEvents: SubscribeFunc<
   // helper function that sends an event through event handlers
   const handleEventFn = async (event: CWEvent<IEventData>): Promise<void> => {
     let prevResult = null;
-    for (const handler of handlers) {
+  for (const handler of handlers) {
       try {
         // pass result of last handler into next one (chaining db events)
         prevResult = await handler.handle(event, prevResult);
