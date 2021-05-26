@@ -73,6 +73,13 @@ export interface IProposalCreated extends IEvent {
   endBlock: number;
   strategy: string;
   ipfsHash: string;
+
+  // if fetching from storage, we cannot query for votes, but we receive
+  // current vote totals instead. we can use fetchedAt to filter against
+  // stored VoteEmitted objects.
+  fetchedAt?: number;
+  forVotes?: Balance;
+  againstVotes?: Balance;
 }
 
 export interface IProposalExecuted extends IEvent {

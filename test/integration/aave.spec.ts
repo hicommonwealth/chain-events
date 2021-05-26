@@ -341,7 +341,7 @@ describe('Aave Event Integration Tests', () => {
 
   it('should fetch proposals from storage', async () => {
     const setupData = await setupSubscription();
-    const { api, strategy, executor, addresses } = setupData;
+    const { api, strategy, executor, addresses, provider } = setupData;
 
     const targets = ['0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B'];
     const values = ['0'];
@@ -354,6 +354,14 @@ describe('Aave Event Integration Tests', () => {
     // cancel first proposal
     const cancelledId = await createAndCancel(setupData);
     const cancelledProposal = await api.governance.getProposalById(cancelledId);
+
+    // complete second proposal
+    const completedId = await proposeToCompletion(setupData);
+    const completedProposal = await api.governance.getProposalById(completedId);
+
+    // configure event data
+    const currentBlock = await provider.getBlockNumber();
+
     const cancelledEventData: CWEvent<IEventData>[] = [
       {
         blockNumber: +cancelledProposal.startBlock,
@@ -370,6 +378,9 @@ describe('Aave Event Integration Tests', () => {
           endBlock: +cancelledProposal.endBlock,
           strategy: strategy.address,
           ipfsHash,
+          fetchedAt: currentBlock,
+          forVotes: cancelledProposal.forVotes.toString(),
+          againstVotes: cancelledProposal.againstVotes.toString(),
         },
       },
       {
@@ -381,9 +392,6 @@ describe('Aave Event Integration Tests', () => {
       },
     ];
 
-    // complete second proposal
-    const completedId = await proposeToCompletion(setupData);
-    const completedProposal = await api.governance.getProposalById(completedId);
     const completedEventData: CWEvent<IEventData>[] = [
       {
         blockNumber: +completedProposal.startBlock,
@@ -400,6 +408,9 @@ describe('Aave Event Integration Tests', () => {
           endBlock: +completedProposal.endBlock,
           strategy: strategy.address,
           ipfsHash,
+          fetchedAt: currentBlock,
+          forVotes: completedProposal.forVotes.toString(),
+          againstVotes: completedProposal.againstVotes.toString(),
         },
       },
       {
@@ -422,27 +433,24 @@ describe('Aave Event Integration Tests', () => {
     // fetch all non-complete from storage (only most recent)
     const fetcher = new StorageFetcher(api);
     const nonCompletedData = await fetcher.fetch(undefined, false);
-    assert.sameDeepMembers(nonCompletedData, completedEventData);
+    assert.deepEqual(nonCompletedData, completedEventData);
 
     // fetch all from storage incl complete
     const allData = await fetcher.fetch(undefined, true);
-    assert.sameDeepMembers(allData, [
-      ...cancelledEventData,
-      ...completedEventData,
-    ]);
+    assert.deepEqual(allData, [...completedEventData, ...cancelledEventData]);
 
     // fetch cancelled from storage via range
     const cancelledData = await fetcher.fetch(
       { startBlock: 0, endBlock: +cancelledProposal.startBlock + 1 },
       true
     );
-    assert.sameDeepMembers(cancelledData, cancelledEventData);
+    assert.deepEqual(cancelledData, cancelledEventData);
 
     // fetch completed from storage via range
     const completedData = await fetcher.fetch(
       { startBlock: +completedProposal.startBlock },
       true
     );
-    assert.sameDeepMembers(completedData, completedEventData);
+    assert.deepEqual(completedData, completedEventData);
   });
 });

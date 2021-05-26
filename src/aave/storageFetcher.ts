@@ -39,6 +39,10 @@ export class StorageFetcher extends IStorageFetcher<Api> {
         endBlock: +proposal.endBlock,
         strategy: proposal.strategy,
         ipfsHash: proposal.ipfsHash,
+
+        fetchedAt: this._currentBlock,
+        forVotes: proposal.forVotes.toString(),
+        againstVotes: proposal.againstVotes.toString(),
       },
     };
     events.push(createdEvent);
