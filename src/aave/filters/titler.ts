@@ -38,6 +38,30 @@ export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
         description: 'A new vote has been emitted.',
       };
     }
+    case EventKind.DelegateChanged: {
+      return {
+        title: 'Delegate changed',
+        description: "A user's delegate has been changed.",
+      };
+    }
+    case EventKind.DelegatedPowerChanged: {
+      return {
+        title: 'Delegated power changed',
+        description: "A user's delegation power has been changed.",
+      };
+    }
+    case EventKind.Transfer: {
+      return {
+        title: 'Token Transfer',
+        description: 'A user transfers tokens.',
+      };
+    }
+    case EventKind.Approval: {
+      return {
+        title: 'Token Approval',
+        description: 'A user approves a token spend.',
+      };
+    }
     default: {
       // ensure exhaustive matching -- gives ts error if missing cases
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

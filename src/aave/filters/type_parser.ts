@@ -19,8 +19,16 @@ export function ParseType(name: string): EventKind | null {
       return EventKind.ProposalQueued;
     case 'VoteEmitted':
       return EventKind.VoteEmitted;
+    case 'DelegateChanged':
+      return EventKind.DelegateChanged;
+    case 'DelegatedPowerChanged':
+      return EventKind.DelegatedPowerChanged;
+    case 'Transfer':
+      return EventKind.Transfer;
+    case 'Approval':
+      return EventKind.Approval;
     default: {
-      log.warn(`Unknown AAVE event name: ${name}!`);
+      log.warn(`Unknown Aave event name: ${name}!`);
       return null;
     }
   }

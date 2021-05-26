@@ -2,13 +2,16 @@
 import { BigNumber } from 'ethers';
 
 import { TypedEventFilter } from '../../contractTypes/commons';
-import { IAaveGovernanceV2 } from '../../contractTypes';
+import { AaveTokenV2, IAaveGovernanceV2 } from '../../contractTypes';
 import { CWEvent } from '../../interfaces';
 import { EventKind, RawEvent, IEventData, Api } from '../types';
 
 type GetEventArgs<T> = T extends TypedEventFilter<any, infer Y> ? Y : never;
 type GetArgType<Name extends keyof IAaveGovernanceV2['filters']> = GetEventArgs<
   ReturnType<IAaveGovernanceV2['filters'][Name]>
+>;
+type GetTokenArgType<Name extends keyof AaveTokenV2['filters']> = GetEventArgs<
+  ReturnType<AaveTokenV2['filters'][Name]>
 >;
 
 export async function Enrich(
@@ -107,8 +110,72 @@ export async function Enrich(
         },
       };
     }
+    case EventKind.DelegateChanged: {
+      const {
+        delegator,
+        delegatee,
+        delegationType,
+      } = rawData.args as GetTokenArgType<'DelegateChanged'>;
+      return {
+        blockNumber,
+        excludeAddresses: [delegator],
+        data: {
+          kind,
+          tokenAddress: rawData.address,
+          delegator,
+          delegatee,
+          type: delegationType,
+        },
+      };
+    }
+    case EventKind.DelegatedPowerChanged: {
+      const { user, amount, delegationType } = rawData.args as GetTokenArgType<
+        'DelegatedPowerChanged'
+      >;
+      return {
+        blockNumber,
+        excludeAddresses: [user],
+        data: {
+          kind,
+          tokenAddress: rawData.address,
+          who: user,
+          amount: amount.toString(),
+          type: delegationType,
+        },
+      };
+    }
+    case EventKind.Transfer: {
+      const { from, to, value } = rawData.args as GetTokenArgType<'Transfer'>;
+      return {
+        blockNumber,
+        excludeAddresses: [from],
+        data: {
+          kind,
+          tokenAddress: rawData.address,
+          from,
+          to,
+          amount: value.toString(),
+        },
+      };
+    }
+    case EventKind.Approval: {
+      const { owner, spender, value } = rawData.args as GetTokenArgType<
+        'Approval'
+      >;
+      return {
+        blockNumber,
+        excludeAddresses: [owner],
+        data: {
+          kind,
+          tokenAddress: rawData.address,
+          owner,
+          spender,
+          amount: value.toString(),
+        },
+      };
+    }
     default: {
-      throw new Error('unknown AAVE event kind!');
+      throw new Error('unknown Aave event kind!');
     }
   }
 

@@ -1,5 +1,8 @@
 import { TypedEvent } from '../contractTypes/commons';
-import { IAaveGovernanceV2 } from '../contractTypes';
+import {
+  IAaveGovernanceV2,
+  IGovernancePowerDelegationToken,
+} from '../contractTypes';
 
 // Used to unwrap promises returned by contract functions
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;
@@ -8,12 +11,15 @@ export type Proposal = UnPromisify<
 >;
 
 // API is imported contracts classes
-interface IAAVEContracts {
-  // keep arg name same as Compound structure, functions similarly
+interface IAaveContracts {
   governance: IAaveGovernanceV2;
+
+  // optional token types for Delegation events
+  aaveToken?: IGovernancePowerDelegationToken;
+  stkAaveToken?: IGovernancePowerDelegationToken;
 }
 
-export type Api = IAAVEContracts;
+export type Api = IAaveContracts;
 
 export const EventChains = ['aave', 'aave-local'] as const;
 
@@ -28,11 +34,18 @@ export enum EntityKind {
 
 // eslint-disable-next-line no-shadow
 export enum EventKind {
+  // governance
   ProposalCanceled = 'proposal-canceled',
   ProposalCreated = 'proposal-created',
   ProposalExecuted = 'proposal-executed',
   ProposalQueued = 'proposal-queued',
   VoteEmitted = 'vote-emitted',
+
+  // tokens
+  DelegateChanged = 'delegate-changed',
+  DelegatedPowerChanged = 'delegated-power-changed',
+  Transfer = 'transfer',
+  Approval = 'approval',
 }
 
 interface IEvent {
@@ -52,6 +65,12 @@ export enum ProposalState {
   QUEUED = 5,
   EXPIRED = 6,
   EXECUTED = 7,
+}
+
+// eslint-disable-next-line no-shadow
+export enum DelegationType {
+  VOTING_POWER = 0,
+  PROPOSITION_POWER = 1,
 }
 
 // GovernorAlpha Event Interfaces
@@ -101,12 +120,48 @@ export interface IVoteEmitted extends IEvent {
   votingPower: Balance;
 }
 
+export interface IDelegateChanged extends IEvent {
+  kind: EventKind.DelegateChanged;
+  tokenAddress: Address;
+  delegator: Address;
+  delegatee: Address;
+  type: DelegationType;
+}
+
+export interface IDelegatedPowerChanged {
+  kind: EventKind.DelegatedPowerChanged;
+  tokenAddress: Address;
+  who: Address;
+  amount: Balance;
+  type: DelegationType;
+}
+
+export interface ITransfer {
+  kind: EventKind.Transfer;
+  tokenAddress: Address;
+  from: Address;
+  to: Address;
+  amount: Balance;
+}
+
+export interface IApproval {
+  kind: EventKind.Approval;
+  tokenAddress: Address;
+  owner: Address;
+  spender: Address;
+  amount: Balance;
+}
+
 export type IEventData =
   | IProposalCanceled
   | IProposalCreated
   | IProposalExecuted
   | IProposalQueued
-  | IVoteEmitted;
+  | IVoteEmitted
+  | IDelegateChanged
+  | IDelegatedPowerChanged
+  | ITransfer
+  | IApproval;
 // eslint-disable-next-line semi-style
 
 export const EventKinds: EventKind[] = Object.values(EventKind);

@@ -25,6 +25,9 @@ import {
   ProposalState,
   IProposalQueued,
   IProposalExecuted,
+  IDelegateChanged,
+  IDelegatedPowerChanged,
+  ITransfer,
 } from '../../src/aave/types';
 import { subscribeEvents } from '../../src/aave/subscribeFunc';
 import { IEventHandler, CWEvent, IChainEventData } from '../../src/interfaces';
@@ -90,6 +93,65 @@ async function increaseTime(
   }
 }
 
+async function initToken(
+  handler: AaveEventHandler,
+  token: AaveTokenV2,
+  member: string,
+  amount: string
+): Promise<void> {
+  await token.mint(member, amount);
+  await token.delegate(member);
+  await Promise.all([
+    assertEvent(handler, EventKind.Transfer, (evt: CWEvent<ITransfer>) => {
+      assert.deepEqual(evt.data, {
+        kind: EventKind.Transfer,
+        tokenAddress: token.address,
+        from: '0x0000000000000000000000000000000000000000',
+        to: member,
+        amount,
+      });
+    }),
+    assertEvent(
+      handler,
+      EventKind.DelegateChanged,
+      (evt: CWEvent<IDelegateChanged>) => {
+        // should emit for both types
+        assert.deepEqual(
+          {
+            tokenAddress: evt.data.tokenAddress,
+            delegatee: evt.data.delegatee,
+            delegator: evt.data.delegator,
+          },
+          {
+            tokenAddress: token.address,
+            delegatee: member,
+            delegator: member,
+          }
+        );
+      }
+    ),
+    assertEvent(
+      handler,
+      EventKind.DelegatedPowerChanged,
+      (evt: CWEvent<IDelegatedPowerChanged>) => {
+        // should emit for both types
+        assert.deepEqual(
+          {
+            tokenAddress: evt.data.tokenAddress,
+            who: evt.data.who,
+            amount: evt.data.amount,
+          },
+          {
+            tokenAddress: token.address,
+            who: member,
+            amount,
+          }
+        );
+      }
+    ),
+  ]);
+}
+
 async function setupSubscription(subscribe = true): Promise<ISetupData> {
   const provider = getProvider();
   const addresses: string[] = await provider.listAccounts();
@@ -100,12 +162,7 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
   // deploy and delegate tokens
   const tokenFactory = new AaveTokenV2Factory(signer);
   const token1 = await tokenFactory.deploy();
-  await token1.mint(member, TOTAL_SUPPLY);
-  await token1.delegate(member);
   const token2 = await tokenFactory.deploy();
-  await token2.mint(member, TOTAL_SUPPLY);
-  await token2.delegate(member);
-  await increaseTime(1, provider);
 
   // deploy strategy
   const strategyFactory = new GovernanceStrategyFactory(signer);
@@ -137,7 +194,12 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
   // authorize executor on governance contract
   await governance.authorizeExecutors([executor.address]);
 
-  const api = { governance };
+  const api: Api = {
+    governance,
+    aaveToken: token1,
+    stkAaveToken: token2,
+  };
+
   const emitter = new EventEmitter();
   const handler = new AaveEventHandler(emitter);
   if (subscribe) {
@@ -148,6 +210,11 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
       // skipCatchup: true,
     });
   }
+
+  // initialize tokens and test delegate events
+  await initToken(handler, token1, member, TOTAL_SUPPLY);
+  await initToken(handler, token2, member, TOTAL_SUPPLY);
+  await increaseTime(1, provider);
   return { api, executor, strategy, addresses, provider, handler };
 }
 

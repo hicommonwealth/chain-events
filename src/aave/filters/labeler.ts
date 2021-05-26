@@ -3,6 +3,12 @@ import moment from 'moment';
 import { LabelerFilter, IEventLabel } from '../../interfaces';
 import { IEventData, EventKind } from '../types';
 
+function fmtAddr(addr: string) {
+  if (!addr) return '';
+  if (addr.length < 16) return addr;
+  return `${addr.slice(0, 7)}…${addr.slice(addr.length - 3)}`;
+}
+
 /**
  * This a labeler function, which takes event data and describes it in "plain english",
  * such that we can display a notification regarding its contents.
@@ -60,6 +66,34 @@ export const Label: LabelerFilter = (
         linkUrl: chainId
           ? `/${chainId}/proposal/aaveproposal/${data.id}`
           : null,
+      };
+    }
+    case EventKind.DelegateChanged: {
+      return {
+        heading: 'Delegate Changed',
+        label: `User ${fmtAddr(data.delegator)} delegated to ${fmtAddr(
+          data.delegatee
+        )}.`,
+        linkUrl: chainId ? `/${chainId}/account/${data.delegator}` : null,
+      };
+    }
+    case EventKind.DelegatedPowerChanged: {
+      return {
+        heading: 'Delegated Power Changed',
+        label: `User ${fmtAddr(data.who)} updated their delegation power.`,
+        linkUrl: chainId ? `/${chainId}/account/${data.who}` : null,
+      };
+    }
+    case EventKind.Transfer: {
+      return {
+        heading: 'Token Transfer',
+        label: `Transfer of ${data.amount} tokens from ${data.from} to ${data.to}.`,
+      };
+    }
+    case EventKind.Approval: {
+      return {
+        heading: 'Approval',
+        label: `${data.spender} approved ${data.amount} to ${data.owner}.`,
       };
     }
     default: {

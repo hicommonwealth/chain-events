@@ -1,6 +1,5 @@
 import { providers } from 'ethers';
 import Web3 from 'web3';
-import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
 import {
@@ -10,7 +9,11 @@ import {
   ISubscribeOptions,
 } from '../interfaces';
 import { factory, formatFilename } from '../logging';
-import { IAaveGovernanceV2__factory as IAaveGovernanceV2Factory } from '../contractTypes';
+import {
+  IAaveGovernanceV2__factory as IAaveGovernanceV2Factory,
+  GovernanceStrategy__factory as GovernanceStrategyFactory,
+  GovernancePowerDelegationERC20__factory as GovernancePowerDelegationERC20Factory,
+} from '../contractTypes';
 
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
@@ -51,16 +54,59 @@ export async function createApi(
       },
     });
     const provider = new providers.Web3Provider(web3Provider);
+
+    // fetch governance contract
     const governanceContract = IAaveGovernanceV2Factory.connect(
       contractAddresses.governance,
       provider
     );
     await governanceContract.deployed();
 
-    log.info('Connection successful!');
-    return {
-      governance: governanceContract,
-    };
+    try {
+      // fetch strategy to get tokens
+      // TODO: ensure that all governance contracts have a valid strategy
+      //   i.e. with these specific tokens -- we may want to take the token addresses
+      //   directly rather than fetch from the contract.
+      const strategyAddress = await governanceContract.getGovernanceStrategy();
+      const strategy = GovernanceStrategyFactory.connect(
+        strategyAddress,
+        provider
+      );
+      await strategy.deployed();
+
+      // fetch tokens
+      const aaveTokenAddress = await strategy.AAVE();
+      const stkAaveTokenAddress = await strategy.STK_AAVE();
+      const aaveToken = GovernancePowerDelegationERC20Factory.connect(
+        aaveTokenAddress,
+        provider
+      );
+      const stkAaveToken = GovernancePowerDelegationERC20Factory.connect(
+        stkAaveTokenAddress,
+        provider
+      );
+      await aaveToken.deployed();
+      await stkAaveToken.deployed();
+
+      // confirm we the token types are correct
+      await aaveToken.DELEGATE_TYPEHASH();
+      await stkAaveToken.DELEGATE_TYPEHASH();
+
+      log.info('Connection successful!');
+      return {
+        governance: governanceContract,
+        aaveToken,
+        stkAaveToken,
+      };
+    } catch (err) {
+      log.warn(
+        'Governance connection successful but token connections failed.'
+      );
+      log.warn('Delegation events will not be emitted.');
+      return {
+        governance: governanceContract,
+      };
+    }
   } catch (err) {
     log.error(
       `Aave ${contractAddresses.toString()} at ${ethNetworkUrl} failure: ${
@@ -170,7 +216,7 @@ export const subscribeEvents: SubscribeFunc<
   }
 
   try {
-    log.info(`Subscribing to Aave contracts ${chain}...`);
+    log.info(`Subscribing to contracts ${chain}...`);
     await subscriber.subscribe(processEventFn);
   } catch (e) {
     log.error(`Subscription error: ${e.message}`);

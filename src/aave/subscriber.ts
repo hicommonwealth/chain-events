@@ -35,11 +35,15 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
       cb(event);
     };
     this._api.governance.on('*', this._listener);
+    this._api.aaveToken?.on('*', this._listener);
+    this._api.stkAaveToken?.on('*', this._listener);
   }
 
   public unsubscribe(): void {
     if (this._listener) {
-      this._api.governance.removeListener('*', this._listener);
+      this._api.governance.off('*', this._listener);
+      this._api.aaveToken?.off('*', this._listener);
+      this._api.stkAaveToken?.off('*', this._listener);
       this._listener = null;
     }
   }

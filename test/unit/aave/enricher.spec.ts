@@ -1,14 +1,20 @@
 import chai from 'chai';
 import { utils } from 'ethers';
 
-import { EventKind, RawEvent, Api } from '../../../src/aave/types';
+import {
+  EventKind,
+  RawEvent,
+  Api,
+  DelegationType,
+} from '../../../src/aave/types';
 import { Enrich } from '../../../src/aave/filters/enricher';
 
 const { assert } = chai;
 
-const constructEvent = (data): RawEvent => {
+const constructEvent = (data, address?: string): RawEvent => {
   return {
     args: data,
+    address,
   } as RawEvent;
 };
 
@@ -137,6 +143,122 @@ describe('Aave Event Enricher Filter Tests', () => {
         voter,
         support,
         votingPower,
+      },
+    });
+  });
+
+  // DelegateChanged
+  it('should enrich DelegateChanged event', async () => {
+    const kind = EventKind.DelegateChanged;
+    const delegator = 'me';
+    const delegatee = 'them';
+    const type = DelegationType.VOTING_POWER;
+    const tokenAddress = 'tokenaddress';
+    const event = constructEvent(
+      {
+        delegator,
+        delegatee,
+        delegationType: type,
+      },
+      tokenAddress
+    );
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [delegator],
+      data: {
+        kind,
+        tokenAddress,
+        delegator,
+        delegatee,
+        type,
+      },
+    });
+  });
+
+  // DelegatedPowerChanged
+  it('should enrich DelegatedPowerChanged event', async () => {
+    const kind = EventKind.DelegatedPowerChanged;
+    const who = 'me';
+    const amount = '123';
+    const type = DelegationType.VOTING_POWER;
+    const tokenAddress = 'tokenaddress';
+    const event = constructEvent(
+      {
+        user: who,
+        amount,
+        delegationType: type,
+      },
+      tokenAddress
+    );
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [who],
+      data: {
+        kind,
+        tokenAddress,
+        who,
+        amount,
+        type,
+      },
+    });
+  });
+
+  // Transfer
+  it('should enrich Transfer event', async () => {
+    const kind = EventKind.Transfer;
+    const from = 'me';
+    const to = 'them';
+    const amount = '234';
+    const tokenAddress = 'tokenaddress';
+    const event = constructEvent(
+      {
+        from,
+        to,
+        value: amount,
+      },
+      tokenAddress
+    );
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [from],
+      data: {
+        kind,
+        tokenAddress,
+        from,
+        to,
+        amount,
+      },
+    });
+  });
+
+  // Approval
+  it('should enrich approval event', async () => {
+    const kind = EventKind.Approval;
+    const owner = 'fromAddress';
+    const spender = 'toAddress';
+    const amount = '123';
+    const tokenAddress = 'tokenaddress';
+    const event = constructEvent(
+      {
+        owner,
+        spender,
+        value: amount,
+      },
+      tokenAddress
+    );
+    const result = await Enrich(api, blockNumber, kind, event);
+    assert.deepEqual(result, {
+      blockNumber,
+      excludeAddresses: [owner],
+      data: {
+        kind,
+        tokenAddress,
+        owner,
+        spender,
+        amount,
       },
     });
   });

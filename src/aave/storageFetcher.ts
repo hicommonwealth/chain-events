@@ -134,7 +134,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       const proposal: Proposal = await this._api.governance.getProposalById(
         queuePosition
       );
-      log.debug(`Fetched AAVE proposal ${proposal.id} from storage.`);
+      log.debug(`Fetched Aave proposal ${proposal.id} from storage.`);
 
       const proposalStartBlock = +proposal.startBlock;
       if (
@@ -163,13 +163,13 @@ export class StorageFetcher extends IStorageFetcher<Api> {
         }
       } else if (proposalStartBlock < range.startBlock) {
         log.debug(
-          `AAVE proposal start block (${proposalStartBlock}) is before ${range.startBlock}, ending fetch.`
+          `Aave proposal start block (${proposalStartBlock}) is before ${range.startBlock}, ending fetch.`
         );
         break;
       } else if (proposalStartBlock > range.endBlock) {
         // keep walking backwards until within range
         log.debug(
-          `AAVE proposal start block (${proposalStartBlock}) is after ${range.endBlock}, continuing fetch.`
+          `Aave proposal start block (${proposalStartBlock}) is after ${range.endBlock}, continuing fetch.`
         );
       }
     }
