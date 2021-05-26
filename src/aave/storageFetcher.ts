@@ -20,6 +20,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
   ): Promise<CWEvent<IEventData>[]> {
     // Only GovernorAlpha events are on Proposals
     const events: CWEvent<IEventData>[] = [];
+
     // All proposals had to have at least been created
     const createdEvent: CWEvent<IEventData> = {
       blockNumber: +proposal.startBlock,
@@ -29,8 +30,9 @@ export class StorageFetcher extends IStorageFetcher<Api> {
         proposer: proposal.creator,
         executor: proposal.executor,
         targets: proposal.targets,
-        // TODO: ensure this is on the fetched object, cf. Marlin
-        values: proposal.values.map((v) => v.toString()),
+        // values doesn't appear on the object version, hack around it by accessing the
+        // argument array instead
+        values: proposal[4].map((v) => v.toString()),
         signatures: proposal.signatures,
         calldatas: proposal.calldatas,
         startBlock: +proposal.startBlock,
@@ -43,7 +45,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
 
     if (state === ProposalState.CANCELED) {
       const canceledEvent: CWEvent<IEventData> = {
-        blockNumber: +proposal.endBlock,
+        blockNumber: Math.min(+proposal.endBlock, this._currentBlock),
         data: {
           kind: EventKind.ProposalCanceled,
           id: +proposal.id,
@@ -53,20 +55,20 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     }
     if (state === ProposalState.QUEUED || state === ProposalState.EXECUTED) {
       const queuedEvent: CWEvent<IEventData> = {
-        blockNumber: proposal.endBlock.toNumber(),
+        blockNumber: +proposal.endBlock,
         data: {
           kind: EventKind.ProposalQueued,
-          id: proposal.id.toNumber(),
+          id: +proposal.id,
           executionTime: +proposal.executionTime,
         },
       };
       events.push(queuedEvent);
       if (state === ProposalState.EXECUTED) {
         const proposalExecuted: CWEvent<IEventData> = {
-          blockNumber: proposal.endBlock.toNumber(),
+          blockNumber: +proposal.endBlock,
           data: {
             kind: EventKind.ProposalExecuted,
-            id: proposal.id.toNumber(),
+            id: +proposal.id,
           },
         };
         events.push(proposalExecuted);
@@ -163,7 +165,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       } else if (proposalStartBlock > range.endBlock) {
         // keep walking backwards until within range
         log.debug(
-          `AAVE proposal start block (${proposalStartBlock}) is after ${range.endBlock}, ending fetch.`
+          `AAVE proposal start block (${proposalStartBlock}) is after ${range.endBlock}, continuing fetch.`
         );
       }
     }

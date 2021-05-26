@@ -28,6 +28,7 @@ import {
 } from '../../src/aave/types';
 import { subscribeEvents } from '../../src/aave/subscribeFunc';
 import { IEventHandler, CWEvent, IChainEventData } from '../../src/interfaces';
+import { StorageFetcher } from '../../src/aave/storageFetcher';
 
 function getProvider(): providers.Web3Provider {
   const web3Provider = require('ganache-cli').provider({
@@ -167,6 +168,7 @@ async function createProposal({
   const ipfsHash = utils.formatBytes32String('0x123abc');
   const strategy = await api.governance.getGovernanceStrategy();
   const blockNumber = await provider.getBlockNumber();
+  const id = await api.governance.getProposalsCount();
   await api.governance.create(
     executor.address,
     targets,
@@ -182,7 +184,7 @@ async function createProposal({
     (evt: CWEvent<IProposalCreated>) => {
       assert.deepEqual(evt.data, {
         kind: EventKind.ProposalCreated,
-        id: 0,
+        id: +id,
         proposer: addresses[0],
         executor: executor.address,
         targets,
@@ -196,9 +198,25 @@ async function createProposal({
       });
     }
   );
-  const state = await api.governance.getProposalState(0);
+  const state = await api.governance.getProposalState(id);
   assert.equal(state, ProposalState.PENDING);
-  return 0;
+  return +id;
+}
+
+async function createAndCancel(setupData: ISetupData): Promise<number> {
+  const id = await createProposal(setupData);
+  await setupData.api.governance.cancel(id);
+  await assertEvent(
+    setupData.handler,
+    EventKind.ProposalCanceled,
+    (evt: CWEvent<IProposalCanceled>) => {
+      assert.deepEqual(evt.data, {
+        kind: EventKind.ProposalCanceled,
+        id,
+      });
+    }
+  );
+  return id;
 }
 
 async function createAndVote({
@@ -225,7 +243,7 @@ async function createAndVote({
   await increaseTime(blocksToAdvance, provider);
 
   const votingBlock = await provider.getBlockNumber();
-  const state = await api.governance.getProposalState(0);
+  const state = await api.governance.getProposalState(id);
   assert.equal(state, ProposalState.ACTIVE);
 
   // emit vote
@@ -240,10 +258,60 @@ async function createAndVote({
     (evt: CWEvent<IVoteEmitted>) => {
       assert.deepEqual(evt.data, {
         kind: EventKind.VoteEmitted,
-        id: 0,
+        id,
         voter: addresses[0],
         support: true,
         votingPower: votingPower.toString(),
+      });
+    }
+  );
+  return id;
+}
+
+async function proposeToCompletion(setupData: ISetupData): Promise<number> {
+  const id = await createAndVote(setupData);
+
+  // wait for voting to succeed
+  const { api, provider, executor } = setupData;
+  const { endBlock } = await api.governance.getProposalById(id);
+  const currentBlock = await provider.getBlockNumber();
+  const blocksToAdvance = +endBlock - currentBlock + 1;
+  await increaseTime(blocksToAdvance, provider);
+
+  const state = await api.governance.getProposalState(id);
+  assert.equal(state, ProposalState.SUCCEEDED);
+
+  // queue proposal
+  const delay = await executor.getDelay();
+  await api.governance.queue(id);
+  const queueBlock = await provider.getBlockNumber();
+  const { timestamp } = await provider.getBlock(queueBlock);
+  const executionTime = timestamp + +delay;
+  await assertEvent(
+    setupData.handler,
+    EventKind.ProposalQueued,
+    (evt: CWEvent<IProposalQueued>) => {
+      assert.deepEqual(evt.data, {
+        kind: EventKind.ProposalQueued,
+        id,
+        executionTime,
+      });
+    }
+  );
+  const queuedState = await api.governance.getProposalState(id);
+  assert.equal(queuedState, ProposalState.QUEUED);
+
+  // wait for execution
+  const delayBlocks = Math.ceil(+delay / 15) + 1;
+  await increaseTime(delayBlocks, provider);
+  await api.governance.execute(id);
+  await assertEvent(
+    setupData.handler,
+    EventKind.ProposalExecuted,
+    (evt: CWEvent<IProposalExecuted>) => {
+      assert.deepEqual(evt.data, {
+        kind: EventKind.ProposalExecuted,
+        id,
       });
     }
   );
@@ -258,18 +326,7 @@ describe('Aave Event Integration Tests', () => {
 
   it('should cancel a proposal', async () => {
     const setupData = await setupSubscription();
-    const id = await createProposal(setupData);
-    await setupData.api.governance.cancel(id);
-    await assertEvent(
-      setupData.handler,
-      EventKind.ProposalCanceled,
-      (evt: CWEvent<IProposalCanceled>) => {
-        assert.deepEqual(evt.data, {
-          kind: EventKind.ProposalCanceled,
-          id: 0,
-        });
-      }
-    );
+    await createAndCancel(setupData);
   });
 
   it('should vote on a proposal', async () => {
@@ -279,51 +336,113 @@ describe('Aave Event Integration Tests', () => {
 
   it('should queue and execute a proposal', async () => {
     const setupData = await setupSubscription();
-    const id = await createAndVote(setupData);
+    await proposeToCompletion(setupData);
+  });
 
-    // wait for voting to succeed
-    const { api, provider, executor } = setupData;
-    const { endBlock } = await api.governance.getProposalById(id);
-    const currentBlock = await provider.getBlockNumber();
-    const blocksToAdvance = +endBlock - currentBlock + 1;
-    await increaseTime(blocksToAdvance, provider);
+  it('should fetch proposals from storage', async () => {
+    const setupData = await setupSubscription();
+    const { api, strategy, executor, addresses } = setupData;
 
-    const state = await api.governance.getProposalState(0);
-    assert.equal(state, ProposalState.SUCCEEDED);
+    const targets = ['0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B'];
+    const values = ['0'];
+    const signatures = ['_setCollateralFactor(address,uint256)'];
+    const calldatas = [
+      '0x000000000000000000000000c11b1268c1a384e55c48c2391d8d480264a3a7f40000000000000000000000000000000000000000000000000853a0d2313c0000',
+    ];
+    const ipfsHash = utils.formatBytes32String('0x123abc');
 
-    // queue proposal
-    const delay = await executor.getDelay();
-    const queueBlock = await provider.getBlockNumber();
-    const { timestamp } = await provider.getBlock(queueBlock);
-    const executionTime = timestamp + +delay;
-    await api.governance.queue(id);
-    await assertEvent(
-      setupData.handler,
-      EventKind.ProposalQueued,
-      (evt: CWEvent<IProposalQueued>) => {
-        assert.deepEqual(evt.data, {
+    // cancel first proposal
+    const cancelledId = await createAndCancel(setupData);
+    const cancelledProposal = await api.governance.getProposalById(cancelledId);
+    const cancelledEventData: CWEvent<IEventData>[] = [
+      {
+        blockNumber: +cancelledProposal.startBlock,
+        data: {
+          kind: EventKind.ProposalCreated,
+          id: cancelledId,
+          proposer: addresses[0],
+          executor: executor.address,
+          targets,
+          values,
+          signatures,
+          calldatas,
+          startBlock: +cancelledProposal.startBlock,
+          endBlock: +cancelledProposal.endBlock,
+          strategy: strategy.address,
+          ipfsHash,
+        },
+      },
+      {
+        blockNumber: +cancelledProposal.endBlock,
+        data: {
+          kind: EventKind.ProposalCanceled,
+          id: cancelledId,
+        },
+      },
+    ];
+
+    // complete second proposal
+    const completedId = await proposeToCompletion(setupData);
+    const completedProposal = await api.governance.getProposalById(completedId);
+    const completedEventData: CWEvent<IEventData>[] = [
+      {
+        blockNumber: +completedProposal.startBlock,
+        data: {
+          kind: EventKind.ProposalCreated,
+          id: completedId,
+          proposer: addresses[0],
+          executor: executor.address,
+          targets,
+          values,
+          signatures,
+          calldatas,
+          startBlock: +completedProposal.startBlock,
+          endBlock: +completedProposal.endBlock,
+          strategy: strategy.address,
+          ipfsHash,
+        },
+      },
+      {
+        blockNumber: +completedProposal.endBlock,
+        data: {
           kind: EventKind.ProposalQueued,
-          id: 0,
-          executionTime,
-        });
-      }
-    );
-    const queuedState = await api.governance.getProposalState(0);
-    assert.equal(queuedState, ProposalState.QUEUED);
-
-    // wait for execution
-    const delayBlocks = Math.ceil(+delay / 15) + 1;
-    await increaseTime(delayBlocks, provider);
-    await api.governance.execute(id);
-    await assertEvent(
-      setupData.handler,
-      EventKind.ProposalExecuted,
-      (evt: CWEvent<IProposalExecuted>) => {
-        assert.deepEqual(evt.data, {
+          id: completedId,
+          executionTime: +completedProposal.executionTime,
+        },
+      },
+      {
+        blockNumber: +completedProposal.endBlock,
+        data: {
           kind: EventKind.ProposalExecuted,
-          id: 0,
-        });
-      }
+          id: completedId,
+        },
+      },
+    ];
+
+    // fetch all non-complete from storage (only most recent)
+    const fetcher = new StorageFetcher(api);
+    const nonCompletedData = await fetcher.fetch(undefined, false);
+    assert.sameDeepMembers(nonCompletedData, completedEventData);
+
+    // fetch all from storage incl complete
+    const allData = await fetcher.fetch(undefined, true);
+    assert.sameDeepMembers(allData, [
+      ...cancelledEventData,
+      ...completedEventData,
+    ]);
+
+    // fetch cancelled from storage via range
+    const cancelledData = await fetcher.fetch(
+      { startBlock: 0, endBlock: +cancelledProposal.startBlock + 1 },
+      true
     );
+    assert.sameDeepMembers(cancelledData, cancelledEventData);
+
+    // fetch completed from storage via range
+    const completedData = await fetcher.fetch(
+      { startBlock: +completedProposal.startBlock },
+      true
+    );
+    assert.sameDeepMembers(completedData, completedEventData);
   });
 });
