@@ -14,8 +14,6 @@ export class StorageFetcher extends IStorageFetcher<Api> {
 
   private _votingPeriod: number; // The duration of voting on a proposal, in blocks
 
-  private _votingDelay: number; // The delay before voting on a proposal may take place, once proposed
-
   private _currentBlock: number;
 
   private _currentTimestamp: number;
@@ -98,7 +96,6 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     fetchAllCompleted = false
   ): Promise<CWEvent<IEventData>[]> {
     // we need to fetch a few constants to convert voting periods into blocks
-    this._votingDelay = +(await this._api.governorAlpha.votingDelay());
     this._votingPeriod = +(await this._api.governorAlpha.votingPeriod());
     this._currentBlock = +(await this._api.governorAlpha.provider.getBlockNumber());
     log.info(`Current block: ${this._currentBlock}.`);
@@ -138,7 +135,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
 
     for (let i = 0; i < queueLength; i++) {
       // work backwards through the queue, starting with the most recent
-      const queuePosition = queueLength - i - 1;
+      const queuePosition = queueLength - i;
       const proposal: Proposal = await this._api.governorAlpha.proposals(
         queuePosition
       );

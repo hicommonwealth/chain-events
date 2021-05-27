@@ -30,11 +30,7 @@ const log = factory.getLogger(formatFilename(__filename));
  */
 export async function createApi(
   ethNetworkUrl: string,
-  contractAddresses: {
-    comp: string;
-    governorAlpha: string;
-    timelock: string;
-  },
+  governorAlphaAddress: string,
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
   if (ethNetworkUrl.includes('infura')) {
@@ -57,20 +53,20 @@ export async function createApi(
       },
     });
     const provider = new providers.Web3Provider(web3Provider);
-    const compContract = MPondFactory.connect(contractAddresses.comp, provider);
+
+    // init governance contract
     const governorAlphaContract = GovernorAlphaFactory.connect(
-      contractAddresses.governorAlpha,
+      governorAlphaAddress,
       provider
     );
-    const timelockContract = TimelockFactory.connect(
-      contractAddresses.timelock,
-      provider
-    );
-    await Promise.all([
-      compContract.deployed(),
-      governorAlphaContract.deployed(),
-      timelockContract.deployed(),
-    ]);
+    await governorAlphaContract.deployed();
+
+    // init secondary contracts
+    const compAddress = await governorAlphaContract.MPond();
+    const timelockAddress = await governorAlphaContract.timelock();
+    const compContract = MPondFactory.connect(compAddress, provider);
+    const timelockContract = TimelockFactory.connect(timelockAddress, provider);
+    await Promise.all([compContract.deployed(), timelockContract.deployed()]);
 
     log.info('Connection successful!');
     return {
@@ -80,13 +76,11 @@ export async function createApi(
     };
   } catch (err) {
     log.error(
-      `Marlin ${contractAddresses.toString()} at ${ethNetworkUrl} failure: ${
-        err.message
-      }`
+      `Marlin ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
     );
     await sleep(retryTimeMs);
     log.error('Retrying connection...');
-    return createApi(ethNetworkUrl, contractAddresses, retryTimeMs);
+    return createApi(ethNetworkUrl, governorAlphaAddress, retryTimeMs);
   }
 }
 
@@ -167,8 +161,8 @@ export const subscribeEvents: SubscribeFunc<
       return;
     }
 
-    // defaulting to the comp contract provider, though could be any of the contracts
-    const dater = new EthDater(api.comp.provider);
+    // defaulting to the governorAlpha contract provider, though could be any of the contracts
+    const dater = new EthDater(api.governorAlpha.provider);
     const fetcher = new StorageFetcher(api, dater);
     try {
       const cwEvents = await fetcher.fetch(offlineRange);

@@ -3,6 +3,7 @@
 import * as yargs from 'yargs';
 import type { RegisteredTypes } from '@polkadot/types/types';
 import { spec as EdgewareSpec } from '@edgeware/node-types';
+import EthDater from 'ethereum-block-by-date';
 
 import {
   chainSupportedBy,
@@ -57,6 +58,8 @@ const networkSpecs: { [chain: string]: RegisteredTypes } = {
 const contracts = {
   moloch: '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
+  marlin: '0x777992c2E4EDF704e49680468a9299C6679e37F6',
+  aave: '0xEC568fffba86c094cf06b22134B23074DFE2252c',
 };
 
 const { argv } = yargs
@@ -146,7 +149,20 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
 } else if (chainSupportedBy(network, MolochEvents.Types.EventChains)) {
   const contractVersion = 1;
   if (!contract) throw new Error(`no contract address for ${network}`);
-  MolochEvents.createApi(url, contractVersion, contract).then((api) => {
+  MolochEvents.createApi(url, contractVersion, contract).then(async (api) => {
+    const dater = new EthDater(api.provider);
+    const fetcher = new MolochEvents.StorageFetcher(
+      api,
+      contractVersion,
+      dater
+    );
+    try {
+      const fetched = await fetcher.fetch({ startBlock: 11000000 }, true);
+      console.log(fetched.map((f) => f.data));
+    } catch (err) {
+      console.log(err);
+      console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
+    }
     MolochEvents.subscribeEvents({
       chain: network,
       api,
@@ -157,12 +173,17 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     });
   });
 } else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
-  const marlinContracts = {
-    comp: '0xEa2923b099b4B588FdFAD47201d747e3b9599A5f', // TESTNET
-    governorAlpha: '0xeDAA76873524f6A203De2Fa792AD97E459Fca6Ff', // TESTNET
-    timelock: '0x7d89D52c464051FcCbe35918cf966e2135a17c43', // TESTNET
-  };
-  MarlinEvents.createApi(url, marlinContracts).then((api) => {
+  if (!contract) throw new Error(`no contract address for ${network}`);
+  MarlinEvents.createApi(url, contract).then(async (api) => {
+    const dater = new EthDater(api.governorAlpha.provider);
+    const fetcher = new MarlinEvents.StorageFetcher(api, dater);
+    try {
+      const fetched = await fetcher.fetch(undefined, true);
+      console.log(fetched.map((f) => f.data));
+    } catch (err) {
+      console.log(err);
+      console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
+    }
     MarlinEvents.subscribeEvents({
       chain: network,
       api,
@@ -172,10 +193,8 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     });
   });
 } else if (chainSupportedBy(network, AaveEvents.Types.EventChains)) {
-  const aaveContracts = {
-    governance: '0xEC568fffba86c094cf06b22134B23074DFE2252c',
-  };
-  AaveEvents.createApi(url, aaveContracts).then(async (api) => {
+  if (!contract) throw new Error(`no contract address for ${network}`);
+  AaveEvents.createApi(url, contract).then(async (api) => {
     const fetcher = new AaveEvents.StorageFetcher(api);
     try {
       const fetched = await fetcher.fetch({ startBlock: 12300000 }, true);

@@ -29,9 +29,7 @@ const log = factory.getLogger(formatFilename(__filename));
  */
 export async function createApi(
   ethNetworkUrl: string,
-  contractAddresses: {
-    governance: string;
-  },
+  governanceAddress: string,
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
   if (ethNetworkUrl.includes('infura')) {
@@ -57,7 +55,7 @@ export async function createApi(
 
     // fetch governance contract
     const governanceContract = IAaveGovernanceV2Factory.connect(
-      contractAddresses.governance,
+      governanceAddress,
       provider
     );
     await governanceContract.deployed();
@@ -109,13 +107,11 @@ export async function createApi(
     }
   } catch (err) {
     log.error(
-      `Aave ${contractAddresses.toString()} at ${ethNetworkUrl} failure: ${
-        err.message
-      }`
+      `Aave ${governanceAddress} at ${ethNetworkUrl} failure: ${err.message}`
     );
     await sleep(retryTimeMs);
     log.error('Retrying connection...');
-    return createApi(ethNetworkUrl, contractAddresses, retryTimeMs);
+    return createApi(ethNetworkUrl, governanceAddress, retryTimeMs);
   }
 }
 
