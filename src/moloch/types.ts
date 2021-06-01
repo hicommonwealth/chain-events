@@ -23,7 +23,7 @@ export interface SubscribeOptions extends ISubscribeOptions<Api> {
 
 // eslint-disable-next-line no-shadow
 export enum EntityKind {
-  Proposal = 'moloch-proposal',
+  Proposal = 'proposal',
 }
 
 // eslint-disable-next-line no-shadow

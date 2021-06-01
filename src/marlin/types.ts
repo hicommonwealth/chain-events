@@ -28,7 +28,7 @@ export type RawEvent = TypedEvent<any>;
 // eslint-disable-next-line no-shadow
 export enum EntityKind {
   // eslint-disable-next-line no-shadow
-  Proposal = 'marlin-proposal',
+  Proposal = 'proposal',
 }
 
 // eslint-disable-next-line no-shadow
