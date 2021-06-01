@@ -409,15 +409,15 @@ export function eventToEntity(
 
     // Aave Events
     case AaveTypes.EventKind.ProposalCreated: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
+      return [AaveTypes.EntityKind.Proposal, EntityEventKind.Create];
     }
     case AaveTypes.EventKind.VoteEmitted:
     case AaveTypes.EventKind.ProposalQueued: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
+      return [AaveTypes.EntityKind.Proposal, EntityEventKind.Update];
     }
     case AaveTypes.EventKind.ProposalExecuted:
     case AaveTypes.EventKind.ProposalCanceled: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      return [AaveTypes.EntityKind.Proposal, EntityEventKind.Complete];
     }
     default: {
       return null;
