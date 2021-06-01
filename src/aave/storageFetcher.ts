@@ -128,6 +128,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     const queueLength = +(await this._api.governance.getProposalsCount());
     const results: CWEvent<IEventData>[] = [];
 
+    let nFetched = 0;
     for (let i = 0; i < queueLength; i++) {
       // work backwards through the queue, starting with the most recent
       const queuePosition = queueLength - i - 1;
@@ -148,6 +149,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
           state
         );
         results.push(...events);
+        nFetched += 1;
 
         // halt fetch once we find a completed/executed proposal in order to save data
         // we may want to run once without this, in order to fetch backlog, or else develop a pagination
@@ -159,6 +161,10 @@ export class StorageFetcher extends IStorageFetcher<Api> {
           log.debug(
             `Proposal ${proposal.id} is marked as executed, halting fetch.`
           );
+          break;
+        }
+        if (range.maxResults && nFetched >= range.maxResults) {
+          log.debug(`Fetched ${nFetched} proposals, halting fetch.`);
           break;
         }
       } else if (proposalStartBlock < range.startBlock) {

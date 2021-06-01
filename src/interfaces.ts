@@ -100,6 +100,7 @@ export abstract class IEventSubscriber<Api, RawEvent> {
 export interface IDisconnectedRange {
   startBlock: number;
   endBlock?: number;
+  maxResults?: number;
 }
 
 export interface ISubscribeOptions<Api> {
