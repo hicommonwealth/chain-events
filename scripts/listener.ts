@@ -130,7 +130,8 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
   SubstrateEvents.createApi(url, spec).then(async (api) => {
     const fetcher = new SubstrateEvents.StorageFetcher(api);
     try {
-      await fetcher.fetch();
+      const fetched = await fetcher.fetch();
+      console.log(fetched.map((f) => f.data));
     } catch (err) {
       console.log(err);
       console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
@@ -157,7 +158,11 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
       dater
     );
     try {
-      const fetched = await fetcher.fetch({ startBlock: 11000000 }, true);
+      const fetched = await fetcher.fetch(
+        { startBlock: 11000000, maxResults: 3 },
+        true
+      );
+      // const fetched = await fetcher.fetchOne('132');
       console.log(fetched.map((f) => f.data));
     } catch (err) {
       console.log(err);
@@ -178,7 +183,11 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     const dater = new EthDater(api.governorAlpha.provider);
     const fetcher = new MarlinEvents.StorageFetcher(api, dater);
     try {
-      const fetched = await fetcher.fetch(undefined, true);
+      const fetched = await fetcher.fetch(
+        { startBlock: 0, maxResults: 1 },
+        true
+      );
+      // const fetched = await fetcher.fetchOne('2');
       console.log(fetched.map((f) => f.data));
     } catch (err) {
       console.log(err);
@@ -197,7 +206,11 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
   AaveEvents.createApi(url, contract).then(async (api) => {
     const fetcher = new AaveEvents.StorageFetcher(api);
     try {
-      const fetched = await fetcher.fetch({ startBlock: 12300000 }, true);
+      const fetched = await fetcher.fetch(
+        { startBlock: 12300000, maxResults: 4 },
+        true
+      );
+      // const fetched = await fetcher.fetchOne('10');
       console.log(fetched.map((f) => f.data));
     } catch (err) {
       console.log(err);

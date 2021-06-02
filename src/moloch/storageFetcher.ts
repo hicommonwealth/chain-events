@@ -138,18 +138,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     return events;
   }
 
-  /**
-   * Fetches all CW events relating to ChainEntities from chain (or in this case contract),
-   *   by quering available chain/contract storage and reconstructing events.
-   *
-   * NOTE: throws on error! Make sure to wrap in try/catch!
-   *
-   * @param range Determines the range of blocks to query events within.
-   */
-  public async fetch(
-    range?: IDisconnectedRange,
-    fetchAllCompleted = false
-  ): Promise<CWEvent<IEventData>[]> {
+  private async _initConstants() {
     // we need to fetch a few constants to convert voting periods into blocks
     this._periodDuration = +(await this._api.periodDuration());
     this._summoningTime = +(await this._api.summoningTime());
@@ -164,6 +153,71 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       await this._api.provider.getBlock(this._currentBlock)
     ).timestamp;
     log.info(`Current timestamp: ${this._currentTimestamp}.`);
+  }
+
+  public async fetchOne(id: string): Promise<CWEvent<IEventData>[]> {
+    await this._initConstants();
+    if (!this._currentBlock) {
+      log.error('Failed to fetch current block! Aborting fetch.');
+      return [];
+    }
+
+    // fetch actual proposal
+    let proposal: ProposalV1 | ProposalV2;
+    try {
+      proposal =
+        this._version === 1
+          ? await (this._api as Moloch1).proposalQueue(id)
+          : await (this._api as Moloch2).proposals(id);
+    } catch (e) {
+      log.error(`Moloch proposal ${id} not found.`);
+      return [];
+    }
+    log.debug(`Fetched Moloch proposal ${id} from storage.`);
+
+    // compute starting time and derive closest block number
+    const startingPeriod = +proposal.startingPeriod;
+    const proposalStartingTime =
+      startingPeriod * this._periodDuration + this._summoningTime;
+    log.debug(`Fetching block for timestamp ${proposalStartingTime}.`);
+    let proposalStartBlock: number;
+    try {
+      const block = await this._dater.getDate(proposalStartingTime * 1000);
+      proposalStartBlock = block.block;
+      log.debug(
+        `For timestamp ${block.date}, fetched ETH block #${block.block}.`
+      );
+    } catch (e) {
+      log.error(
+        `Unable to fetch closest block to timestamp ${proposalStartingTime}: ${e.message}`
+      );
+      log.error('Skipping proposal event fetch.');
+      // eslint-disable-next-line no-continue
+      return [];
+    }
+
+    const events = await this._eventsFromProposal(
+      +id,
+      proposal,
+      proposalStartingTime,
+      proposalStartBlock
+    );
+    return events;
+  }
+
+  /**
+   * Fetches all CW events relating to ChainEntities from chain (or in this case contract),
+   *   by quering available chain/contract storage and reconstructing events.
+   *
+   * NOTE: throws on error! Make sure to wrap in try/catch!
+   *
+   * @param range Determines the range of blocks to query events within.
+   */
+  public async fetch(
+    range?: IDisconnectedRange,
+    fetchAllCompleted = false
+  ): Promise<CWEvent<IEventData>[]> {
+    await this._initConstants();
     if (!this._currentBlock) {
       log.error('Failed to fetch current block! Aborting fetch.');
       return [];
@@ -194,6 +248,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     const queueLength = +(await this._api.getProposalQueueLength());
     const results: CWEvent<IEventData>[] = [];
 
+    let nFetched = 0;
     for (let i = 0; i < queueLength; i++) {
       // work backwards through the queue, starting with the most recent
       const queuePosition = queueLength - i - 1;
@@ -241,6 +296,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
           proposalStartBlock
         );
         results.push(...events);
+        nFetched += 1;
 
         // halt fetch once we find a completed proposal in order to save data
         // we may want to run once without this, in order to fetch backlog, or else develop a pagination
@@ -252,6 +308,10 @@ export class StorageFetcher extends IStorageFetcher<Api> {
           log.debug(
             `Proposal ${proposalIndex} is marked processed, halting fetch.`
           );
+          break;
+        }
+        if (range.maxResults && nFetched >= range.maxResults) {
+          log.debug(`Fetched ${nFetched} proposals, halting fetch.`);
           break;
         }
       } else if (proposalStartBlock < range.startBlock) {

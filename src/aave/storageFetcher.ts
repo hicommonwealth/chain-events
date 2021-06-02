@@ -1,7 +1,14 @@
 import { CWEvent, IStorageFetcher, IDisconnectedRange } from '../interfaces';
 import { factory, formatFilename } from '../logging';
 
-import { IEventData, EventKind, Api, Proposal, ProposalState } from './types';
+import {
+  IEventData,
+  EventKind,
+  Api,
+  Proposal,
+  ProposalState,
+  IVoteEmitted,
+} from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -39,10 +46,6 @@ export class StorageFetcher extends IStorageFetcher<Api> {
         endBlock: +proposal.endBlock,
         strategy: proposal.strategy,
         ipfsHash: proposal.ipfsHash,
-
-        fetchedAt: this._currentBlock,
-        forVotes: proposal.forVotes.toString(),
-        againstVotes: proposal.againstVotes.toString(),
       },
     };
     events.push(createdEvent);
@@ -82,6 +85,67 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     // Vote Cast events are unfetchable
     // No events emitted for failed/expired
     return events;
+  }
+
+  private async _fetchVotes(
+    start: number,
+    end: number,
+    id?: number
+  ): Promise<CWEvent<IVoteEmitted>[]> {
+    const votesEmitted = await this._api.governance.queryFilter(
+      this._api.governance.filters.VoteEmitted(null, null, null, null),
+      start,
+      end
+    );
+    const voteEvents: CWEvent<IVoteEmitted>[] = votesEmitted.map(
+      ({ args: [pId, voter, support, votingPower], blockNumber }) => ({
+        blockNumber,
+        data: {
+          kind: EventKind.VoteEmitted,
+          id: +pId,
+          voter,
+          support,
+          votingPower: votingPower.toString(),
+        },
+      })
+    );
+    if (id) {
+      return voteEvents.filter(({ data: { id: pId } }) => id === pId);
+    }
+    return voteEvents;
+  }
+
+  public async fetchOne(id: string): Promise<CWEvent<IEventData>[]> {
+    this._currentBlock = +(await this._api.governance.provider.getBlockNumber());
+    log.info(`Current block: ${this._currentBlock}.`);
+    if (!this._currentBlock) {
+      log.error('Failed to fetch current block! Aborting fetch.');
+      return [];
+    }
+
+    // TODO: handle errors
+    const proposal: Proposal = await this._api.governance.getProposalById(id);
+    if (+proposal.id === 0) {
+      log.error(`Aave proposal ${id} not found.`);
+      return [];
+    }
+    const state = await this._api.governance.getProposalState(proposal.id);
+
+    // fetch historical votes
+    const voteEvents = await this._fetchVotes(
+      +proposal.startBlock,
+      Math.min(+proposal.endBlock, this._currentBlock)
+    );
+
+    const events = await this._eventsFromProposal(
+      +proposal.id,
+      proposal,
+      state
+    );
+    const propVoteEvents = voteEvents.filter(
+      ({ data: { id: pId } }) => pId === +proposal.id
+    );
+    return [...events, ...propVoteEvents];
   }
 
   /**
@@ -128,6 +192,9 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     const queueLength = +(await this._api.governance.getProposalsCount());
     const results: CWEvent<IEventData>[] = [];
 
+    // fetch historical votes
+    const voteEvents = await this._fetchVotes(range.startBlock, range.endBlock);
+
     let nFetched = 0;
     for (let i = 0; i < queueLength; i++) {
       // work backwards through the queue, starting with the most recent
@@ -144,11 +211,14 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       ) {
         const state = await this._api.governance.getProposalState(proposal.id);
         const events = await this._eventsFromProposal(
-          proposal.id.toNumber(),
+          +proposal.id,
           proposal,
           state
         );
-        results.push(...events);
+        const propVoteEvents = voteEvents.filter(
+          ({ data: { id } }) => id === +proposal.id
+        );
+        results.push(...events, ...propVoteEvents);
         nFetched += 1;
 
         // halt fetch once we find a completed/executed proposal in order to save data

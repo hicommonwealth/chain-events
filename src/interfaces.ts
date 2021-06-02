@@ -98,7 +98,7 @@ export abstract class IEventSubscriber<Api, RawEvent> {
 }
 
 export interface IDisconnectedRange {
-  startBlock: number;
+  startBlock?: number;
   endBlock?: number;
   maxResults?: number;
 }
@@ -125,6 +125,11 @@ export abstract class IStorageFetcher<Api> {
   constructor(protected _api: Api) {}
 
   public abstract fetch(range?: IDisconnectedRange): Promise<CWEvent[]>;
+
+  public abstract fetchOne(
+    id: string,
+    kind?: IChainEntityKind
+  ): Promise<CWEvent[]>;
 }
 
 // fetches historical blocks from chain for processing
