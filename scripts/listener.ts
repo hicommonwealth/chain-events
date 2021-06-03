@@ -207,11 +207,11 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     const fetcher = new AaveEvents.StorageFetcher(api);
     try {
       const fetched = await fetcher.fetch(
-        { startBlock: 12300000, maxResults: 4 },
-        true
+        { startBlock: 12300000, maxResults: 1 },
+        false
       );
       // const fetched = await fetcher.fetchOne('10');
-      console.log(fetched.map((f) => f.data));
+      console.log(fetched.sort((a, b) => a.blockNumber - b.blockNumber));
     } catch (err) {
       console.log(err);
       console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);

@@ -54,6 +54,7 @@ export function isSupportedChain(
 export enum EntityEventKind {
   Create = 0,
   Update,
+  Vote,
   Complete,
 }
 
@@ -219,7 +220,7 @@ export function eventToEntity(
         return [MolochTypes.EntityKind.Proposal, EntityEventKind.Create];
       }
       case MolochTypes.EventKind.SubmitVote: {
-        return [MolochTypes.EntityKind.Proposal, EntityEventKind.Update];
+        return [MolochTypes.EntityKind.Proposal, EntityEventKind.Vote];
       }
       case MolochTypes.EventKind.ProcessProposal: {
         return [MolochTypes.EntityKind.Proposal, EntityEventKind.Complete];
@@ -234,6 +235,7 @@ export function eventToEntity(
   }
   if (MarlinTypes.EventChains.find((c) => c === chain)) {
     switch (event) {
+      // TODO: not all of these are entity-related...
       case MarlinTypes.EventKind.Approval: {
         return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
       }
@@ -277,7 +279,7 @@ export function eventToEntity(
         return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
       }
       case MarlinTypes.EventKind.VoteCast: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Vote];
       }
       default: {
         return null;
@@ -289,7 +291,9 @@ export function eventToEntity(
       case AaveTypes.EventKind.ProposalCreated: {
         return [AaveTypes.EntityKind.Proposal, EntityEventKind.Create];
       }
-      case AaveTypes.EventKind.VoteEmitted:
+      case AaveTypes.EventKind.VoteEmitted: {
+        return [AaveTypes.EntityKind.Proposal, EntityEventKind.Vote];
+      }
       case AaveTypes.EventKind.ProposalQueued: {
         return [AaveTypes.EntityKind.Proposal, EntityEventKind.Update];
       }
@@ -323,7 +327,12 @@ export function eventToEntity(
         EntityEventKind.Create,
       ];
     }
-    case SubstrateTypes.EventKind.DemocracyVoted:
+    case SubstrateTypes.EventKind.DemocracyVoted: {
+      return [
+        SubstrateTypes.EntityKind.DemocracyReferendum,
+        EntityEventKind.Vote,
+      ];
+    }
     case SubstrateTypes.EventKind.DemocracyPassed: {
       return [
         SubstrateTypes.EntityKind.DemocracyReferendum,
@@ -409,7 +418,12 @@ export function eventToEntity(
         EntityEventKind.Create,
       ];
     }
-    case SubstrateTypes.EventKind.CollectiveVoted:
+    case SubstrateTypes.EventKind.CollectiveVoted: {
+      return [
+        SubstrateTypes.EntityKind.CollectiveProposal,
+        EntityEventKind.Vote,
+      ];
+    }
     case SubstrateTypes.EventKind.CollectiveApproved: {
       return [
         SubstrateTypes.EntityKind.CollectiveProposal,
@@ -448,4 +462,14 @@ export function eventToEntity(
       return null;
     }
   }
+}
+
+export function isEntityCompleted(
+  chain: EventSupportingChainT,
+  entityEvents: CWEvent<any>[]
+): boolean {
+  return entityEvents.some(({ data: { kind } }) => {
+    const entityData = eventToEntity(chain, kind);
+    return entityData && entityData[1] === EntityEventKind.Complete;
+  });
 }

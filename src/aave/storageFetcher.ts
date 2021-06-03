@@ -1,4 +1,9 @@
-import { CWEvent, IStorageFetcher, IDisconnectedRange } from '../interfaces';
+import {
+  CWEvent,
+  IStorageFetcher,
+  IDisconnectedRange,
+  isEntityCompleted,
+} from '../interfaces';
 import { factory, formatFilename } from '../logging';
 
 import {
@@ -8,6 +13,7 @@ import {
   Proposal,
   ProposalState,
   IVoteEmitted,
+  EventChains,
 } from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
@@ -62,7 +68,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     }
     if (state === ProposalState.QUEUED || state === ProposalState.EXECUTED) {
       const queuedEvent: CWEvent<IEventData> = {
-        blockNumber: +proposal.endBlock,
+        blockNumber: Math.min(+proposal.endBlock, this._currentBlock),
         data: {
           kind: EventKind.ProposalQueued,
           id: +proposal.id,
@@ -72,7 +78,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       events.push(queuedEvent);
       if (state === ProposalState.EXECUTED) {
         const proposalExecuted: CWEvent<IEventData> = {
-          blockNumber: +proposal.endBlock,
+          blockNumber: Math.min(+proposal.endBlock, this._currentBlock),
           data: {
             kind: EventKind.ProposalExecuted,
             id: +proposal.id,
@@ -215,24 +221,23 @@ export class StorageFetcher extends IStorageFetcher<Api> {
           proposal,
           state
         );
+
+        // halt fetch once we find a completed/executed proposal in order to save data
+        // we may want to run once without this, in order to fetch backlog, or else develop a pagination
+        // strategy, but for now our API usage is limited.
+        if (!fetchAllCompleted && isEntityCompleted(EventChains[0], events)) {
+          log.debug(
+            `Proposal ${proposal.id} is marked as completed, halting fetch.`
+          );
+          break;
+        }
+
         const propVoteEvents = voteEvents.filter(
           ({ data: { id } }) => id === +proposal.id
         );
         results.push(...events, ...propVoteEvents);
         nFetched += 1;
 
-        // halt fetch once we find a completed/executed proposal in order to save data
-        // we may want to run once without this, in order to fetch backlog, or else develop a pagination
-        // strategy, but for now our API usage is limited.
-        if (
-          !fetchAllCompleted &&
-          events.find((p) => p.data.kind === EventKind.ProposalExecuted)
-        ) {
-          log.debug(
-            `Proposal ${proposal.id} is marked as executed, halting fetch.`
-          );
-          break;
-        }
         if (range.maxResults && nFetched >= range.maxResults) {
           log.debug(`Fetched ${nFetched} proposals, halting fetch.`);
           break;
