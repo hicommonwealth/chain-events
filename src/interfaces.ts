@@ -124,7 +124,10 @@ export type SubscribeFunc<
 export abstract class IStorageFetcher<Api> {
   constructor(protected _api: Api) {}
 
-  public abstract fetch(range?: IDisconnectedRange): Promise<CWEvent[]>;
+  public abstract fetch(
+    range?: IDisconnectedRange,
+    fetchAllCompleted?: boolean
+  ): Promise<CWEvent[]>;
 
   public abstract fetchOne(
     id: string,
