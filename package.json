@@ -9,7 +9,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist/ && tsc",
     "compile-contracts": "cd eth && npx hardhat compile",
     "prepare": "npx install-peers",
     "unit-test": "nyc ts-mocha --config ./.mocharc.json ./test/unit/**/*.spec.ts",
@@ -22,7 +22,7 @@
     "scrape": "ts-node -T ./scripts/scraper.ts",
     "ganache": "ganache-cli -m \"Alice\" -p 9545 -l 800000000 --allowUnlimitedContractSize",
     "batch-poll": "ts-node -T ./scripts/batchPoller.ts",
-    "preyalcpublish": "tsc"
+    "preyalcpublish": "yarn build"
   },
   "engines": {
     "node": ">=14"
@@ -90,6 +90,7 @@
     "mocha": "^8.2.1",
     "nyc": "^15.1.0",
     "prettier": "2.0.2",
+    "rimraf": "^3.0.2",
     "ts-generator": "^0.1.1",
     "ts-mocha": "^8.0.0",
     "ts-node": "^8.10.2",
