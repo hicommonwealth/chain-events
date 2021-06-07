@@ -66,7 +66,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       };
       events.push(canceledEvent);
     }
-    if (state === ProposalState.QUEUED || state === ProposalState.EXECUTED) {
+    if (proposal.executionTime) {
       const queuedEvent: CWEvent<IEventData> = {
         blockNumber: Math.min(+proposal.endBlock, this._currentBlock),
         data: {
@@ -166,7 +166,8 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     range?: IDisconnectedRange,
     fetchAllCompleted = false
   ): Promise<CWEvent<IEventData>[]> {
-    this._currentBlock = +(await this._api.governance.provider.getBlockNumber());
+    const block = await this._api.governance.provider.getBlock('latest');
+    this._currentBlock = block.number;
     log.info(`Current block: ${this._currentBlock}.`);
     if (!this._currentBlock) {
       log.error('Failed to fetch current block! Aborting fetch.');
@@ -211,6 +212,8 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       log.debug(`Fetched Aave proposal ${proposal.id} from storage.`);
 
       const proposalStartBlock = +proposal.startBlock;
+      // TODO: if proposal exists but is before start block, we skip.
+      //   is this desired behavior?
       if (
         proposalStartBlock >= range.startBlock &&
         proposalStartBlock <= range.endBlock
@@ -222,10 +225,16 @@ export class StorageFetcher extends IStorageFetcher<Api> {
           state
         );
 
+        // special cases to handle lack of failed / expired events
+        const isCompleted =
+          state === ProposalState.FAILED ||
+          state === ProposalState.EXPIRED ||
+          isEntityCompleted(EventChains[0], events);
+
         // halt fetch once we find a completed/executed proposal in order to save data
         // we may want to run once without this, in order to fetch backlog, or else develop a pagination
         // strategy, but for now our API usage is limited.
-        if (!fetchAllCompleted && isEntityCompleted(EventChains[0], events)) {
+        if (!fetchAllCompleted && isCompleted) {
           log.debug(
             `Proposal ${proposal.id} is marked as completed, halting fetch.`
           );
