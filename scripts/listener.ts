@@ -4,6 +4,7 @@ import { spec as EdgewareSpec } from '@edgeware/node-types';
 import { HydraDXSpec } from './specs/hydraDX';
 import { KulupuSpec } from './specs/kulupu';
 import { StafiSpec } from './specs/stafi';
+import { PlasmSpec } from './specs/plasm';
 import { CloverSpec } from './specs/clover';
 import {
   chainSupportedBy, IEventHandler, CWEvent, SubstrateEvents, MarlinEvents, MolochEvents, EventSupportingChains
@@ -19,6 +20,7 @@ const networkUrls = {
   'polkadot': 'wss://rpc.polkadot.io',
   'kulupu': 'ws://rpc.kulupu.corepaper.org/ws',
   'stafi': 'wss://scan-rpc.stafi.io/ws',
+  'plasm': 'wss://rpc.plasmnet.io/ws',
 
   'moloch': 'wss://mainnet.infura.io/ws',
   'moloch-local': 'ws://127.0.0.1:9545',
@@ -35,6 +37,7 @@ const networkSpecs: { [chain: string]: RegisteredTypes } = {
   'edgeware-local': EdgewareSpec,
   'edgeware-testnet': EdgewareSpec,
   'stafi': StafiSpec,
+  'plasm': PlasmSpec,
 }
 
 const contracts = {

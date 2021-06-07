@@ -80,6 +80,8 @@ const getDenom = (chain: EventSupportingChainT): string => {
       return 'MPond';
     case 'marlin-local':
       return 'tMPond';
+    case 'plasm':
+      return 'PLM';
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _dummy: never = chain;
