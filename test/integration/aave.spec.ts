@@ -408,7 +408,7 @@ describe('Aave Event Integration Tests', () => {
 
   it('should fetch proposals from storage', async () => {
     const setupData = await setupSubscription();
-    const { api, strategy, executor, addresses, provider } = setupData;
+    const { api, strategy, executor, addresses } = setupData;
 
     const targets = ['0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B'];
     const values = ['0'];
@@ -426,9 +426,6 @@ describe('Aave Event Integration Tests', () => {
     const completedId = await proposeToCompletion(setupData);
     const completedProposal = await api.governance.getProposalById(completedId);
 
-    // configure event data
-    const currentBlock = await provider.getBlockNumber();
-
     const cancelledEventData: CWEvent<IEventData>[] = [
       {
         blockNumber: +cancelledProposal.startBlock,
@@ -445,9 +442,6 @@ describe('Aave Event Integration Tests', () => {
           endBlock: +cancelledProposal.endBlock,
           strategy: strategy.address,
           ipfsHash,
-          fetchedAt: currentBlock,
-          forVotes: cancelledProposal.forVotes.toString(),
-          againstVotes: cancelledProposal.againstVotes.toString(),
         },
       },
       {
@@ -475,9 +469,6 @@ describe('Aave Event Integration Tests', () => {
           endBlock: +completedProposal.endBlock,
           strategy: strategy.address,
           ipfsHash,
-          fetchedAt: currentBlock,
-          forVotes: completedProposal.forVotes.toString(),
-          againstVotes: completedProposal.againstVotes.toString(),
         },
       },
       {
