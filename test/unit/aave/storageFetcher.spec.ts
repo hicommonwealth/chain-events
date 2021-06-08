@@ -11,10 +11,16 @@ const makeApi = (proposals: Proposal[]) => {
   const governance = ({
     provider: {
       getBlockNumber: async () => 200,
+      getBlock: async () => ({ number: 200 }),
     },
     getProposalsCount: async () => proposals.length,
     getProposalById: async (n: number) => proposals[n],
     getProposalState: async () => ProposalState.CANCELED,
+    filters: {
+      VoteEmitted: () => null,
+    },
+    // TODO: test vote queries
+    queryFilter: async () => [],
   } as unknown) as AaveGovernanceV2;
   return { governance };
 };
@@ -70,7 +76,7 @@ describe('Aave Storage Fetcher Tests', () => {
     ];
     const api = makeApi(proposals);
     const fetcher = new StorageFetcher(api);
-    const fetched = await fetcher.fetch();
+    const fetched = await fetcher.fetch(undefined, true);
     assert.sameDeepMembers(fetched, [
       {
         blockNumber: 5,
@@ -87,9 +93,6 @@ describe('Aave Storage Fetcher Tests', () => {
           targets: ['target'],
           strategy: 'strategy',
           ipfsHash: 'hash',
-          fetchedAt: 200,
-          forVotes: '1000',
-          againstVotes: '2000',
         },
       },
       {

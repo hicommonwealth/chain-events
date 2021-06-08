@@ -66,7 +66,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       };
       events.push(canceledEvent);
     }
-    if (proposal.executionTime) {
+    if (proposal.executionTime?.gt(0)) {
       const queuedEvent: CWEvent<IEventData> = {
         blockNumber: Math.min(+proposal.endBlock, this._currentBlock),
         data: {

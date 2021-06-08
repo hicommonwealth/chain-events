@@ -3,7 +3,7 @@
 /* eslint-disable no-unused-expressions */
 import { EventEmitter } from 'events';
 
-import { providers, utils } from 'ethers';
+import { BigNumber, providers, utils } from 'ethers';
 import { assert } from 'chai';
 
 import {
@@ -293,7 +293,11 @@ async function createAndVote({
   strategy,
   provider,
   handler,
-}: ISetupData): Promise<number> {
+}: ISetupData): Promise<{
+  id: number;
+  votingBlock: number;
+  votingPower: BigNumber;
+}> {
   const id = await createProposal({
     api,
     executor,
@@ -332,11 +336,13 @@ async function createAndVote({
       });
     }
   );
-  return id;
+  return { id, votingBlock, votingPower };
 }
 
-async function proposeToCompletion(setupData: ISetupData): Promise<number> {
-  const id = await createAndVote(setupData);
+async function proposeToCompletion(
+  setupData: ISetupData
+): Promise<{ id: number; votingBlock: number; votingPower: BigNumber }> {
+  const { id, votingBlock, votingPower } = await createAndVote(setupData);
 
   // wait for voting to succeed
   const { api, provider, executor } = setupData;
@@ -382,7 +388,7 @@ async function proposeToCompletion(setupData: ISetupData): Promise<number> {
       });
     }
   );
-  return id;
+  return { id, votingBlock, votingPower };
 }
 
 describe('Aave Event Integration Tests', () => {
@@ -423,7 +429,11 @@ describe('Aave Event Integration Tests', () => {
     const cancelledProposal = await api.governance.getProposalById(cancelledId);
 
     // complete second proposal
-    const completedId = await proposeToCompletion(setupData);
+    const {
+      id: completedId,
+      votingBlock,
+      votingPower,
+    } = await proposeToCompletion(setupData);
     const completedProposal = await api.governance.getProposalById(completedId);
 
     const cancelledEventData: CWEvent<IEventData>[] = [
@@ -486,12 +496,22 @@ describe('Aave Event Integration Tests', () => {
           id: completedId,
         },
       },
+      {
+        blockNumber: votingBlock + 1,
+        data: {
+          kind: EventKind.VoteEmitted,
+          id: completedId,
+          support: true,
+          voter: addresses[0],
+          votingPower: votingPower.toString(),
+        },
+      },
     ];
 
-    // fetch all non-complete from storage (only most recent)
+    // fetch all non-complete from storage (none)
     const fetcher = new StorageFetcher(api);
     const nonCompletedData = await fetcher.fetch(undefined, false);
-    assert.deepEqual(nonCompletedData, completedEventData);
+    assert.deepEqual(nonCompletedData, []);
 
     // fetch all from storage incl complete
     const allData = await fetcher.fetch(undefined, true);
