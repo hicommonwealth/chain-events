@@ -1,19 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { hexToNumberString, hexToNumber as web3HexToNumber } from 'web3-utils';
-
-import { Erc20 } from '../contractTypes/Erc20';
 import { CWEvent } from '../../interfaces';
 import { EventKind, RawEvent, IEventData, Api } from '../types';
-
-// these functions unwrap the uint type received from chain,
-// which is an object like { _hex: <value> }, into a string/number
-function hexToString({ _hex: n }: { _hex: string }): string {
-  return hexToNumberString(n);
-}
-
-function hexToNumber({ _hex: n }: { _hex: string }): number {
-  return web3HexToNumber(n);
-}
 
 /**
  * This is an "enricher" function, whose goal is to augment the initial event data

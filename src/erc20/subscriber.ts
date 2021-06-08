@@ -57,7 +57,8 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
       return o.address === tokenAddress;
     });
     if (existingToken) {
-      return; // Token is already being monitored
+      log.info('Token is already being monitored');
+      return;
     }
     try {
       const contract = await Erc20Factory.connect(

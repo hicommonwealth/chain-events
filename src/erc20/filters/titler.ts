@@ -11,7 +11,7 @@ export const Title: TitlerFilter = (kind: EventKind): IEventTitle => {
     case EventKind.Approval:
       return {
         title: 'Delegation Approved',
-        description: 'One account delegated tokens to another..',
+        description: 'One account delegated tokens to another.',
       };
     case EventKind.Transfer:
       return {

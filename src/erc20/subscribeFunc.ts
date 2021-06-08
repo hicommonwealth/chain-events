@@ -55,7 +55,7 @@ export async function createApi(
       tokenContracts.map((o) =>
         o
           .deployed()
-          .then((_) => {
+          .then(() => {
             return { token: o, deployed: true };
           })
           .catch((err) => {
@@ -97,7 +97,7 @@ export const subscribeEvents: SubscribeFunc<
   // helper function that sends an event through event handlers
   const handleEventFn = async (event: CWEvent<IEventData>): Promise<void> => {
     let prevResult = null;
-  for (const handler of handlers) {
+    for (const handler of handlers) {
       try {
         // pass result of last handler into next one (chaining db events)
         prevResult = await handler.handle(event, prevResult);
