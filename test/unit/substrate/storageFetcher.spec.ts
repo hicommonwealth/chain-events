@@ -184,7 +184,7 @@ const api = constructFakeApi({
         bond: 10,
         status: 'Proposed',
       },
-      description: 'test bounty description',
+      description: 'hello',
       index: 0,
       proposals: [{}],
     } as unknown) as DeriveBounty,
@@ -526,6 +526,7 @@ describe('Edgeware Event Migration Tests', () => {
           fee: '10',
           curatorDeposit: '10',
           bond: '10',
+          description: 'hello',
         } as ITreasuryBountyProposed,
       },
       {

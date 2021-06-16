@@ -502,10 +502,55 @@ const api = constructFakeApi({
           fee: 10,
           curatorDeposit: 10,
           bond: 10,
-          status: 'Proposed',
+          status: {
+            isActive: false,
+            isPendingPayout: false,
+            isProposed: true,
+          },
         } as unknown) as Bounty,
-        description: 'an empty bounty',
+        description: 'hello',
         index: 0,
+        proposals: [],
+      },
+      {
+        bounty: ({
+          proposer: 'alice',
+          value: 50,
+          fee: 10,
+          curatorDeposit: 10,
+          bond: 10,
+          status: {
+            isActive: true,
+            isPendingPayout: false,
+            asActive: {
+              curator: 'bob',
+              updateDue: '999',
+            },
+          },
+        } as unknown) as Bounty,
+        description: 'hello',
+        index: 2,
+        proposals: [],
+      },
+      {
+        bounty: ({
+          proposer: 'alice',
+          value: 50,
+          fee: 10,
+          curatorDeposit: 10,
+          bond: 10,
+          status: {
+            isActive: false,
+            isPendingPayout: true,
+            asPendingPayout: {
+              curator: 'bob',
+              unlockAt: '9999',
+              beneficiary: 'dave',
+            },
+          },
+        } as unknown) as Bounty,
+        description: 'hello',
+        index: 3,
         proposals: [],
       },
     ] as unknown) as DeriveBounties,
@@ -1205,20 +1250,23 @@ describe('Edgeware Event Enricher Filter Tests', () => {
         fee: '10',
         proposer: 'alice',
         value: '50',
+        description: 'hello',
       },
     });
   });
 
   it('should enrich bounty-awarded event', async () => {
     const kind = EventKind.TreasuryBountyAwarded;
-    const event = constructEvent(['1', 100]);
+    const event = constructEvent(['3', 100]);
     const result = await Enrich(api, blockNumber, kind, event);
     assert.deepEqual(result, {
       blockNumber,
       data: {
         kind,
-        bountyIndex: 1,
+        bountyIndex: 3,
         beneficiary: '100',
+        curator: 'bob',
+        unlockAt: 9999,
       },
     });
   });
@@ -1239,13 +1287,15 @@ describe('Edgeware Event Enricher Filter Tests', () => {
 
   it('should enrich bounty-became-active event', async () => {
     const kind = EventKind.TreasuryBountyBecameActive;
-    const event = constructEvent(['1']);
+    const event = constructEvent(['2']);
     const result = await Enrich(api, blockNumber, kind, event);
     assert.deepEqual(result, {
       blockNumber,
       data: {
         kind,
-        bountyIndex: 1,
+        bountyIndex: 2,
+        curator: 'bob',
+        updateDue: 999,
       },
     });
   });
@@ -1281,13 +1331,14 @@ describe('Edgeware Event Enricher Filter Tests', () => {
 
   it('should enrich bounty-extended event', async () => {
     const kind = EventKind.TreasuryBountyExtended;
-    const event = constructEvent(['1']);
+    const event = constructExtrinsic('alice', ['1', stringToHex('remark')]);
     const result = await Enrich(api, blockNumber, kind, event);
     assert.deepEqual(result, {
       blockNumber,
       data: {
         kind,
         bountyIndex: 1,
+        remark: 'remark',
       },
     });
   });

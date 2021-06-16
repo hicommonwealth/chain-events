@@ -453,6 +453,7 @@ export interface ITreasuryBountyProposed extends IEvent {
   fee: BalanceString;
   curatorDeposit: BalanceString;
   bond: BalanceString;
+  description?: string;
 }
 
 export interface ITreasuryBountyAwarded extends IEvent {
@@ -460,6 +461,8 @@ export interface ITreasuryBountyAwarded extends IEvent {
   kind: EventKind.TreasuryBountyAwarded;
   bountyIndex: number;
   beneficiary: AccountId;
+  curator: AccountId;
+  unlockAt: number;
 }
 
 export interface ITreasuryBountyRejected extends IEvent {
@@ -473,6 +476,8 @@ export interface ITreasuryBountyBecameActive extends IEvent {
   // A bounty proposal is funded and became active. [index]
   kind: EventKind.TreasuryBountyBecameActive;
   bountyIndex: number;
+  curator: AccountId;
+  updateDue: number;
 }
 
 export interface ITreasuryBountyClaimed extends IEvent {
@@ -490,9 +495,10 @@ export interface ITreasuryBountyCanceled extends IEvent {
 }
 
 export interface ITreasuryBountyExtended extends IEvent {
-  // A bounty expiry is extended. [index]
+  // A bounty expiry is extended. [index, remark]
   kind: EventKind.TreasuryBountyExtended;
   bountyIndex: number;
+  remark: string;
 }
 
 /**

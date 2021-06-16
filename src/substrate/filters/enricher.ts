@@ -30,6 +30,7 @@ import {
   u64,
   Compact,
   StorageKey,
+  Bytes,
 } from '@polkadot/types';
 import { Codec, AnyTuple } from '@polkadot/types/types';
 import { hexToString } from '@polkadot/util';
@@ -777,7 +778,7 @@ export async function Enrich(
         }
         const bounty = bounties.find((b) => +b.index === +bountyIndex);
         if (!bounty) {
-          throw new Error(`could not fetch bounty`);
+          throw new Error('could not find bounty');
         }
         return {
           data: {
@@ -788,6 +789,7 @@ export async function Enrich(
             fee: bounty.bounty.fee.toString(),
             curatorDeposit: bounty.bounty.curatorDeposit.toString(),
             bond: bounty.bounty.bond.toString(),
+            description: bounty.description,
           },
         };
       }
@@ -798,11 +800,25 @@ export async function Enrich(
           AccountId
         ] &
           Codec;
+
+        const bounties = await api.derive.bounties.bounties();
+        if (!bounties) {
+          throw new Error('could not fetch bounties');
+        }
+        const bounty = bounties.find((b) => +b.index === +bountyIndex);
+        if (!bounty) {
+          throw new Error('could not find bounty');
+        }
+        if (!bounty.bounty.status.isPendingPayout) {
+          throw new Error('invalid bounty status');
+        }
         return {
           data: {
             kind,
             bountyIndex: +bountyIndex,
             beneficiary: beneficiary.toString(),
+            curator: bounty.bounty.status.asPendingPayout.curator.toString(),
+            unlockAt: +bounty.bounty.status.asPendingPayout.unlockAt,
           },
         };
       }
@@ -818,16 +834,6 @@ export async function Enrich(
             kind,
             bountyIndex: +bountyIndex,
             bond: bond.toString(),
-          },
-        };
-      }
-
-      case EventKind.TreasuryBountyExtended: {
-        const [bountyIndex] = (event.data as unknown) as [BountyIndex] & Codec;
-        return {
-          data: {
-            kind,
-            bountyIndex: +bountyIndex,
           },
         };
       }
@@ -861,10 +867,24 @@ export async function Enrich(
 
       case EventKind.TreasuryBountyBecameActive: {
         const [bountyIndex] = (event.data as unknown) as [BountyIndex] & Codec;
+
+        const bounties = await api.derive.bounties.bounties();
+        if (!bounties) {
+          throw new Error('could not fetch bounties');
+        }
+        const bounty = bounties.find((b) => +b.index === +bountyIndex);
+        if (!bounty) {
+          throw new Error('could not find bounty');
+        }
+        if (!bounty.bounty.status.isActive) {
+          throw new Error('invalid bounty status');
+        }
         return {
           data: {
             kind,
             bountyIndex: +bountyIndex,
+            curator: bounty.bounty.status.asActive.curator.toString(),
+            updateDue: +bounty.bounty.status.asActive.updateDue,
           },
         };
       }
@@ -1270,7 +1290,6 @@ export async function Enrich(
           },
         };
       }
-
       case EventKind.TipVoted: {
         const voter = extrinsic.signer.toString();
         const [hash, value] = extrinsic.args as [Hash, Compact<BalanceOf>];
@@ -1280,6 +1299,16 @@ export async function Enrich(
             proposalHash: hash.toString(),
             who: voter,
             value: value.toString(),
+          },
+        };
+      }
+      case EventKind.TreasuryBountyExtended: {
+        const [idx, remark] = extrinsic.args as [BountyIndex, Bytes];
+        return {
+          data: {
+            kind,
+            bountyIndex: +idx,
+            remark: hexToString(remark.toString()),
           },
         };
       }

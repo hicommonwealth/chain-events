@@ -1,6 +1,6 @@
 {
   "name": "@commonwealth/chain-events",
-  "version": "0.6.1",
+  "version": "0.6.4",
   "description": "Listen to various chains for events.",
   "license": "GPL-3.0",
   "files": [
@@ -10,17 +10,18 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "prepare": "npx install-peers",
     "unit-test": "nyc ts-mocha --config ./.mocharc.json ./test/unit/**/*.spec.ts",
     "marlin-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/marlin.spec.ts",
     "integration-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts",
     "test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts ./test/unit/**/*.spec.ts",
-    "prepare": "install-peers",
     "lint": "eslint src/ test/",
     "listen": "ts-node -T ./scripts/listener.ts",
     "listen-archival": "ts-node -T ./scripts/listener.ts -n edgeware-local -a true",
     "scrape": "ts-node -T ./scripts/scraper.ts",
     "ganache": "ganache-cli -m \"Alice\" -p 9545 -l 800000000 --allowUnlimitedContractSize",
-    "batch-poll": "ts-node -T ./scripts/batchPoller.ts"
+    "batch-poll": "ts-node -T ./scripts/batchPoller.ts",
+    "preyalcpublish": "tsc"
   },
   "engines": {
     "node": ">=14"
