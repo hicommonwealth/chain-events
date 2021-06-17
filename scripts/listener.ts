@@ -63,6 +63,7 @@ const contracts = {
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
   marlin: '0x777992c2E4EDF704e49680468a9299C6679e37F6',
   aave: '0xEC568fffba86c094cf06b22134B23074DFE2252c',
+  'aave-local': '0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9',
 };
 
 const { argv } = yargs
@@ -230,8 +231,8 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     const fetcher = new AaveEvents.StorageFetcher(api);
     try {
       const fetched = await fetcher.fetch(
-        { startBlock: 12300000, maxResults: 1 },
-        false
+        undefined, // { startBlock: 12300000, maxResults: 1 },
+        true
       );
       // const fetched = await fetcher.fetchOne('10');
       console.log(fetched.sort((a, b) => a.blockNumber - b.blockNumber));
