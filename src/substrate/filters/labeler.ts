@@ -76,9 +76,12 @@ const getDenom = (chain: typeof EventChains[number]): string => {
   }
 };
 
-const edgBalanceFormatter = (chain, balance: BalanceString): string => {
+const edgBalanceFormatter = (
+  chain: typeof EventChains[number],
+  balance: BalanceString
+): string => {
   const denom = getDenom(chain);
-  let dollar;
+  let dollar: BN;
   if (chain.startsWith('edgeware')) {
     dollar = new BN(10).pow(new BN(EDG_DECIMAL));
   } else if (chain.startsWith('kusama') || chain.startsWith('polkadot')) {
@@ -103,7 +106,7 @@ const edgBalanceFormatter = (chain, balance: BalanceString): string => {
  */
 export const Label: LabelerFilter = (
   blockNumber: number,
-  chainId: string,
+  chainId: typeof EventChains[number],
   data: IEventData
 ): IEventLabel => {
   const balanceFormatter = (bal) => edgBalanceFormatter(chainId, bal);
@@ -693,6 +696,78 @@ export const Label: LabelerFilter = (
         label: "A signaling proposal's voting phase completed.",
         linkUrl: chainId
           ? `/${chainId}/proposal/signalingproposal/${voteId}`
+          : null,
+      };
+    }
+
+    /**
+     * Tip Events
+     */
+    case EventKind.NewTip: {
+      return {
+        heading: 'New Tip Suggested',
+        label: `A new tip for ${fmtAddr(data.who)} was suggested with reason "${
+          data.reason
+        }".`,
+        // TODO: fix
+        linkUrl: chainId
+          ? `/${chainId}/proposal/tip/${data.proposalHash}`
+          : null,
+      };
+    }
+    case EventKind.TipVoted: {
+      return {
+        heading: 'Tip Voted',
+        label: `A tip was voted on by ${data.who} for ${balanceFormatter(
+          data.value
+        )}.`,
+        // TODO: fix
+        linkUrl: chainId
+          ? `/${chainId}/proposal/tip/${data.proposalHash}`
+          : null,
+      };
+    }
+    case EventKind.TipClosing: {
+      return {
+        heading: 'Tip Closing',
+        label: `A tip is now closing on block ${data.closing}.`,
+        // TODO: fix
+        linkUrl: chainId
+          ? `/${chainId}/proposal/tip/${data.proposalHash}`
+          : null,
+      };
+    }
+    case EventKind.TipClosed: {
+      return {
+        heading: 'Tip Closed',
+        label: `A tip to ${fmtAddr(
+          data.who
+        )} was paid out for ${balanceFormatter(data.payout)}.`,
+        // TODO: fix
+        linkUrl: chainId
+          ? `/${chainId}/proposal/tip/${data.proposalHash}`
+          : null,
+      };
+    }
+    case EventKind.TipRetracted: {
+      return {
+        heading: 'Tip Retracted',
+        label: 'A tip was retracted.',
+        // TODO: fix
+        linkUrl: chainId
+          ? `/${chainId}/proposal/tip/${data.proposalHash}`
+          : null,
+      };
+    }
+    case EventKind.TipSlashed: {
+      return {
+        heading: 'Tip Slashed',
+        label: `A tip submitted by ${fmtAddr(
+          data.finder
+        )} slashed for ${balanceFormatter(data.deposit)}`,
+        // TODO: fix
+        linkUrl: chainId
+          ? `/${chainId}/proposal/tip/${data.proposalHash}`
           : null,
       };
     }

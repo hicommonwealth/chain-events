@@ -18,10 +18,11 @@ import {
   Proposal,
   Votes,
   PropIndex,
+  OpenTip,
 } from '@polkadot/types/interfaces';
 import { Codec } from '@polkadot/types/types';
 import { DeriveProposalImage } from '@polkadot/api-derive/types';
-import { isFunction } from '@polkadot/util';
+import { isFunction, hexToString } from '@polkadot/util';
 
 import { CWEvent, IChainEntityKind, IStorageFetcher } from '../interfaces';
 import { factory, formatFilename } from '../logging';
@@ -48,6 +49,9 @@ import {
   ITreasuryBountyAwarded,
   ITreasuryBountyEvents,
   EntityKind,
+  INewTip,
+  ITipVoted,
+  ITipClosing,
 } from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
@@ -134,6 +138,8 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         return this.fetchBounties(blockNumber, id);
       case EntityKind.TreasuryProposal:
         return this.fetchTreasuryProposals(blockNumber, id);
+      case EntityKind.TipProposal:
+        return this.fetchTips(blockNumber, id);
       default:
         return null;
     }
@@ -184,6 +190,9 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       blockNumber
     );
 
+    /** tips */
+    const tipsEvents = await this.fetchTips(blockNumber);
+
     /** signaling proposals */
     const signalingProposalEvents = await this.fetchSignalingProposals(
       blockNumber
@@ -199,6 +208,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       ...technicalCommitteeProposalEvents,
       ...councilProposalEvents,
       ...signalingProposalEvents,
+      ...tipsEvents,
     ];
   }
 
@@ -614,6 +624,90 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       } votes!`
     );
     return proposedEvents.map((data) => ({ blockNumber, data }));
+  }
+
+  public async fetchTips(
+    blockNumber: number,
+    hash?: string
+  ): Promise<CWEvent<INewTip | ITipVoted | ITipClosing>[]> {
+    if (!this._api.query.tips) {
+      log.info('Tips module not detected.');
+      return [];
+    }
+
+    log.info('Migrating tips...');
+    const openTipKeys = await this._api.query.tips.tips.keys();
+    const results: CWEvent<INewTip | ITipVoted | ITipClosing>[] = [];
+    for (const key of openTipKeys) {
+      const h = key.args[0].toString();
+      // support fetchOne
+      if (!hash || hash === h) {
+        try {
+          const tip = await this._api.rpc.state.getStorage<Option<OpenTip>>(
+            key
+          );
+          if (tip.isSome) {
+            const {
+              reason: reasonHash,
+              who,
+              finder,
+              deposit,
+              closes,
+              tips: tipVotes,
+              findersFee,
+            } = tip.unwrap();
+            const reason = await this._api.query.tips.reasons(reasonHash);
+            if (reason.isSome) {
+              // newtip events
+              results.push({
+                blockNumber,
+                data: {
+                  kind: EventKind.NewTip,
+                  proposalHash: h,
+                  who: who.toString(),
+                  reason: hexToString(reason.unwrap().toString()),
+                  finder: finder.toString(),
+                  deposit: deposit.toString(),
+                  findersFee: findersFee.valueOf(),
+                },
+              });
+
+              // n tipvoted events
+              for (const [voter, amount] of tipVotes) {
+                results.push({
+                  blockNumber,
+                  data: {
+                    kind: EventKind.TipVoted,
+                    proposalHash: h,
+                    who: voter.toString(),
+                    value: amount.toString(),
+                  },
+                });
+              }
+
+              // tipclosing event
+              if (closes.isSome) {
+                const closesAt = +closes.unwrap();
+                results.push({
+                  blockNumber,
+                  data: {
+                    kind: EventKind.TipClosing,
+                    proposalHash: hash,
+                    closing: closesAt,
+                  },
+                });
+              }
+            }
+          }
+        } catch (e) {
+          log.error(`Unable to fetch tip "${key.args[0]}"!`);
+        }
+      }
+    }
+
+    const newTips = results.filter((v) => v.data.kind === EventKind.NewTip);
+    log.info(`Found ${newTips.length} open tips!`);
+    return results;
   }
 
   public async fetchSignalingProposals(

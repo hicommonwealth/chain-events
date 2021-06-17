@@ -6,6 +6,7 @@ import * as SubstrateTypes from './substrate/types';
 import * as MolochTypes from './moloch/types';
 import * as MarlinTypes from './marlin/types';
 import * as AaveTypes from './aave/types';
+import * as Erc20Types from './erc20/types';
 
 // add other events here as union types
 export type IChainEntityKind =
@@ -17,23 +18,27 @@ export type IChainEventData =
   | SubstrateTypes.IEventData
   | MolochTypes.IEventData
   | MarlinTypes.IEventData
-  | AaveTypes.IEventData;
+  | AaveTypes.IEventData
+  | Erc20Types.IEventData;
 export type IChainEventKind =
   | SubstrateTypes.EventKind
   | MolochTypes.EventKind
   | MarlinTypes.EventKind
-  | AaveTypes.EventKind;
+  | AaveTypes.EventKind
+  | Erc20Types.EventKind;
 export const ChainEventKinds = [
   ...SubstrateTypes.EventKinds,
   ...MolochTypes.EventKinds,
   ...MarlinTypes.EventKinds,
   ...AaveTypes.EventKinds,
+  ...Erc20Types.EventKinds,
 ];
 export const EventSupportingChains = [
   ...SubstrateTypes.EventChains,
   ...MolochTypes.EventChains,
   ...MarlinTypes.EventChains,
   ...AaveTypes.EventChains,
+  ...Erc20Types.EventChains,
 ] as const;
 export type EventSupportingChainT = typeof EventSupportingChains[number];
 
@@ -204,6 +209,15 @@ export function entityToFieldName(
     case SubstrateTypes.EntityKind.SignalingProposal: {
       return 'proposalHash';
     }
+    case SubstrateTypes.EntityKind.TipProposal: {
+      return 'proposalHash';
+    }
+    case MolochTypes.EntityKind.Proposal: {
+      return 'proposalIndex';
+    }
+    case MarlinTypes.EntityKind.Proposal: {
+      return 'id';
+    }
     default: {
       return null;
     }
@@ -362,6 +376,20 @@ export function eventToEntity(
         SubstrateTypes.EntityKind.DemocracyPreimage,
         EntityEventKind.Complete,
       ];
+    }
+
+    // Tip Events
+    case SubstrateTypes.EventKind.NewTip: {
+      return [SubstrateTypes.EntityKind.TipProposal, EntityEventKind.Create];
+    }
+    case SubstrateTypes.EventKind.TipVoted:
+    case SubstrateTypes.EventKind.TipClosing: {
+      return [SubstrateTypes.EntityKind.TipProposal, EntityEventKind.Update];
+    }
+    case SubstrateTypes.EventKind.TipClosed:
+    case SubstrateTypes.EventKind.TipRetracted:
+    case SubstrateTypes.EventKind.TipSlashed: {
+      return [SubstrateTypes.EntityKind.TipProposal, EntityEventKind.Complete];
     }
 
     // Treasury Events

@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-console */
 import * as yargs from 'yargs';
+import fetch from 'node-fetch';
 import type { RegisteredTypes } from '@polkadot/types/types';
 import { spec as EdgewareSpec } from '@edgeware/node-types';
 import EthDater from 'ethereum-block-by-date';
@@ -14,6 +15,7 @@ import {
   MolochEvents,
   EventSupportingChains,
   AaveEvents,
+  Erc20Events,
 } from '../dist/index';
 
 import { HydraDXSpec } from './specs/hydraDX';
@@ -43,8 +45,9 @@ const networkUrls = {
 
   aave: 'wss://mainnet.infura.io/ws',
   'aave-local': 'ws://127.0.0.1:9545',
-} as const;
 
+  erc20: 'wss://mainnet.infura.io/ws',
+} as const;
 const networkSpecs: { [chain: string]: RegisteredTypes } = {
   clover: CloverSpec,
   hydradx: HydraDXSpec,
@@ -107,6 +110,7 @@ const { argv } = yargs
     }
     return true;
   });
+
 const { archival } = argv;
 // if running in archival mode then which block shall we star from
 const startBlock: number = argv.startBlock ?? 0;
@@ -114,7 +118,6 @@ const { network } = argv;
 const url: string = argv.url || networkUrls[network];
 const spec = networkSpecs[network] || {};
 const contract: string | undefined = argv.contractAddress || contracts[network];
-
 class StandaloneEventHandler extends IEventHandler {
   // eslint-disable-next-line class-methods-use-this
   public async handle(event: CWEvent): Promise<null> {
@@ -122,9 +125,29 @@ class StandaloneEventHandler extends IEventHandler {
     return null;
   }
 }
-
 const skipCatchup = false;
+const tokenListUrls = [
+  'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokenlist.aave.eth.link',
+  'https://gateway.ipfs.io/ipns/tokens.uniswap.org',
+  'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link',
+];
 
+async function getTokenLists() {
+  const data = await Promise.all(
+    tokenListUrls.map((listUrl) =>
+      fetch(listUrl)
+        .then((o) => o.json())
+        .catch((e) => {
+          console.error(e);
+          return [];
+        })
+    )
+  );
+  return data
+    .map((o) => o && o.tokens)
+    .flat()
+    .filter((o) => o);
+}
 console.log(`Connecting to ${network} on url ${url}...`);
 if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
   SubstrateEvents.createApi(url, spec).then(async (api) => {
@@ -217,6 +240,18 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
       console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
     }
     AaveEvents.subscribeEvents({
+      chain: network,
+      api,
+      handlers: [new StandaloneEventHandler()],
+      skipCatchup,
+      verbose: true,
+    });
+  });
+} else if (chainSupportedBy(network, Erc20Events.Types.EventChains)) {
+  getTokenLists().then(async (tokens) => {
+    const tokenAddresses = tokens.map((o) => o.address);
+    const api = await Erc20Events.createApi(url, tokenAddresses);
+    Erc20Events.subscribeEvents({
       chain: network,
       api,
       handlers: [new StandaloneEventHandler()],

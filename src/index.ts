@@ -7,3 +7,5 @@ export * as AaveEvents from './aave/index';
 export * as AaveTypes from './aave/types';
 export * as SubstrateEvents from './substrate/index';
 export * as SubstrateTypes from './substrate/types';
+export * as Erc20Events from './erc20/index';
+export * as Erc20Types from './erc20/types';
