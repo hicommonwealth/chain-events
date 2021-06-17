@@ -34,12 +34,13 @@ export async function createApi(
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
   if (ethNetworkUrl.includes('infura')) {
+    const networkPrefix = ethNetworkUrl.split('infura')[0];
     if (process && process.env) {
       const { INFURA_API_KEY } = process.env;
       if (!INFURA_API_KEY) {
         throw new Error('no infura key found!');
       }
-      ethNetworkUrl = `wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}`;
+      ethNetworkUrl = `${networkPrefix}infura.io/ws/v3/${INFURA_API_KEY}`;
     } else {
       throw new Error('must use nodejs to connect to infura provider!');
     }
