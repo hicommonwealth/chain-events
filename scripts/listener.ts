@@ -2,10 +2,13 @@ import * as yargs from 'yargs';
 import fetch from 'node-fetch';
 import type { RegisteredTypes } from '@polkadot/types/types';
 import { spec as EdgewareSpec } from '@edgeware/node-types';
+import { Producer } from '../src/producer';
+
 import { HydraDXSpec } from './specs/hydraDX';
 import { KulupuSpec } from './specs/kulupu';
 import { StafiSpec } from './specs/stafi';
 import { CloverSpec } from './specs/clover';
+
 import {
   chainSupportedBy,
   IEventHandler,
@@ -16,6 +19,7 @@ import {
   Erc20Events,
   EventSupportingChains,
 } from '../dist/index';
+
 const networkUrls = {
   clover: 'wss://api.clover.finance',
   hydradx: 'wss://rpc-01.snakenet.hydradx.io',
@@ -101,6 +105,8 @@ class StandaloneEventHandler extends IEventHandler {
     console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
   }
 }
+const producer = new Producer().init();
+
 const skipCatchup = false;
 const tokenListUrls = [
   'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokenlist.aave.eth.link',
@@ -108,7 +114,7 @@ const tokenListUrls = [
   'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link',
 ];
 async function getTokenLists() {
-  var data: any = await Promise.all(
+  let data: any = await Promise.all(
     tokenListUrls.map((url) =>
       fetch(url)
         .then((o) => o.json())
