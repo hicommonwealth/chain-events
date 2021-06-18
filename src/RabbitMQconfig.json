@@ -1,0 +1,45 @@
+{
+  "vhosts": {
+    "v1": {
+      "connection": {
+        "hostname": "localhost",
+        "user": "admin",
+        "password": "password"
+      },
+      "exchanges": {
+        "eventsExchange": {
+          "assert": true
+        }
+      },
+      "queues": {
+        "eventsQueue": {
+          "assert": true,
+          "purge": true
+        }
+      },
+      "bindings": {
+        "eventsBinding": {
+          "source": "eventsExchange",
+          "destination": "eventsQueue",
+          "destinationType": "queue",
+          "bindingKey": "eQueue"
+        }
+      },
+      "publications": {
+        "eventsPub": {
+          "vhost": "v1",
+          "queue": "eventsQueue",
+          "confirm": true,
+          "timeout": 10000
+        }
+      },
+      "subscriptions": {
+        "eventsSub": {
+          "vhost": "v1",
+          "queue":"eventsQueue",
+          "contentType": "application/json"
+        }
+      }
+    }
+  }
+}
