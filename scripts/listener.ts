@@ -105,7 +105,7 @@ class StandaloneEventHandler extends IEventHandler {
     console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
   }
 }
-const producer = new Producer().init();
+const producer = new Producer()
 
 const skipCatchup = false;
 const tokenListUrls = [
@@ -125,68 +125,73 @@ async function getTokenLists() {
   data = data.filter((o) => o); //remove undefined
   return data;
 }
+
 console.log(`Connecting to ${network} on url ${url}...`);
-if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
-  SubstrateEvents.createApi(url, spec).then(async (api) => {
-    const fetcher = new SubstrateEvents.StorageFetcher(api);
-    try {
-      await fetcher.fetch();
-    } catch (err) {
-      console.log(err);
-      console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
-    }
-    SubstrateEvents.subscribeEvents({
-      chain: network,
-      api,
-      handlers: [new StandaloneEventHandler()],
-      skipCatchup,
-      archival,
-      startBlock,
-      verbose: true,
-      enricherConfig: { balanceTransferThresholdPermill: 1_000 }, // 0.1% of total issuance
-    });
-  });
-} else if (chainSupportedBy(network, MolochEvents.Types.EventChains)) {
-  const contractVersion = 1;
-  if (!contract) throw new Error(`no contract address for ${network}`);
-  MolochEvents.createApi(url, contractVersion, contract).then((api) => {
-    MolochEvents.subscribeEvents({
-      chain: network,
-      api,
-      contractVersion,
-      handlers: [new StandaloneEventHandler()],
-      skipCatchup,
-      verbose: true,
-    });
-  });
-} else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
-  const contracts = {
-    comp: '0xEa2923b099b4B588FdFAD47201d747e3b9599A5f', // TESTNET
-    governorAlpha: '0xeDAA76873524f6A203De2Fa792AD97E459Fca6Ff', // TESTNET
-    timelock: '0x7d89D52c464051FcCbe35918cf966e2135a17c43', // TESTNET
-  };
-  MarlinEvents.createApi(url, contracts).then((api) => {
-    MarlinEvents.subscribeEvents({
-      chain: network,
-      api,
-      handlers: [new StandaloneEventHandler()],
-      skipCatchup,
-      verbose: true,
-    });
-  });
-} else if (chainSupportedBy(network, Erc20Events.Types.EventChains)) {
-  async function erc20Subscribe() {
-    let tokens = await getTokenLists();
-    let tokenAddresses = tokens.map((o) => o.address);
-    Erc20Events.createApi(url, tokenAddresses).then((api) => {
-      Erc20Events.subscribeEvents({
+
+// start producer/connect to rabbitmq before subscribing to events
+producer.init().then(() => {
+  if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
+    SubstrateEvents.createApi(url, spec).then(async (api) => {
+      const fetcher = new SubstrateEvents.StorageFetcher(api);
+      try {
+        await fetcher.fetch();
+      } catch (err) {
+        console.log(err);
+        console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
+      }
+      SubstrateEvents.subscribeEvents({
         chain: network,
         api,
-        handlers: [new StandaloneEventHandler()],
+        handlers: [new StandaloneEventHandler(), producer],
+        skipCatchup,
+        archival,
+        startBlock,
+        verbose: true,
+        enricherConfig: { balanceTransferThresholdPermill: 1_000 }, // 0.1% of total issuance
+      });
+    });
+  } else if (chainSupportedBy(network, MolochEvents.Types.EventChains)) {
+    const contractVersion = 1;
+    if (!contract) throw new Error(`no contract address for ${network}`);
+    MolochEvents.createApi(url, contractVersion, contract).then((api) => {
+      MolochEvents.subscribeEvents({
+        chain: network,
+        api,
+        contractVersion,
+        handlers: [new StandaloneEventHandler(), producer],
         skipCatchup,
         verbose: true,
       });
     });
+  } else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
+    const contracts = {
+      comp: '0xEa2923b099b4B588FdFAD47201d747e3b9599A5f', // TESTNET
+      governorAlpha: '0xeDAA76873524f6A203De2Fa792AD97E459Fca6Ff', // TESTNET
+      timelock: '0x7d89D52c464051FcCbe35918cf966e2135a17c43', // TESTNET
+    };
+    MarlinEvents.createApi(url, contracts).then((api) => {
+      MarlinEvents.subscribeEvents({
+        chain: network,
+        api,
+        handlers: [new StandaloneEventHandler(), producer],
+        skipCatchup,
+        verbose: true,
+      });
+    });
+  } else if (chainSupportedBy(network, Erc20Events.Types.EventChains)) {
+    async function erc20Subscribe() {
+      let tokens = await getTokenLists();
+      let tokenAddresses = tokens.map((o) => o.address);
+      Erc20Events.createApi(url, tokenAddresses).then((api) => {
+        Erc20Events.subscribeEvents({
+          chain: network,
+          api,
+          handlers: [new StandaloneEventHandler(), producer],
+          skipCatchup,
+          verbose: true,
+        });
+      });
+    }
+    erc20Subscribe();
   }
-  erc20Subscribe();
-}
+});
