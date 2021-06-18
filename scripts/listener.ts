@@ -2,7 +2,7 @@ import * as yargs from 'yargs';
 import fetch from 'node-fetch';
 import type { RegisteredTypes } from '@polkadot/types/types';
 import { spec as EdgewareSpec } from '@edgeware/node-types';
-import { Producer } from '../src/producer';
+import { Producer } from '../src/rabbitmq/producer';
 
 import { HydraDXSpec } from './specs/hydraDX';
 import { KulupuSpec } from './specs/kulupu';
