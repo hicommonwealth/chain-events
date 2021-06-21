@@ -99,6 +99,8 @@ export const subscribeEvents: SubscribeFunc<
     let prevResult = null;
     for (const handler of handlers) {
       try {
+        event.chain = chain;
+        event.received = Date.now();
         // pass result of last handler into next one (chaining db events)
         prevResult = await handler.handle(event, prevResult);
       } catch (err) {

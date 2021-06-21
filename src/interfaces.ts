@@ -62,6 +62,8 @@ export interface CWEvent<IEventData = IChainEventData> {
   excludeAddresses?: string[];
 
   data: IEventData;
+  chain?: EventSupportingChainT;
+  received?: number;
 }
 
 // handles individual events by sending them off to storage/notifying
