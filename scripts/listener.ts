@@ -81,7 +81,7 @@ const argv = yargs
     },
     rabbitMQ: {
       alias: 'q',
-      type: 'string',
+      type: 'boolean',
       description: "Push events to queue in RabbitMQ"
     }
   })
@@ -107,6 +107,7 @@ const network = argv.network;
 const url: string = argv.url || networkUrls[network];
 const spec = networkSpecs[network] || {};
 const contract: string | undefined = argv.contractAddress || contracts[network];
+const rabbitMQ: boolean = argv.rabbitMQ;
 
 class StandaloneEventHandler extends IEventHandler {
   public async handle(event: CWEvent): Promise<any> {
@@ -204,7 +205,7 @@ function setup(producer: IProducer) {
   }
 }
 
-if (argv.rabbitMQ == "true") {
+if (rabbitMQ) {
   const producer = new Producer()
   producer.init().then(() => {
       setup(producer)
