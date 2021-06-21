@@ -90,6 +90,7 @@ Options:
                                                                  "moloch-local"]
   -u, --url              node url                                       [string]
   -c, --contractAddress  eth contract address                           [string]
+  -q, --rabbitmq         Publish messages to queue hosted on RabbitMQ  [boolean]
 ```
 
 ## Library Usage
