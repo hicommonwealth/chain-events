@@ -1,10 +1,13 @@
 {
   "vhosts": {
-    "v1": {
+    "/": {
       "connection": {
+        "protocol": "amqp",
         "hostname": "localhost",
         "user": "admin",
-        "password": "password"
+        "password": "password",
+        "port": 5672,
+        "vhost": "/"
       },
       "exchanges": {
         "eventsExchange": {
@@ -27,7 +30,7 @@
       },
       "publications": {
         "eventsPub": {
-          "vhost": "v1",
+          "vhost": "/",
           "queue": "eventsQueue",
           "confirm": true,
           "timeout": 10000
@@ -35,7 +38,7 @@
       },
       "subscriptions": {
         "eventsSub": {
-          "vhost": "v1",
+          "vhost": "/",
           "queue":"eventsQueue",
           "contentType": "application/json"
         }

@@ -46,6 +46,7 @@
     "ethereum-block-by-date": "^1.2.2",
     "ethers": "^4.0.39",
     "lodash": "^4.17.21",
+    "node-fetch": "^2.6.1",
     "rascal": "^13.0.3",
     "sleep-promise": "^8.0.1",
     "typescript-logging": "^0.6.4",

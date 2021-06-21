@@ -19,3 +19,4 @@
 1. Extended IEventHandler in `interface.ts` interface to create IProducer interface in `Producer.ts`
 2. Implemented IProducer as Producer in `Producer.ts` with a handle method that adds the event to the queue
 3. Instantiated Producer in `listener.ts` before subscribing to events and pass the producer instance to the handlers array
+4. Added -rabbitmq/-q command line arg to allow toggle for using or not using rabbitmq (-q true : turns on rabbitmq)

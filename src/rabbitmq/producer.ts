@@ -1,8 +1,9 @@
 import Rascal from 'rascal';
 
-import config from './RabbitMQconfig.json';
 import { factory, formatFilename } from '../logging';
 import { CWEvent, IEventHandler } from '../interfaces';
+
+import config from './RabbitMQconfig.json';
 
 const log = factory.getLogger(formatFilename(__filename));
 

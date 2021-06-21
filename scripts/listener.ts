@@ -19,6 +19,8 @@ import {
   Erc20Events,
   EventSupportingChains,
 } from '../dist/index';
+import { IProducer } from "../dist/rabbitmq/producer";
+import { isInstanceOf } from "@polkadot/util";
 
 const networkUrls = {
   clover: 'wss://api.clover.finance',
@@ -77,6 +79,11 @@ const argv = yargs
       description:
         'when running in archival mode, which block should we start from',
     },
+    rabbitMQ: {
+      alias: 'q',
+      type: 'string',
+      description: "Push events to queue in RabbitMQ"
+    }
   })
   .check((data) => {
     if (
@@ -100,12 +107,12 @@ const network = argv.network;
 const url: string = argv.url || networkUrls[network];
 const spec = networkSpecs[network] || {};
 const contract: string | undefined = argv.contractAddress || contracts[network];
+
 class StandaloneEventHandler extends IEventHandler {
   public async handle(event: CWEvent): Promise<any> {
     console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
   }
 }
-const producer = new Producer()
 
 const skipCatchup = false;
 const tokenListUrls = [
@@ -128,8 +135,9 @@ async function getTokenLists() {
 
 console.log(`Connecting to ${network} on url ${url}...`);
 
-// start producer/connect to rabbitmq before subscribing to events
-producer.init().then(() => {
+
+function setup(producer: IProducer) {
+  let handlers = producer instanceof Producer ? [new StandaloneEventHandler(), producer] : [new StandaloneEventHandler()]
   if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     SubstrateEvents.createApi(url, spec).then(async (api) => {
       const fetcher = new SubstrateEvents.StorageFetcher(api);
@@ -142,7 +150,7 @@ producer.init().then(() => {
       SubstrateEvents.subscribeEvents({
         chain: network,
         api,
-        handlers: [new StandaloneEventHandler(), producer],
+        handlers: handlers,
         skipCatchup,
         archival,
         startBlock,
@@ -158,7 +166,7 @@ producer.init().then(() => {
         chain: network,
         api,
         contractVersion,
-        handlers: [new StandaloneEventHandler(), producer],
+        handlers: handlers,
         skipCatchup,
         verbose: true,
       });
@@ -173,7 +181,7 @@ producer.init().then(() => {
       MarlinEvents.subscribeEvents({
         chain: network,
         api,
-        handlers: [new StandaloneEventHandler(), producer],
+        handlers: handlers,
         skipCatchup,
         verbose: true,
       });
@@ -186,7 +194,7 @@ producer.init().then(() => {
         Erc20Events.subscribeEvents({
           chain: network,
           api,
-          handlers: [new StandaloneEventHandler(), producer],
+          handlers: handlers,
           skipCatchup,
           verbose: true,
         });
@@ -194,4 +202,15 @@ producer.init().then(() => {
     }
     erc20Subscribe();
   }
-});
+}
+
+if (argv.rabbitMQ == "true") {
+  const producer = new Producer()
+  producer.init().then(() => {
+      setup(producer)
+  });
+} else {
+  setup(null)
+}
+// start producer/connect to rabbitmq before subscribing to events
+
