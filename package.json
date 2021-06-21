@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@edgeware/node-types": "^3.3.3",
-    "@polkadot/api": "^4.15.1",
+    "@polkadot/api": "4.9.2",
     "amqplib": "^0.8.0",
     "bn.js": "^5.1.3",
     "ethereum-block-by-date": "^1.2.2",

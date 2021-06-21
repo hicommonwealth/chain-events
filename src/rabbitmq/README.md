@@ -24,7 +24,7 @@
 #### Package.json changes:
 - added node-fetch as a dependency
 - added amqplib and rascal as dependencies
-- added @polkadot/api as dependency --- why is this in peerDependencies?
+- added @polkadot/api as dependency since npx install peer-dependencies not functioning correctly (at least for testing)
 
 # Standalone usage
 1. `git clone https://github.com/timolegros/chain-events.git`
