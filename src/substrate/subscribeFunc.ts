@@ -8,6 +8,7 @@ import {
   ISubscribeOptions,
 } from '../interfaces';
 import { factory, formatFilename } from '../logging';
+import { Producer } from '../rabbitmq/producer';
 
 import { Subscriber } from './subscriber';
 import { Poller } from './poller';
@@ -88,8 +89,15 @@ export const subscribeEvents: SubscribeFunc<
     let prevResult = null;
     for (const handler of handlers) {
       try {
+        // if (JSON.stringify(handler).includes('broker')) {
+        //   event.chain = chain;
+        //   event.received = Date.now();
+        //   log.info('>>>>>>>>>>>>>>>>Handler Found');
+        // }
+
         event.chain = chain;
         event.received = Date.now();
+
         // pass result of last handler into next one (chaining db events)
         prevResult = await handler.handle(event, prevResult);
       } catch (err) {
