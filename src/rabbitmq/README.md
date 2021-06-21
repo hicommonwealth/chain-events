@@ -25,3 +25,10 @@
 - added node-fetch as a dependency
 - added amqplib and rascal as dependencies
 - added @polkadot/api as dependency --- why is this in peerDependencies?
+
+# Standalone usage
+1. `git clone https://github.com/timolegros/chain-events.git`
+2. `git checkout tim.rabbitmq`
+3. `yarn`
+4. `yarn build`
+5. `yarn listen -n edgeware -q`

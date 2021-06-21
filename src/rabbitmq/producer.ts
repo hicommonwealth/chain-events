@@ -18,9 +18,14 @@ export class Producer implements IProducer {
   public broker;
 
   public async init(): Promise<void> {
+    const cnct = config.vhosts['/'].connection;
+    log.info(
+      `Rascal connecting to RabbitMQ: ${cnct.protocol}://${cnct.user}:*****@${cnct.hostname}:${cnct.port}/`
+    );
     this.broker = await Rascal.BrokerAsPromised.create(
       Rascal.withDefaultConfig(config)
     );
+
     this.broker.on('error', log.error);
     this.broker.on('vhost_initialized', ({ vhost, connectionUrl }) => {
       log.info(
