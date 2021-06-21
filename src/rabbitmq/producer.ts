@@ -1,13 +1,13 @@
 import Rascal from 'rascal';
 
-import { factory, formatFilename } from '../logging';
+// import { factory, formatFilename } from '../logging';
 import { CWEvent, IEventHandler } from '../interfaces';
 
 import config from './RabbitMQconfig.json';
 
-const log = factory.getLogger(formatFilename(__filename));
+// const log = factory.getLogger(formatFilename(__filename));
 
-// TODO: remove option purge from queue config
+// TODO: using log factory raises Log Factory with name Chain_events already exists error -- research/fix
 
 export interface IProducer extends IEventHandler {
   broker: Rascal.BrokerAsPromised;
@@ -19,26 +19,26 @@ export class Producer implements IProducer {
 
   public async init(): Promise<void> {
     const cnct = config.vhosts['/'].connection;
-    log.info(
+    console.info(
       `Rascal connecting to RabbitMQ: ${cnct.protocol}://${cnct.user}:*****@${cnct.hostname}:${cnct.port}/`
     );
     this.broker = await Rascal.BrokerAsPromised.create(
       Rascal.withDefaultConfig(config)
     );
 
-    this.broker.on('error', log.error);
+    this.broker.on('error', console.error);
     this.broker.on('vhost_initialized', ({ vhost, connectionUrl }) => {
-      log.info(
+      console.info(
         `Vhost: ${vhost} was initialised using connection: ${connectionUrl}`
       );
     });
     this.broker.on('blocked', (reason, { vhost, connectionUrl }) => {
-      log.info(
+      console.info(
         `Vhost: ${vhost} was blocked using connection: ${connectionUrl}. Reason: ${reason}`
       );
     });
     this.broker.on('unblocked', ({ vhost, connectionUrl }) => {
-      log.info(
+      console.info(
         `Vhost: ${vhost} was unblocked using connection: ${connectionUrl}.`
       );
     });
@@ -48,7 +48,7 @@ export class Producer implements IProducer {
     try {
       const publication = await this.broker.publish('eventsPub', event);
       publication.on('error', (err, messageId) => {
-        log.error(`Publisher error ${err}, ${messageId}`);
+        console.error(`Publisher error ${err}, ${messageId}`);
       });
     } catch (err) {
       throw new Error(`Rascal config error: ${err.message}`);
