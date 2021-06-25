@@ -17,10 +17,11 @@ import {
   MarlinEvents,
   MolochEvents,
   Erc20Events,
-  EventSupportingChains,
+  EventSupportingChains, EventSupportingChainT,
 } from '../dist/index';
 import { IProducer } from "../dist/rabbitmq/producer";
 import { isInstanceOf } from "@polkadot/util";
+import {log} from "util";
 
 const networkUrls = {
   clover: 'wss://api.clover.finance',
@@ -134,10 +135,26 @@ async function getTokenLists() {
   return data;
 }
 
+async function getSubstrateSpecs(chain: EventSupportingChainT) {
+  let url: string = process.env.NODE_ENV == "production" ? `https://commonwealth.im/api/getSubstrateSpec?chain=${chain}`
+      : `http://localhost:8080/api/getSubstrateSpec?chain=${chain}`;
+  console.log(`Getting ${chain} spec at url ${url}`)
+
+  let data: any = await fetch(url)
+      .then((res) => res.json())
+      .then((json) => json)
+      .catch((err) => console.error(err))
+
+  return data
+}
+
 console.log(`Connecting to ${network} on url ${url}...`);
 
 
-function setup(producer: IProducer) {
+async function setup(producer: IProducer) {
+  // saves the spec retrieved from the server
+  networkSpecs[network] = await getSubstrateSpecs(network)
+
   let handlers = producer instanceof Producer ? [new StandaloneEventHandler(), producer] : [new StandaloneEventHandler()]
   if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     SubstrateEvents.createApi(url, spec).then(async (api) => {
@@ -213,5 +230,3 @@ if (rabbitMQ) {
 } else {
   setup(null)
 }
-// start producer/connect to rabbitmq before subscribing to events
-

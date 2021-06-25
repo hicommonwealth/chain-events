@@ -27,6 +27,7 @@
 4. Added -rabbitmq/-q command line arg to allow toggle for using or not using rabbitmq (-q : turns on rabbitmq)
 5. Add chain and received optional fields to CWEvents interface
 6. Added the chain and current timestamp to the event in each handleEventFn function in subscribeFunc.ts files
+7. Added `getSubstrateSpecs` function to `listener.ts`
 #### Package.json changes:
 - added node-fetch as a dependency
 - added amqplib and rascal as dependencies
