@@ -142,7 +142,7 @@ async function getSubstrateSpecs(chain: EventSupportingChainT) {
 
   let data: any = await fetch(url)
       .then((res) => res.json())
-      .then((json) => json)
+      .then((json) => json.result)
       .catch((err) => console.error(err))
 
   return data
