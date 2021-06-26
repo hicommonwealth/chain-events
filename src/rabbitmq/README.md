@@ -21,6 +21,7 @@
 5. `yarn listen -n edgeware -q`
 
 # Change Log:
+
 1. Extended IEventHandler in `interface.ts` interface to create IProducer interface in `Producer.ts`
 2. Implemented IProducer as Producer in `Producer.ts` with a handle method that adds the event to the queue
 3. Instantiated Producer in `listener.ts` before subscribing to events and pass the producer instance to the handlers array
@@ -28,9 +29,16 @@
 5. Add chain and received optional fields to CWEvents interface
 6. Added the chain and current timestamp to the event in each handleEventFn function in subscribeFunc.ts files
 7. Added `getSubstrateSpecs` function to `listener.ts`
+
+June 26-27
+8. Added _shouldSkip function check and _filterConfig to Producer class in `Producer.ts`
+9. Configured producer to skip excluded substrate events
+10. Added option to pass json config file for rabbitmq (-q "jsonConfigFile.json")
+
 #### Package.json changes:
 - added node-fetch as a dependency
 - added amqplib and rascal as dependencies
 - added @polkadot/api as dependency since npx install peer-dependencies not functioning correctly (at least for testing)
+- removed @polkadot/api as dep -> npx install-peers not working on my env -> use npm run install-peers
 
 

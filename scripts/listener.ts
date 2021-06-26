@@ -1,6 +1,7 @@
 import * as yargs from 'yargs';
 import fetch from 'node-fetch';
 import type { RegisteredTypes } from '@polkadot/types/types';
+import { EventKind as SubstrateEventKind } from "../src/substrate/types"
 import { spec as EdgewareSpec } from '@edgeware/node-types';
 import { Producer } from '../src/rabbitmq/producer';
 
@@ -8,6 +9,8 @@ import { HydraDXSpec } from './specs/hydraDX';
 import { KulupuSpec } from './specs/kulupu';
 import { StafiSpec } from './specs/stafi';
 import { CloverSpec } from './specs/clover';
+
+import config from '../src/rabbitmq/RabbitMQconfig.json';
 
 import {
   chainSupportedBy,
@@ -19,9 +22,11 @@ import {
   Erc20Events,
   EventSupportingChains, EventSupportingChainT,
 } from '../dist/index';
-import { IProducer } from "../dist/rabbitmq/producer";
+
+import { IProducer } from "../src/rabbitmq/producer";
 import { isInstanceOf } from "@polkadot/util";
 import {log} from "util";
+import * as fs from "fs";
 
 const networkUrls = {
   clover: 'wss://api.clover.finance',
@@ -82,10 +87,25 @@ const argv = yargs
     },
     rabbitMQ: {
       alias: 'q',
-      type: 'boolean',
+      type: 'string',
       description: "Push events to queue in RabbitMQ"
-    }
+    },
   })
+    .coerce("rabbitMQ", (filepath) => {
+      if (typeof filepath == "string" && filepath.length == 0) return config;
+      else {
+        try {
+          let raw = fs.readFileSync(filepath);
+          return JSON.parse(raw.toString());
+        } catch (error) {
+          console.error(`Failed to load the configuration file at: ${filepath}`);
+          console.error(error)
+          console.warn("Using default RabbitMQ configuration");
+          // leave config empty to use default
+          return config
+        }
+      }
+    })
   .check((data) => {
     if (
       !chainSupportedBy(data.network, SubstrateEvents.Types.EventChains) &&
@@ -101,6 +121,7 @@ const argv = yargs
     }
     return true;
   }).argv;
+
 const archival: boolean = argv.archival;
 // if running in archival mode then which block shall we star from
 const startBlock: number = argv.startBlock ?? 0;
@@ -108,7 +129,6 @@ const network = argv.network;
 const url: string = argv.url || networkUrls[network];
 const spec = networkSpecs[network] || {};
 const contract: string | undefined = argv.contractAddress || contracts[network];
-const rabbitMQ: boolean = argv.rabbitMQ;
 
 class StandaloneEventHandler extends IEventHandler {
   public async handle(event: CWEvent): Promise<any> {
@@ -153,10 +173,18 @@ console.log(`Connecting to ${network} on url ${url}...`);
 
 async function setup(producer: IProducer) {
   // saves the spec retrieved from the server
-  networkSpecs[network] = await getSubstrateSpecs(network)
+  let newSpec = await getSubstrateSpecs(network)
+  if (newSpec?.types != undefined) networkSpecs[network] = newSpec
 
   let handlers = producer instanceof Producer ? [new StandaloneEventHandler(), producer] : [new StandaloneEventHandler()]
   if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
+    if (producer) producer.filterConfig.excludedEvents = [
+      SubstrateEventKind.Reward,
+      SubstrateEventKind.TreasuryRewardMinting,
+      SubstrateEventKind.TreasuryRewardMintingV2,
+      SubstrateEventKind.HeartbeatReceived,
+    ];
+
     SubstrateEvents.createApi(url, spec).then(async (api) => {
       const fetcher = new SubstrateEvents.StorageFetcher(api);
       try {
@@ -222,8 +250,8 @@ async function setup(producer: IProducer) {
   }
 }
 
-if (rabbitMQ) {
-  const producer = new Producer()
+if (!!argv.rabbitMQ) {
+  const producer = new Producer(argv.rabbitMQ)
   producer.init().then(() => {
       setup(producer)
   });
