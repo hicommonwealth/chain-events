@@ -1,7 +1,7 @@
 import * as yargs from 'yargs';
 import fetch from 'node-fetch';
 import type { RegisteredTypes } from '@polkadot/types/types';
-import { EventKind as SubstrateEventKind } from "../src/substrate/types"
+import { EventKind as SubstrateEventKind } from '../src/substrate/types';
 import { spec as EdgewareSpec } from '@edgeware/node-types';
 import { Producer } from '../src/rabbitmq/producer';
 
@@ -20,13 +20,12 @@ import {
   MarlinEvents,
   MolochEvents,
   Erc20Events,
-  EventSupportingChains, EventSupportingChainT,
+  EventSupportingChains,
+  EventSupportingChainT,
 } from '../dist/index';
 
-import { IProducer } from "../src/rabbitmq/producer";
-import { isInstanceOf } from "@polkadot/util";
-import {log} from "util";
-import * as fs from "fs";
+import { IProducer } from '../src/rabbitmq/producer';
+import * as fs from 'fs';
 
 const networkUrls = {
   clover: 'wss://api.clover.finance',
@@ -88,24 +87,24 @@ const argv = yargs
     rabbitMQ: {
       alias: 'q',
       type: 'string',
-      description: "Push events to queue in RabbitMQ"
+      description: 'Push events to queue in RabbitMQ',
     },
   })
-    .coerce("rabbitMQ", (filepath) => {
-      if (typeof filepath == "string" && filepath.length == 0) return config;
-      else {
-        try {
-          let raw = fs.readFileSync(filepath);
-          return JSON.parse(raw.toString());
-        } catch (error) {
-          console.error(`Failed to load the configuration file at: ${filepath}`);
-          console.error(error)
-          console.warn("Using default RabbitMQ configuration");
-          // leave config empty to use default
-          return config
-        }
+  .coerce('rabbitMQ', (filepath) => {
+    if (typeof filepath == 'string' && filepath.length == 0) return config;
+    else {
+      try {
+        let raw = fs.readFileSync(filepath);
+        return JSON.parse(raw.toString());
+      } catch (error) {
+        console.error(`Failed to load the configuration file at: ${filepath}`);
+        console.error(error);
+        console.warn('Using default RabbitMQ configuration');
+        // leave config empty to use default
+        return config;
       }
-    })
+    }
+  })
   .check((data) => {
     if (
       !chainSupportedBy(data.network, SubstrateEvents.Types.EventChains) &&
@@ -156,53 +155,57 @@ async function getTokenLists() {
 }
 
 async function getSubstrateSpecs(chain: EventSupportingChainT) {
-  let url: string = process.env.NODE_ENV == "production" ? `https://commonwealth.im/api/getSubstrateSpec?chain=${chain}`
+  let url: string =
+    process.env.NODE_ENV == 'production'
+      ? `https://commonwealth.im/api/getSubstrateSpec?chain=${chain}`
       : `http://localhost:8080/api/getSubstrateSpec?chain=${chain}`;
-  console.log(`Getting ${chain} spec at url ${url}`)
+  console.log(`Getting ${chain} spec at url ${url}`);
 
   let data: any = await fetch(url)
-      .then((res) => res.json())
-      .then((json) => json.result)
-      .catch((err) => console.error(err))
+    .then((res) => res.json())
+    .then((json) => json.result)
+    .catch((err) => console.error(err));
 
-  return data
+  return data;
 }
 
 console.log(`Connecting to ${network} on url ${url}...`);
 
-
 async function setup(producer: IProducer) {
   // saves the spec retrieved from the server
-  let newSpec = await getSubstrateSpecs(network)
-  if (newSpec?.types != undefined) networkSpecs[network] = newSpec
+  let newSpec = await getSubstrateSpecs(network);
+  if (newSpec?.types != undefined) networkSpecs[network] = newSpec;
 
-  let handlers = producer instanceof Producer ? [new StandaloneEventHandler(), producer] : [new StandaloneEventHandler()]
+  let handlers =
+    producer instanceof Producer
+      ? [new StandaloneEventHandler(), producer]
+      : [new StandaloneEventHandler()];
   if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
-    if (producer) producer.filterConfig.excludedEvents = [
-      SubstrateEventKind.Reward,
-      SubstrateEventKind.TreasuryRewardMinting,
-      SubstrateEventKind.TreasuryRewardMintingV2,
-      SubstrateEventKind.HeartbeatReceived,
-    ];
+    if (producer)
+      producer.filterConfig.excludedEvents = [
+        SubstrateEventKind.Reward,
+        SubstrateEventKind.TreasuryRewardMinting,
+        SubstrateEventKind.TreasuryRewardMintingV2,
+        SubstrateEventKind.HeartbeatReceived,
+      ];
 
-    SubstrateEvents.createApi(url, spec).then(async (api) => {
-      const fetcher = new SubstrateEvents.StorageFetcher(api);
-      try {
-        await fetcher.fetch();
-      } catch (err) {
-        console.log(err);
-        console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
-      }
-      SubstrateEvents.subscribeEvents({
-        chain: network,
-        api,
-        handlers: handlers,
-        skipCatchup,
-        archival,
-        startBlock,
-        verbose: true,
-        enricherConfig: { balanceTransferThresholdPermill: 1_000 }, // 0.1% of total issuance
-      });
+    const api = await SubstrateEvents.createApi(url, spec);
+    const fetcher = new SubstrateEvents.StorageFetcher(api);
+    try {
+      await fetcher.fetch();
+    } catch (err) {
+      console.log(err);
+      console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
+    }
+    SubstrateEvents.subscribeEvents({
+      chain: network,
+      api,
+      handlers: handlers,
+      skipCatchup,
+      archival,
+      startBlock,
+      verbose: true,
+      enricherConfig: { balanceTransferThresholdPermill: 1_000 }, // 0.1% of total issuance
     });
   } else if (chainSupportedBy(network, MolochEvents.Types.EventChains)) {
     const contractVersion = 1;
@@ -233,28 +236,25 @@ async function setup(producer: IProducer) {
       });
     });
   } else if (chainSupportedBy(network, Erc20Events.Types.EventChains)) {
-    async function erc20Subscribe() {
-      let tokens = await getTokenLists();
-      let tokenAddresses = tokens.map((o) => o.address);
-      Erc20Events.createApi(url, tokenAddresses).then((api) => {
-        Erc20Events.subscribeEvents({
-          chain: network,
-          api,
-          handlers: handlers,
-          skipCatchup,
-          verbose: true,
-        });
+    let tokens = await getTokenLists();
+    let tokenAddresses = tokens.map((o) => o.address);
+    Erc20Events.createApi(url, tokenAddresses).then((api) => {
+      Erc20Events.subscribeEvents({
+        chain: network,
+        api,
+        handlers: handlers,
+        skipCatchup,
+        verbose: true,
       });
-    }
-    erc20Subscribe();
+    });
   }
 }
 
 if (!!argv.rabbitMQ) {
-  const producer = new Producer(argv.rabbitMQ)
+  const producer = new Producer(argv.rabbitMQ);
   producer.init().then(() => {
-      setup(producer)
+    setup(producer);
   });
 } else {
-  setup(null)
+  setup(null);
 }
