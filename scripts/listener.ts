@@ -10,6 +10,7 @@ import { KulupuSpec } from './specs/kulupu';
 import { StafiSpec } from './specs/stafi';
 import { CloverSpec } from './specs/clover';
 
+// @ts-ignore
 import config from '../src/rabbitmq/RabbitMQconfig.json';
 
 import {
@@ -22,10 +23,12 @@ import {
   Erc20Events,
   EventSupportingChains,
   EventSupportingChainT,
+  IEventSubscriber,
 } from '../dist/index';
 
 import { IProducer } from '../src/rabbitmq/producer';
 import * as fs from 'fs';
+import { listenerOptionsT } from '../src';
 
 const networkUrls = {
   clover: 'wss://api.clover.finance',
@@ -55,8 +58,14 @@ const contracts = {
   moloch: '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
 };
+
 const argv = yargs
   .options({
+    config: {
+      alias: 'z',
+      type: 'string',
+      description: 'path to config file to use to initiate multiple listeners',
+    },
     network: {
       alias: 'n',
       choices: EventSupportingChains,
@@ -89,7 +98,22 @@ const argv = yargs
       type: 'string',
       description: 'Push events to queue in RabbitMQ',
     },
+    skipCatchup: {
+      alias: 's',
+      type: 'boolean',
+      description:
+        'Whether to attempt to retrieve historical events not collected due to down-time',
+    },
   })
+  .conflicts('config', [
+    'network',
+    'url',
+    'contractAddress',
+    'archival',
+    'startBlock',
+    'rabbitMQ',
+    'skipCatchup',
+  ])
   .coerce('rabbitMQ', (filepath) => {
     if (typeof filepath == 'string' && filepath.length == 0) return config;
     else {
@@ -102,6 +126,20 @@ const argv = yargs
         console.warn('Using default RabbitMQ configuration');
         // leave config empty to use default
         return config;
+      }
+    }
+  })
+  .coerce('config', (filepath) => {
+    if (typeof filepath == 'string' && filepath.length == 0)
+      throw new Error('Config filepath invalid');
+    else {
+      try {
+        let raw = fs.readFileSync(filepath);
+        return JSON.parse(raw.toString());
+      } catch (error) {
+        console.error(`Failed to load the configuration file at: ${filepath}`);
+        console.error(error);
+        throw new Error('Error occurred while loading the config file');
       }
     }
   })
@@ -121,21 +159,12 @@ const argv = yargs
     return true;
   }).argv;
 
-const archival: boolean = argv.archival;
-// if running in archival mode then which block shall we star from
-const startBlock: number = argv.startBlock ?? 0;
-const network = argv.network;
-const url: string = argv.url || networkUrls[network];
-const spec = networkSpecs[network] || {};
-const contract: string | undefined = argv.contractAddress || contracts[network];
-
 class StandaloneEventHandler extends IEventHandler {
   public async handle(event: CWEvent): Promise<any> {
     console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
   }
 }
 
-const skipCatchup = false;
 const tokenListUrls = [
   'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokenlist.aave.eth.link',
   'https://gateway.ipfs.io/ipns/tokens.uniswap.org',
@@ -169,17 +198,28 @@ async function getSubstrateSpecs(chain: EventSupportingChainT) {
   return data;
 }
 
-console.log(`Connecting to ${network} on url ${url}...`);
+async function setupListener(
+  network,
+  rabbitMQ,
+  url,
+  skipCatchup,
+  startBlock,
+  archival,
+  contract,
+  spec
+): Promise<IEventSubscriber<any, any>> {
+  // start rabbitmq
+  let handlers, producer;
+  if (rabbitMQ) {
+    producer = new Producer(rabbitMQ);
+    await producer.init();
+    handlers = [new StandaloneEventHandler(), producer];
+  } else {
+    handlers = [new StandaloneEventHandler()];
+  }
 
-async function setup(producer: IProducer) {
-  // saves the spec retrieved from the server
-  let newSpec = await getSubstrateSpecs(network);
-  if (newSpec?.types != undefined) networkSpecs[network] = newSpec;
+  console.log(`Connecting to ${network} on url ${url}...`);
 
-  let handlers =
-    producer instanceof Producer
-      ? [new StandaloneEventHandler(), producer]
-      : [new StandaloneEventHandler()];
   if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     if (producer)
       producer.filterConfig.excludedEvents = [
@@ -197,28 +237,27 @@ async function setup(producer: IProducer) {
       console.log(err);
       console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
     }
-    SubstrateEvents.subscribeEvents({
+    return SubstrateEvents.subscribeEvents({
       chain: network,
       api,
       handlers: handlers,
-      skipCatchup,
-      archival,
-      startBlock,
+      skipCatchup: skipCatchup,
+      archival: archival,
+      startBlock: startBlock,
       verbose: true,
       enricherConfig: { balanceTransferThresholdPermill: 1_000 }, // 0.1% of total issuance
     });
   } else if (chainSupportedBy(network, MolochEvents.Types.EventChains)) {
     const contractVersion = 1;
     if (!contract) throw new Error(`no contract address for ${network}`);
-    MolochEvents.createApi(url, contractVersion, contract).then((api) => {
-      MolochEvents.subscribeEvents({
-        chain: network,
-        api,
-        contractVersion,
-        handlers: handlers,
-        skipCatchup,
-        verbose: true,
-      });
+    const api = await MolochEvents.createApi(url, contractVersion, contract);
+    return MolochEvents.subscribeEvents({
+      chain: network,
+      api,
+      contractVersion,
+      handlers: handlers,
+      skipCatchup: skipCatchup,
+      verbose: true,
     });
   } else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
     const contracts = {
@@ -226,35 +265,70 @@ async function setup(producer: IProducer) {
       governorAlpha: '0xeDAA76873524f6A203De2Fa792AD97E459Fca6Ff', // TESTNET
       timelock: '0x7d89D52c464051FcCbe35918cf966e2135a17c43', // TESTNET
     };
-    MarlinEvents.createApi(url, contracts).then((api) => {
-      MarlinEvents.subscribeEvents({
-        chain: network,
-        api,
-        handlers: handlers,
-        skipCatchup,
-        verbose: true,
-      });
+    const api = await MarlinEvents.createApi(url, contracts);
+    return MarlinEvents.subscribeEvents({
+      chain: network,
+      api,
+      handlers: handlers,
+      skipCatchup: skipCatchup,
+      verbose: true,
     });
   } else if (chainSupportedBy(network, Erc20Events.Types.EventChains)) {
     let tokens = await getTokenLists();
     let tokenAddresses = tokens.map((o) => o.address);
-    Erc20Events.createApi(url, tokenAddresses).then((api) => {
-      Erc20Events.subscribeEvents({
-        chain: network,
-        api,
-        handlers: handlers,
-        skipCatchup,
-        verbose: true,
-      });
+    const api = await Erc20Events.createApi(url, tokenAddresses);
+    return Erc20Events.subscribeEvents({
+      chain: network,
+      api,
+      handlers: handlers,
+      skipCatchup: skipCatchup,
+      verbose: true,
     });
   }
 }
 
-if (!!argv.rabbitMQ) {
-  const producer = new Producer(argv.rabbitMQ);
-  producer.init().then(() => {
-    setup(producer);
-  });
+export let listenerArgs: { [key: string]: listenerOptionsT };
+let cf = argv.config;
+if (cf) {
+  for (const chain of cf) {
+    listenerArgs[chain.network] = {
+      archival: !!chain.archival,
+      startBlock: chain.startBlock ?? 0,
+      url: chain.url || networkUrls[chain.network],
+      spec: networkSpecs[chain.network] || {},
+      contract: chain.contractAddress || contracts[chain.network],
+      skipCatchup: !!chain.skipCatchup,
+      rabbitMQ: chain.rabbitMQ,
+    };
+  }
 } else {
-  setup(null);
+  listenerArgs[argv.network] = {
+    archival: !!argv.archival,
+    startBlock: argv.startBlock ?? 0,
+    url: argv.url || networkUrls[argv.network],
+    spec: networkSpecs[argv.network] || {},
+    contract: argv.contractAddress || contracts[argv.network],
+    skipCatchup: !!argv.skipCatchup,
+    rabbitMQ: argv.rabbitMQ,
+  };
+}
+
+// exposed in order to allow external scripts to unsubscribe
+export let subscribers: { [key: string]: IEventSubscriber<any, any> };
+for (const chain in listenerArgs) {
+  getSubstrateSpecs(chain as EventSupportingChainT).then((newSpec) => {
+    if (newSpec?.types != undefined) listenerArgs[chain].spec = newSpec;
+    setupListener(
+      chain,
+      listenerArgs[chain].rabbitMQ,
+      listenerArgs[chain].url,
+      listenerArgs[chain].skipCatchup,
+      listenerArgs[chain].startBlock,
+      listenerArgs[chain].archival,
+      listenerArgs[chain].contract,
+      newSpec
+    ).then((subscriber) => {
+      subscribers[chain] = subscriber;
+    });
+  });
 }

@@ -6,6 +6,7 @@ import * as SubstrateTypes from './substrate/types';
 import * as MolochTypes from './moloch/types';
 import * as MarlinTypes from './marlin/types';
 import * as Erc20Types from './erc20/types';
+import { RegisteredTypes } from '@polkadot/types/types';
 
 // add other events here as union types
 export type IChainEntityKind =
@@ -156,6 +157,16 @@ export type LabelerFilter = (
 export interface IEventTitle {
   title: string;
   description: string;
+}
+
+export interface listenerOptionsT {
+  spec: RegisteredTypes | {};
+  startBlock: number;
+  skipCatchup: boolean;
+  archival: boolean;
+  url: string;
+  contract: string | undefined;
+  rabbitMQ: string | undefined;
 }
 
 export type TitlerFilter = (kind: IChainEventKind) => IEventTitle;

@@ -1,0 +1,15 @@
+[
+  {
+    "network": "edgeware",
+    "url": "",
+    "archival": false,
+    "rabbitMQ": "",
+    "skipCatchup": true
+  },
+  {
+    "network": "polkadot",
+    "archival": false,
+    "rabbitMQ": "",
+    "skipCatchup": true
+  }
+]
