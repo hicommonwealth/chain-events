@@ -167,6 +167,7 @@ export interface listenerOptionsT {
   url: string;
   contract: string | undefined;
   rabbitMQ: string | undefined;
+  excludedEvents: IChainEventKind[];
 }
 
 export type TitlerFilter = (kind: IChainEventKind) => IEventTitle;

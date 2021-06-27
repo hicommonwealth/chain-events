@@ -1,29 +1,40 @@
 import express from 'express';
-import { IEventSubscriber, listenerOptionsT } from '../src';
-import { listenerArgs } from './listener';
+import {
+  listenerArgs,
+  subscribers,
+  setupListener,
+  getSubstrateSpecs,
+} from './listener';
 
-function createApp(
-  listenerArgs: { [key: string]: listenerOptionsT },
-  subscribers: { [key: string]: IEventSubscriber<any, any> },
-  createSubscriber: () => Promise<IEventSubscriber<any, any>>
-) {
+export function createNode() {
   const app = express();
 
+  app.use(express.json());
+
   app.post('/updateSpec', async (req, res) => {
+    console.log(req.body);
+    console.log(req.body.chain);
+
+    req.body.spec = await getSubstrateSpecs('kulupu');
+
+    console.log(req.body.spec);
+
     let chain = req.body.chain;
     let spec = req.body.spec;
     if (!chain || !spec) {
       res.status = 400;
-      res.send('ERROR');
+      res.send('ERROR - Chain or Spec is not defined');
+      return;
     }
 
     try {
       subscribers[chain].unsubscribe();
       listenerArgs[chain].spec = spec;
-      subscribers[chain] = await createSubscriber();
+      subscribers[chain] = await setupListener(chain, listenerArgs[chain]);
+      res.status(200).send('Success');
     } catch (error) {
       res.status = 400;
-      res.send('ERROR');
+      res.send(error);
     }
   });
 
@@ -40,7 +51,7 @@ function createApp(
   app.post('/setExcludedEvents', (req, res) => {});
 
   app.listen(8081, () => {
-    console.log(`server started at http://localhost:${8081}`);
+    console.log(`Events node started at http://localhost:${8081}`);
   });
 
   return app;

@@ -1,9 +1,14 @@
 import * as yargs from 'yargs';
 import fetch from 'node-fetch';
 import type { RegisteredTypes } from '@polkadot/types/types';
-import { EventKind as SubstrateEventKind } from '../src/substrate/types';
+import {
+  EventKind as SubstrateEventKind,
+  EventChains as SubstrateChains,
+} from '../src/substrate/types';
+
 import { spec as EdgewareSpec } from '@edgeware/node-types';
 import { Producer } from '../src/rabbitmq/producer';
+import { createNode } from './eventsNode';
 
 import { HydraDXSpec } from './specs/hydraDX';
 import { KulupuSpec } from './specs/kulupu';
@@ -182,7 +187,8 @@ async function getTokenLists() {
   return data;
 }
 
-async function getSubstrateSpecs(chain: EventSupportingChainT) {
+// TODO: implement check to make sure returned data is really a spec
+export async function getSubstrateSpecs(chain: EventSupportingChainT) {
   let url: string =
     process.env.NODE_ENV == 'production'
       ? `https://commonwealth.im/api/getSubstrateSpec?chain=${chain}`
@@ -197,27 +203,21 @@ async function getSubstrateSpecs(chain: EventSupportingChainT) {
   return data;
 }
 
-async function setupListener(
-  network,
-  rabbitMQ,
-  url,
-  skipCatchup,
-  startBlock,
-  archival,
-  contract,
-  spec
+export async function setupListener(
+  network: EventSupportingChainT,
+  listenerArg: listenerOptionsT
 ): Promise<IEventSubscriber<any, any>> {
   // start rabbitmq
   let handlers, producer;
-  if (rabbitMQ) {
-    producer = new Producer(rabbitMQ);
+  if (listenerArg.rabbitMQ) {
+    producer = new Producer(listenerArg.rabbitMQ);
     await producer.init();
     handlers = [new StandaloneEventHandler(), producer];
   } else {
     handlers = [new StandaloneEventHandler()];
   }
 
-  console.log(`Connecting to ${network} on url ${url}...`);
+  console.log(`Connecting to ${network} on url ${listenerArg.url}...`);
 
   if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     if (producer)
@@ -228,7 +228,10 @@ async function setupListener(
         SubstrateEventKind.HeartbeatReceived,
       ];
 
-    const api = await SubstrateEvents.createApi(url, spec);
+    const api = await SubstrateEvents.createApi(
+      listenerArg.url,
+      listenerArg.spec
+    );
     const fetcher = new SubstrateEvents.StorageFetcher(api);
     try {
       await fetcher.fetch();
@@ -240,22 +243,27 @@ async function setupListener(
       chain: network,
       api,
       handlers: handlers,
-      skipCatchup: skipCatchup,
-      archival: archival,
-      startBlock: startBlock,
+      skipCatchup: listenerArg.skipCatchup,
+      archival: listenerArg.archival,
+      startBlock: listenerArg.startBlock,
       verbose: true,
       enricherConfig: { balanceTransferThresholdPermill: 1_000 }, // 0.1% of total issuance
     });
   } else if (chainSupportedBy(network, MolochEvents.Types.EventChains)) {
     const contractVersion = 1;
-    if (!contract) throw new Error(`no contract address for ${network}`);
-    const api = await MolochEvents.createApi(url, contractVersion, contract);
+    if (!listenerArgs.contract)
+      throw new Error(`no contract address for ${network}`);
+    const api = await MolochEvents.createApi(
+      listenerArg.url,
+      contractVersion,
+      listenerArg.contract
+    );
     return MolochEvents.subscribeEvents({
       chain: network,
       api,
       contractVersion,
       handlers: handlers,
-      skipCatchup: skipCatchup,
+      skipCatchup: listenerArg.skipCatchup,
       verbose: true,
     });
   } else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
@@ -264,28 +272,29 @@ async function setupListener(
       governorAlpha: '0xeDAA76873524f6A203De2Fa792AD97E459Fca6Ff', // TESTNET
       timelock: '0x7d89D52c464051FcCbe35918cf966e2135a17c43', // TESTNET
     };
-    const api = await MarlinEvents.createApi(url, contracts);
+    const api = await MarlinEvents.createApi(listenerArg.url, contracts);
     return MarlinEvents.subscribeEvents({
       chain: network,
       api,
       handlers: handlers,
-      skipCatchup: skipCatchup,
+      skipCatchup: listenerArg.skipCatchup,
       verbose: true,
     });
   } else if (chainSupportedBy(network, Erc20Events.Types.EventChains)) {
     let tokens = await getTokenLists();
     let tokenAddresses = tokens.map((o) => o.address);
-    const api = await Erc20Events.createApi(url, tokenAddresses);
+    const api = await Erc20Events.createApi(listenerArg.url, tokenAddresses);
     return Erc20Events.subscribeEvents({
       chain: network,
       api,
       handlers: handlers,
-      skipCatchup: skipCatchup,
+      skipCatchup: listenerArg.skipCatchup,
       verbose: true,
     });
   }
 }
 
+// TODO: shorten this if else
 export let listenerArgs: { [key: string]: listenerOptionsT } = {};
 let cf = argv.config;
 if (cf) {
@@ -298,6 +307,7 @@ if (cf) {
       contract: chain.contractAddress || contracts[chain.network],
       skipCatchup: !!chain.skipCatchup,
       rabbitMQ: chain.rabbitMQ,
+      excludedEvents: [],
     };
   }
 } else {
@@ -309,31 +319,28 @@ if (cf) {
     contract: argv.contractAddress || contracts[argv.network],
     skipCatchup: !!argv.skipCatchup,
     rabbitMQ: argv.rabbitMQ,
+    excludedEvents: [],
   };
 }
 
-// TODO: add excludedEvents to the listenerOptionsT
-// exposed in order to allow external scripts to unsubscribe
-export let subscribers: { [key: string]: IEventSubscriber<any, any> };
+export let subscribers: { [key: string]: IEventSubscriber<any, any> } = {};
 for (const chain in listenerArgs) {
-  getSubstrateSpecs(chain as EventSupportingChainT)
-    .then((newSpec) => {
-      if (newSpec?.types != undefined) listenerArgs[chain].spec = newSpec;
-      setupListener(
-        chain,
-        listenerArgs[chain].rabbitMQ,
-        listenerArgs[chain].url,
-        listenerArgs[chain].skipCatchup,
-        listenerArgs[chain].startBlock,
-        listenerArgs[chain].archival,
-        listenerArgs[chain].contract,
-        newSpec
-      ).then((subscriber) => {
-        subscribers[chain] = subscriber;
+  // @ts-ignore
+  if (SubstrateChains.includes(chain))
+    getSubstrateSpecs(chain as EventSupportingChainT)
+      .then((newSpec) => {
+        // TODO: implement better checks to make sure the spec if valid
+        if (newSpec?.types != undefined) listenerArgs[chain].spec = newSpec;
+      })
+      .catch((error) => {
+        console.log(error);
       });
-    })
-    .catch((error) => {
-      // TODO: use default/hardcoded spec if getSubstrateSpecs fails
-      console.log(error);
-    });
+
+  setupListener(chain as EventSupportingChainT, listenerArgs[chain]).then(
+    (subscriber) => {
+      subscribers[chain] = subscriber;
+    }
+  );
 }
+
+const eventNode = createNode();
