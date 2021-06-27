@@ -1,5 +1,5 @@
 import express from 'express';
-import { IEventSubscriber } from "../src";
+import { IEventSubscriber } from '../src';
 
 function createApp(
   listenerArgs,

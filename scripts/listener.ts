@@ -69,7 +69,6 @@ const argv = yargs
     network: {
       alias: 'n',
       choices: EventSupportingChains,
-      demandOption: true,
       description: 'chain to listen on',
     },
     url: {
@@ -287,7 +286,7 @@ async function setupListener(
   }
 }
 
-export let listenerArgs: { [key: string]: listenerOptionsT };
+export let listenerArgs: { [key: string]: listenerOptionsT } = {};
 let cf = argv.config;
 if (cf) {
   for (const chain of cf) {
