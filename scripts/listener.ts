@@ -312,22 +312,28 @@ if (cf) {
   };
 }
 
+// TODO: add excludedEvents to the listenerOptionsT
 // exposed in order to allow external scripts to unsubscribe
 export let subscribers: { [key: string]: IEventSubscriber<any, any> };
 for (const chain in listenerArgs) {
-  getSubstrateSpecs(chain as EventSupportingChainT).then((newSpec) => {
-    if (newSpec?.types != undefined) listenerArgs[chain].spec = newSpec;
-    setupListener(
-      chain,
-      listenerArgs[chain].rabbitMQ,
-      listenerArgs[chain].url,
-      listenerArgs[chain].skipCatchup,
-      listenerArgs[chain].startBlock,
-      listenerArgs[chain].archival,
-      listenerArgs[chain].contract,
-      newSpec
-    ).then((subscriber) => {
-      subscribers[chain] = subscriber;
+  getSubstrateSpecs(chain as EventSupportingChainT)
+    .then((newSpec) => {
+      if (newSpec?.types != undefined) listenerArgs[chain].spec = newSpec;
+      setupListener(
+        chain,
+        listenerArgs[chain].rabbitMQ,
+        listenerArgs[chain].url,
+        listenerArgs[chain].skipCatchup,
+        listenerArgs[chain].startBlock,
+        listenerArgs[chain].archival,
+        listenerArgs[chain].contract,
+        newSpec
+      ).then((subscriber) => {
+        subscribers[chain] = subscriber;
+      });
+    })
+    .catch((error) => {
+      // TODO: use default/hardcoded spec if getSubstrateSpecs fails
+      console.log(error);
     });
-  });
 }
