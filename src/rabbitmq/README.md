@@ -30,10 +30,14 @@
 6. Added the chain and current timestamp to the event in each handleEventFn function in subscribeFunc.ts files
 7. Added `getSubstrateSpecs` function to `listener.ts`
 
-June 26-27
-8. Added _shouldSkip function check and _filterConfig to Producer class in `Producer.ts`
-9. Configured producer to skip excluded substrate events
-10. Added option to pass json config file for rabbitmq (-q "jsonConfigFile.json")
+June 26-28
+1. Added _shouldSkip function check and _filterConfig to Producer class in `Producer.ts`
+2. Configured producer to skip excluded substrate events
+3. Added option to pass json config file for rabbitmq (-q "jsonConfigFile.json")
+4. I needed to make the startup args easily usable in the webhook/server to restart the subscriber, so I created an interface
+    called listenerOptionsT in `interfaces.ts`. This meant it was also super easily to allow multiple listeners to be started from the same process which makes chain-events have node/server type functionality (closer to the TheGraph/Subscan)
+5. Added execution options for the node/webhook with (-e), and a config file for using multiple listeners with (-z filepath) in `listeners.ts`
+6. Then "/updateSpec" route unsubscribes, reruns setupListener to recreate api with updated spec + resubscribe, and saves the subscriber
 
 #### Package.json changes:
 - added node-fetch as a dependency
