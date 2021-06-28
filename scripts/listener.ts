@@ -108,7 +108,7 @@ const argv = yargs
       description:
         'Whether to attempt to retrieve historical events not collected due to down-time',
     },
-    node: {
+    eventNode: {
       alias: 'e',
       type: 'boolean',
       description: 'Whether to run chain events as a node',
@@ -133,7 +133,6 @@ const argv = yargs
         console.error(`Failed to load the configuration file at: ${filepath}`);
         console.error(error);
         console.warn('Using default RabbitMQ configuration');
-        // leave config empty to use default
         return config;
       }
     }
@@ -213,10 +212,14 @@ export async function setupListener(
   listenerArg: listenerOptionsT
 ): Promise<IEventSubscriber<any, any>> {
   // start rabbitmq
-  let handlers, producer;
+  let handlers;
   if (listenerArg.rabbitMQ) {
-    producer = new Producer(listenerArg.rabbitMQ);
-    await producer.init();
+    // only initialize a producer if it hasn't been initialized otherwise utilize the same producer for all listeners
+    // running on the same node/chain-events instance
+    if (!producer) {
+      producer = new Producer(listenerArg.rabbitMQ);
+      await producer.init();
+    }
     handlers = [new StandaloneEventHandler(), producer];
   } else {
     handlers = [new StandaloneEventHandler()];
@@ -225,13 +228,13 @@ export async function setupListener(
   console.log(`Connecting to ${network} on url ${listenerArg.url}...`);
 
   if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
-    if (producer)
-      producer.filterConfig.excludedEvents = [
-        SubstrateEventKind.Reward,
-        SubstrateEventKind.TreasuryRewardMinting,
-        SubstrateEventKind.TreasuryRewardMintingV2,
-        SubstrateEventKind.HeartbeatReceived,
-      ];
+    // TODO: this is hardcoded but ideally should be made explicit in a config file eventually
+    listenerArg.excludedEvents = [
+      SubstrateEventKind.Reward,
+      SubstrateEventKind.TreasuryRewardMinting,
+      SubstrateEventKind.TreasuryRewardMintingV2,
+      SubstrateEventKind.HeartbeatReceived,
+    ];
 
     const api = await SubstrateEvents.createApi(
       listenerArg.url,
@@ -312,7 +315,7 @@ if (cf) {
       contract: chain.contractAddress || contracts[chain.network],
       skipCatchup: !!chain.skipCatchup,
       rabbitMQ: chain.rabbitMQ,
-      excludedEvents: [],
+      excludedEvents: chain.excludedEvents || [],
     };
   }
 } else {
@@ -324,10 +327,11 @@ if (cf) {
     contract: argv.contractAddress || contracts[argv.network],
     skipCatchup: !!argv.skipCatchup,
     rabbitMQ: argv.rabbitMQ,
-    excludedEvents: [],
+    excludedEvents: [], // passing excluded events in terminal is not supported
   };
 }
 
+let producer;
 export let subscribers: { [key: string]: IEventSubscriber<any, any> } = {};
 for (const chain in listenerArgs) {
   // @ts-ignore

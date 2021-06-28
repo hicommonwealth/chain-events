@@ -69,7 +69,9 @@ First ensure you bump the package version in the [package.json](./package.json) 
 
 ## Standalone Usage
 
-This package includes a "event listener" script located at [listener.ts](./scripts/listener.ts), which permits real-time listening for on-chain events, and can be used for testing a chain connection.
+This package includes an "event listener" script located at [listener.ts](./scripts/listener.ts), 
+which permits real-time listening for on-chain events, and can be used for testing a chain connection, pushing events to
+a queue, or/and running chain-events as a node.
 
 The following is an example usage, connecting to a local node running on edgeware mainnet:
 
@@ -84,14 +86,42 @@ The full set of options is listed as, with only `-n` required:
 Options:
       --help             Show help                                     [boolean]
       --version          Show version number                           [boolean]
+  -z, --config           Path to a config file to setup multiple        [string]
+                         listeners (see below)
   -n, --network          chain to listen on
           [required] [choices: "edgeware", "edgeware-local", "edgeware-testnet",
      "kusama", "kusama-local", "polkadot", "polkadot-local", "kulupu", "moloch",
                                                                  "moloch-local"]
   -u, --url              node url                                       [string]
+  -a, --archival         run listener in archival mode                 [boolean]
+  -b, --startBlock       when running in archival mode, which block     [number]
+                         should we start from
+  -s, --skipCatchup      Whether to attempt to retrieve historical     [boolean]
+                         events not collected due to down-time
   -c, --contractAddress  eth contract address                           [string]
   -q, --rabbitmq         Publish messages to queue hosted on RabbitMQ  [boolean]
+  -e, --eventNode        Run chain-events as a node that allows        [boolean]
+                         interacting with listeners over http
+                         (only updating substrate specs for now)
 ```
+
+#### Listener config file
+Must be a json file with the following format:
+```json
+[
+  {
+    "network": "Required (string) - The name of the network",
+    "url": "Optional (string) - Node url to connect to",
+    "archival": "Optional (boolean) - run listener in archival mode",
+    "startBlock": "Optional (number) - when running in archival mode, which block should we start from",
+    "skipCatchup": "Optional (boolean) - Whether to attempt to retrieve historical events not collected due to down-time",
+    "rabbitMQ": "Optional (string) - Publishes messages to a queue. Pass an empty string to use default config or the filepath to the configuration to use",
+    "excludedEvents": "Optional (array of strings) - An array of EventKinds to ignore. Currently only relevant for the RabbitMQ producer."
+  }
+]
+```
+See manyListenerConfigEx.json for an example configuration
+
 
 ## Library Usage
 

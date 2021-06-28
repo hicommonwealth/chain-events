@@ -1,18 +1,14 @@
 import Rascal from 'rascal';
 
 // import { factory, formatFilename } from '../logging';
-import {CWEvent, IChainEventKind, IEventHandler} from '../interfaces';
+import { CWEvent, IChainEventKind, IEventHandler } from '../interfaces';
 
 import config from './RabbitMQconfig.json';
-
+import { listenerArgs } from '../../scripts/listener';
 
 export interface StorageFilterConfig {
   excludedEvents?: IChainEventKind[];
 }
-
-// const log = factory.getLogger(formatFilename(__filename));
-
-// TODO: using log factory raises Log Factory with name Chain_events already exists error -- research/fix
 
 export interface IProducer extends IEventHandler {
   broker: Rascal.BrokerAsPromised;
@@ -22,7 +18,7 @@ export interface IProducer extends IEventHandler {
 
 export class Producer implements IProducer {
   public broker;
-  public filterConfig: StorageFilterConfig = {}
+  public filterConfig: StorageFilterConfig = {};
 
   constructor(private readonly _rabbitMQConfig: {}) {
     this._rabbitMQConfig = _rabbitMQConfig;
@@ -57,7 +53,7 @@ export class Producer implements IProducer {
   }
 
   public async handle(event: CWEvent): Promise<any> {
-    if (this._shouldSkip(event)) return;
+    if (Producer._shouldSkip(event)) return;
     try {
       const publication = await this.broker.publish('eventsPub', event);
       publication.on('error', (err, messageId) => {
@@ -68,7 +64,8 @@ export class Producer implements IProducer {
     }
   }
 
-  private _shouldSkip(event: CWEvent): boolean {
-    return !!this.filterConfig.excludedEvents?.includes(event.data.kind);
+  private static _shouldSkip(event: CWEvent): boolean {
+    return !!listenerArgs[event.chain].excludedEvents.includes(event.data.kind);
+    // return !!this.filterConfig.excludedEvents?.includes(event.data.kind);
   }
 }
