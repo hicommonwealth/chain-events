@@ -41,6 +41,7 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
 
   public unsubscribe(): void {
     if (this._listener) {
+      log.info(`Unsubscribing from ${this._name}`);
       this._api.comp.removeListener('*', this._listener);
       this._api.governorAlpha.removeListener('*', this._listener);
       this._api.timelock.removeListener('*', this._listener);

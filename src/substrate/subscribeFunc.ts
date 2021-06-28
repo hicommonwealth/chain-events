@@ -26,6 +26,8 @@ export interface ISubstrateSubscribeOptions
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
  * @param url websocket endpoing to connect to, including ws[s]:// and port
+ * @param typeOverrides
+ * @param timeoutMs
  * @returns a promise resolving to an ApiPromise once the connection has been established
  */
 export async function createApi(

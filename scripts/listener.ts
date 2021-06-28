@@ -108,6 +108,11 @@ const argv = yargs
       description:
         'Whether to attempt to retrieve historical events not collected due to down-time',
     },
+    node: {
+      alias: 'e',
+      type: 'boolean',
+      description: 'Whether to run chain events as a node',
+    },
   })
   .conflicts('config', [
     'network',
@@ -343,4 +348,5 @@ for (const chain in listenerArgs) {
   );
 }
 
-const eventNode = createNode();
+export let eventNode;
+if (argv.node) eventNode = createNode();

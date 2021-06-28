@@ -6,35 +6,47 @@ import {
   getSubstrateSpecs,
 } from './listener';
 
+import { EventSupportingChainT } from '../src';
+
 export function createNode() {
   const app = express();
 
   app.use(express.json());
 
+  /**
+   * Used to update the spec for any listener (chain). Requires 2 keys in
+   * the requests body as JSON (Content-Type should be application/json)
+   * {
+   *   "chain": *the chain name*,
+   *   "spec": {}
+   * }
+   */
   app.post('/updateSpec', async (req, res) => {
-    console.log(req.body);
-    console.log(req.body.chain);
+    let chain: EventSupportingChainT = req.body.chain;
+    let spec: {} = req.body.spec;
 
-    req.body.spec = await getSubstrateSpecs('kulupu');
-
-    console.log(req.body.spec);
-
-    let chain = req.body.chain;
-    let spec = req.body.spec;
     if (!chain || !spec) {
-      res.status = 400;
-      res.send('ERROR - Chain or Spec is not defined');
+      res.status(400).send('ERROR - Chain or Spec is not defined');
+      return;
+    }
+
+    if (listenerArgs[chain] == null) {
+      res.status(400).send(`ERROR: No subscription to ${chain} found`);
       return;
     }
 
     try {
       subscribers[chain].unsubscribe();
+
+      // turn on catchup in order to retrieve events not collected during downtime
+      listenerArgs[chain].skipCatchup = false;
+
       listenerArgs[chain].spec = spec;
       subscribers[chain] = await setupListener(chain, listenerArgs[chain]);
       res.status(200).send('Success');
+      return;
     } catch (error) {
-      res.status = 400;
-      res.send(error);
+      res.status(400).send(error);
     }
   });
 
