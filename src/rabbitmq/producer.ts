@@ -11,7 +11,7 @@ export interface IProducer extends IEventHandler {
 
 export class Producer implements IProducer {
   public broker;
-  private _publisher;
+  private readonly _publisher;
   private _vhost;
 
   constructor(private readonly _rabbitMQConfig: any) {

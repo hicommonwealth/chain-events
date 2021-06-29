@@ -12,6 +12,8 @@ describe.only('RabbitMQ producer integration tests', () => {
     producer = await new Producer(getRabbitMQConfig());
     await producer.init();
     assert.isNotNull(producer.broker);
+
+    return;
   });
 
   it('should publish a CWEvent to a queue', async function () {
@@ -33,6 +35,8 @@ describe.only('RabbitMQ producer integration tests', () => {
       chain: 'polkadot',
       received: 123,
     });
+
+    return;
   });
 
   it('should prevent excluded events from being published', async function () {
@@ -72,5 +76,7 @@ describe.only('RabbitMQ producer integration tests', () => {
       chain: 'polkadot',
       received: 77,
     });
+
+    return;
   });
 });

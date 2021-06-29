@@ -26,12 +26,14 @@ export function createNode() {
     const spec: {} = req.body.spec;
 
     if (!chain || !spec) {
-      res.status(400).send('ERROR - Chain or Spec is not defined');
+      res
+        .status(400)
+        .json({ error: `${!chain ? 'chain' : 'spec'} is not defined` });
       return;
     }
 
     if (listenerArgs[chain] == null) {
-      res.status(400).send(`ERROR: No subscription to ${chain} found`);
+      res.status(400).json({ error: `No subscription to ${chain} found` });
       return;
     }
 
@@ -42,11 +44,14 @@ export function createNode() {
       listenerArgs[chain].skipCatchup = false;
 
       listenerArgs[chain].spec = spec;
+
       subscribers[chain] = await setupListener(chain, listenerArgs[chain]);
-      res.status(200).send('Success');
+      res.status(200).json({ message: 'Success' });
       return;
     } catch (error) {
-      res.status(400).send(error);
+      res
+        .status(400)
+        .json({ error: 'An error occurred during listener setup' });
     }
   });
 
@@ -62,16 +67,25 @@ export function createNode() {
     const options = req.body.options;
 
     if (!chain || !options) {
-      res.status(400).send('ERROR - Chain or options is not defined');
+      res
+        .status(400)
+        .json({ error: `${!chain ? 'chain' : 'options'} is not defined` });
+      return;
+    }
+
+    if (subscribers[chain]) {
+      res
+        .status(400)
+        .json({ error: `Listener for ${chain} is already active` });
       return;
     }
 
     createListener(chain, options)
       .then(() => {
-        res.status(200).send('Success');
+        res.status(200).json({ message: 'Success' });
       })
       .catch((error) => {
-        res.status(400).send(error);
+        res.status(400).json({ error: error });
       });
   });
 
@@ -85,12 +99,12 @@ export function createNode() {
     const chain: EventSupportingChainT = req.body.chain;
 
     if (!chain) {
-      res.status(400).send('ERROR - Chain is not defined');
+      res.status(400).json({ error: 'Chain is not defined' });
       return;
     }
 
     if (listenerArgs[chain] == null) {
-      res.status(400).send(`ERROR: No subscription to ${chain} found`);
+      res.status(400).json({ error: `No subscription to ${chain} found` });
       return;
     }
 
@@ -98,9 +112,9 @@ export function createNode() {
       subscribers[chain].unsubscribe();
       subscribers[chain] = undefined;
       listenerArgs[chain] = undefined;
-      res.status(200).send('Success');
+      res.status(200).json({ message: 'Success' });
     } catch (error) {
-      res.status(400).send(error);
+      res.status(400).json({ error: error });
     }
   });
 
@@ -117,20 +131,24 @@ export function createNode() {
     const excludedEvents: IChainEventKind[] = req.body.excludedEvents;
 
     if (!chain || !excludedEvents) {
-      res.status(400).send('ERROR - Chain or excluded events is not defined');
+      res
+        .status(400)
+        .json({ error: 'ERROR - Chain or excluded events is not defined' });
       return;
     }
 
     if (listenerArgs[chain] == null) {
-      res.status(400).send(`ERROR - There is no active listener for ${chain}`);
+      res
+        .status(400)
+        .json({ error: `ERROR - There is no active listener for ${chain}` });
       return;
     }
 
     try {
       listenerArgs[chain].excludedEvents = excludedEvents;
-      res.status(200).send('Success');
+      res.status(200).json({ message: 'Success' });
     } catch (error) {
-      res.status(400).send(error);
+      res.status(400).json(error);
     }
   });
 

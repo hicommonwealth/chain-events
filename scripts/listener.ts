@@ -29,6 +29,7 @@ import {
   MolochEvents,
   Erc20Events,
   IEventSubscriber,
+  IChainEventKind,
 } from '../src';
 
 import * as fs from 'fs';
@@ -229,12 +230,18 @@ export async function setupListener(
 
   if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
     // TODO: this is hardcoded but ideally should be made explicit in a config file eventually
-    listenerArg.excludedEvents = [
+    const excludedEvents = [
       SubstrateEventKind.Reward,
       SubstrateEventKind.TreasuryRewardMinting,
       SubstrateEventKind.TreasuryRewardMintingV2,
       SubstrateEventKind.HeartbeatReceived,
     ];
+    // NOTE: must check presence before pushing in order to avoid duplicates if running this function
+    // more than once with the same listenerArg
+    for (const eventKind of excludedEvents) {
+      if (!listenerArg.excludedEvents.includes(<IChainEventKind>eventKind))
+        listenerArg.excludedEvents.push(<IChainEventKind>eventKind);
+    }
 
     const api = await SubstrateEvents.createApi(
       listenerArg.url,
