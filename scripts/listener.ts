@@ -7,7 +7,7 @@ import {
 } from '../src/substrate/types';
 
 import { spec as EdgewareSpec } from '@edgeware/node-types';
-import { Producer } from '../src/rabbitmq/producer';
+import { IProducer, Producer } from '../src/rabbitmq/producer';
 import { createNode } from './eventsNode';
 
 import { HydraDXSpec } from './specs/hydraDX';
@@ -32,9 +32,9 @@ import {
 } from '../src';
 
 import * as fs from 'fs';
-import { listenerOptionsT } from '../src';
+import { IListenerOptions } from '../src';
 
-const networkUrls = {
+export const networkUrls = {
   clover: 'wss://api.clover.finance',
   hydradx: 'wss://rpc-01.snakenet.hydradx.io',
   edgeware: 'ws://mainnet1.edgewa.re:9944',
@@ -49,7 +49,7 @@ const networkUrls = {
   marlin: 'wss://mainnet.infura.io/ws',
   'marlin-local': 'ws://127.0.0.1:9545',
 } as const;
-const networkSpecs: { [chain: string]: RegisteredTypes } = {
+export const networkSpecs: { [chain: string]: RegisteredTypes } = {
   clover: CloverSpec,
   hydradx: HydraDXSpec,
   kulupu: KulupuSpec,
@@ -58,7 +58,7 @@ const networkSpecs: { [chain: string]: RegisteredTypes } = {
   'edgeware-testnet': EdgewareSpec,
   stafi: StafiSpec,
 };
-const contracts = {
+export const contracts = {
   moloch: '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
 };
@@ -208,9 +208,15 @@ export async function getSubstrateSpecs(chain: EventSupportingChainT) {
   return data;
 }
 
+/**
+ * Sets up a listener
+ * @param network The name of the chain/network to listen for events on
+ * @param listenerArg An object containing the processed listener options
+ * @return subscriber A subscriber instance to the chosen network
+ */
 export async function setupListener(
   network: EventSupportingChainT,
-  listenerArg: listenerOptionsT
+  listenerArg: IListenerOptions
 ): Promise<IEventSubscriber<any, any>> {
   // start rabbitmq
   let handlers;
@@ -297,34 +303,47 @@ export async function setupListener(
   }
 }
 
-export let listenerArgs: { [key: string]: listenerOptionsT } = {};
-let cf = argv.config;
-if (cf) {
-  for (const chain of cf) {
-    listenerArgs[chain.network] = {
-      archival: !!chain.archival,
-      startBlock: chain.startBlock ?? 0,
-      url: chain.url || networkUrls[chain.network],
-      spec: networkSpecs[chain.network] || {},
-      contract: chain.contractAddress || contracts[chain.network],
-      skipCatchup: !!chain.skipCatchup,
-      excludedEvents: chain.excludedEvents || [],
-    };
-  }
-} else {
-  listenerArgs[argv.network] = {
-    archival: !!argv.archival,
-    startBlock: argv.startBlock ?? 0,
-    url: argv.url || networkUrls[argv.network],
-    spec: networkSpecs[argv.network] || {},
-    contract: argv.contractAddress || contracts[argv.network],
-    skipCatchup: !!argv.skipCatchup,
-    excludedEvents: [], // passing excluded events in terminal is not supported
+/**
+ * Creates a listener instance for any chain. NOTE: this function has 2 main side effects.
+ * 1. It processes the options parameter to populate the listenerArgs object.
+ * 2. It saves the subscriber returned by setupListener in the subscribers object.
+ * This function is useful to start a listener from scratch when given unprocessed options
+ * @param chain The name of the chain to listen to
+ * @param options An object containing the desired settings for the listener (see ReadMe.md)
+ */
+export async function createListener(chain, options: any) {
+  listenerArgs[chain] = {
+    archival: !!options.archival,
+    startBlock: options.startBlock ?? 0,
+    url: options.url || networkUrls[chain],
+    spec: networkSpecs[chain] || {},
+    contract: options.contractAddress || contracts[chain],
+    skipCatchup: !!options.skipCatchup,
+    excludedEvents: options.excludedEvents || [],
   };
+
+  if (SubstrateChains.includes(chain)) {
+    try {
+      const newSpec = await getSubstrateSpecs(chain as EventSupportingChainT);
+      if (newSpec?.types != undefined) listenerArgs[chain].spec = newSpec;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  try {
+    subscribers[chain] = await setupListener(
+      chain as EventSupportingChainT,
+      listenerArgs[chain]
+    );
+  } catch (error) {
+    console.log(error);
+  }
 }
 
-let producer;
+export let listenerArgs: { [key: string]: IListenerOptions } = {};
 export let subscribers: { [key: string]: IEventSubscriber<any, any> } = {};
+let producer: IProducer;
 
 async function init() {
   if (argv.rabbitMQ) {
@@ -332,22 +351,13 @@ async function init() {
     await producer.init();
   }
 
-  for (const chain in listenerArgs) {
-    // @ts-ignore
-    if (SubstrateChains.includes(chain as EventSupportingChainT))
-      getSubstrateSpecs(chain as EventSupportingChainT)
-        .then((newSpec) => {
-          if (newSpec?.types != undefined) listenerArgs[chain].spec = newSpec;
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-
-    setupListener(chain as EventSupportingChainT, listenerArgs[chain]).then(
-      (subscriber) => {
-        subscribers[chain] = subscriber;
-      }
-    );
+  let cf = argv.config;
+  if (cf) {
+    for (const chain of cf) {
+      createListener(chain.network, chain);
+    }
+  } else {
+    createListener(argv.network, argv);
   }
 }
 

@@ -3,27 +3,27 @@ import {
   listenerArgs,
   subscribers,
   setupListener,
-  getSubstrateSpecs,
+  createListener,
 } from './listener';
 
-import { EventSupportingChainT } from '../src';
+import { EventSupportingChainT, IChainEventKind } from '../src';
 
 export function createNode() {
   const app = express();
 
+  // request body as JSON (Content-Type = application/json)
   app.use(express.json());
 
   /**
-   * Used to update the spec for any listener (chain). Requires 2 keys in
-   * the requests body as JSON (Content-Type should be application/json)
+   * Used to update the spec for any listener (chain).
    * {
    *   "chain": *the chain name*,
    *   "spec": {}
    * }
    */
   app.post('/updateSpec', async (req, res) => {
-    let chain: EventSupportingChainT = req.body.chain;
-    let spec: {} = req.body.spec;
+    const chain: EventSupportingChainT = req.body.chain;
+    const spec: {} = req.body.spec;
 
     if (!chain || !spec) {
       res.status(400).send('ERROR - Chain or Spec is not defined');
@@ -50,17 +50,89 @@ export function createNode() {
     }
   });
 
-  // below paths are possibilities if we want to take this "node" concept further
-  // it means in order to change settings of a listener there is no need to ssh and
-  // do a hard restart you can just submit requests
-  // this would also bring us closer to the whole competitor to Subscan/TheGraph
-  // but with live update capabilities and support a large variety of chains
+  /**
+   * Adds a listener to an active chain-events node.
+   * {
+   *   "chain": *the chain name*,
+   *   "options": *listener options as defined in the readme multiple listener configuration*
+   * }
+   */
+  app.post('/addListener', (req, res) => {
+    const chain: EventSupportingChainT = req.body.chain;
+    const options = req.body.options;
 
-  app.post('/addListener', (req, res) => {});
+    if (!chain || !options) {
+      res.status(400).send('ERROR - Chain or options is not defined');
+      return;
+    }
 
-  app.post('/removeListener', (req, res) => {});
+    createListener(chain, options)
+      .then(() => {
+        res.status(200).send('Success');
+      })
+      .catch((error) => {
+        res.status(400).send(error);
+      });
+  });
 
-  app.post('/setExcludedEvents', (req, res) => {});
+  /**
+   * Removes a listener from an active chain-events node.
+   * {
+   *   "chain": *the chain name*
+   * }
+   */
+  app.post('/removeListener', (req, res) => {
+    const chain: EventSupportingChainT = req.body.chain;
+
+    if (!chain) {
+      res.status(400).send('ERROR - Chain is not defined');
+      return;
+    }
+
+    if (listenerArgs[chain] == null) {
+      res.status(400).send(`ERROR: No subscription to ${chain} found`);
+      return;
+    }
+
+    try {
+      subscribers[chain].unsubscribe();
+      subscribers[chain] = undefined;
+      listenerArgs[chain] = undefined;
+      res.status(200).send('Success');
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  });
+
+  /**
+   * Sets the excluded events for any active chain. ExcludedEvents should be an array of event names
+   * to ignore.
+   * {
+   *   "chain": *the chain name*
+   *   "excludedEvents: []
+   * }
+   */
+  app.post('/setExcludedEvents', (req, res) => {
+    const chain: EventSupportingChainT = req.body.chain;
+    const excludedEvents: IChainEventKind[] = req.body.spec;
+
+    if (!chain || !excludedEvents) {
+      res.status(400).send('ERROR - Chain or excluded events is not defined');
+      return;
+    }
+
+    if (listenerArgs[chain] == null) {
+      res.status(400).send(`ERROR - There is no active listener for ${chain}`);
+      return;
+    }
+
+    try {
+      listenerArgs[chain].excludedEvents = excludedEvents;
+      res.status(200).send('Success');
+    } catch (error) {
+      res.status(400).send(error);
+    }
+  });
 
   app.listen(8081, () => {
     console.log(`Events node started at http://localhost:${8081}`);

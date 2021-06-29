@@ -159,7 +159,7 @@ export interface IEventTitle {
   description: string;
 }
 
-export interface listenerOptionsT {
+export interface IListenerOptions {
   spec: RegisteredTypes | {};
   startBlock: number;
   skipCatchup: boolean;
