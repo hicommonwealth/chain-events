@@ -166,7 +166,6 @@ export interface listenerOptionsT {
   archival: boolean;
   url: string;
   contract: string | undefined;
-  rabbitMQ: string | undefined;
   excludedEvents: IChainEventKind[];
 }
 

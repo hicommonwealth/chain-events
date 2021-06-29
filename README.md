@@ -105,6 +105,13 @@ Options:
                          (only updating substrate specs for now)
 ```
 
+If the -z option is passed then only -q and -e can be used (all other options conflict with the config defined by -z)
+
+#### Environment Variables
+- NODE_ENV: dictates where a listener will get its initial spec. when NODE_ENV = "production"
+the listener gets its spec from commonwealth.im. Otherwise, the listener will get its spec from the commonwealth server
+hosted locally.
+
 #### Listener config file
 Must be a json file with the following format:
 ```json
@@ -115,7 +122,6 @@ Must be a json file with the following format:
     "archival": "Optional (boolean) - run listener in archival mode",
     "startBlock": "Optional (number) - when running in archival mode, which block should we start from",
     "skipCatchup": "Optional (boolean) - Whether to attempt to retrieve historical events not collected due to down-time",
-    "rabbitMQ": "Optional (string) - Publishes messages to a queue. Pass an empty string to use default config or the filepath to the configuration to use",
     "excludedEvents": "Optional (array of strings) - An array of EventKinds to ignore. Currently only relevant for the RabbitMQ producer."
   }
 ]

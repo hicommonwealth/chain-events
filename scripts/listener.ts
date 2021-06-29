@@ -19,6 +19,8 @@ import { CloverSpec } from './specs/clover';
 import config from '../src/rabbitmq/RabbitMQconfig.json';
 
 import {
+  EventSupportingChains,
+  EventSupportingChainT,
   chainSupportedBy,
   IEventHandler,
   CWEvent,
@@ -26,12 +28,9 @@ import {
   MarlinEvents,
   MolochEvents,
   Erc20Events,
-  EventSupportingChains,
-  EventSupportingChainT,
   IEventSubscriber,
-} from '../dist/index';
+} from '../src';
 
-import { IProducer } from '../src/rabbitmq/producer';
 import * as fs from 'fs';
 import { listenerOptionsT } from '../src';
 
@@ -120,23 +119,9 @@ const argv = yargs
     'contractAddress',
     'archival',
     'startBlock',
-    'rabbitMQ',
     'skipCatchup',
   ])
-  .coerce('rabbitMQ', (filepath) => {
-    if (typeof filepath == 'string' && filepath.length == 0) return config;
-    else {
-      try {
-        let raw = fs.readFileSync(filepath);
-        return JSON.parse(raw.toString());
-      } catch (error) {
-        console.error(`Failed to load the configuration file at: ${filepath}`);
-        console.error(error);
-        console.warn('Using default RabbitMQ configuration');
-        return config;
-      }
-    }
-  })
+  .coerce('rabbitMQ', getRabbitMQConfig)
   .coerce('config', (filepath) => {
     if (typeof filepath == 'string' && filepath.length == 0)
       throw new Error('Config filepath invalid');
@@ -191,6 +176,22 @@ async function getTokenLists() {
   return data;
 }
 
+// returns either the RabbitMQ config specified by the filepath or the default config
+function getRabbitMQConfig(filepath: string) {
+  if (typeof filepath == 'string' && filepath.length == 0) return config;
+  else {
+    try {
+      let raw = fs.readFileSync(filepath);
+      return JSON.parse(raw.toString());
+    } catch (error) {
+      console.error(`Failed to load the configuration file at: ${filepath}`);
+      console.error(error);
+      console.warn('Using default RabbitMQ configuration');
+      return config;
+    }
+  }
+}
+
 // TODO: implement check to make sure returned data is really a spec
 export async function getSubstrateSpecs(chain: EventSupportingChainT) {
   let url: string =
@@ -213,13 +214,7 @@ export async function setupListener(
 ): Promise<IEventSubscriber<any, any>> {
   // start rabbitmq
   let handlers;
-  if (listenerArg.rabbitMQ) {
-    // only initialize a producer if it hasn't been initialized otherwise utilize the same producer for all listeners
-    // running on the same node/chain-events instance
-    if (!producer) {
-      producer = new Producer(listenerArg.rabbitMQ);
-      await producer.init();
-    }
+  if (argv.rabbitMQ) {
     handlers = [new StandaloneEventHandler(), producer];
   } else {
     handlers = [new StandaloneEventHandler()];
@@ -302,7 +297,6 @@ export async function setupListener(
   }
 }
 
-// TODO: shorten this if else
 export let listenerArgs: { [key: string]: listenerOptionsT } = {};
 let cf = argv.config;
 if (cf) {
@@ -314,7 +308,6 @@ if (cf) {
       spec: networkSpecs[chain.network] || {},
       contract: chain.contractAddress || contracts[chain.network],
       skipCatchup: !!chain.skipCatchup,
-      rabbitMQ: chain.rabbitMQ,
       excludedEvents: chain.excludedEvents || [],
     };
   }
@@ -326,31 +319,38 @@ if (cf) {
     spec: networkSpecs[argv.network] || {},
     contract: argv.contractAddress || contracts[argv.network],
     skipCatchup: !!argv.skipCatchup,
-    rabbitMQ: argv.rabbitMQ,
     excludedEvents: [], // passing excluded events in terminal is not supported
   };
 }
 
 let producer;
 export let subscribers: { [key: string]: IEventSubscriber<any, any> } = {};
-for (const chain in listenerArgs) {
-  // @ts-ignore
-  if (SubstrateChains.includes(chain))
-    getSubstrateSpecs(chain as EventSupportingChainT)
-      .then((newSpec) => {
-        // TODO: implement better checks to make sure the spec if valid
-        if (newSpec?.types != undefined) listenerArgs[chain].spec = newSpec;
-      })
-      .catch((error) => {
-        console.log(error);
-      });
 
-  setupListener(chain as EventSupportingChainT, listenerArgs[chain]).then(
-    (subscriber) => {
-      subscribers[chain] = subscriber;
-    }
-  );
+async function init() {
+  if (argv.rabbitMQ) {
+    producer = new Producer(argv.rabbitMQ);
+    await producer.init();
+  }
+
+  for (const chain in listenerArgs) {
+    // @ts-ignore
+    if (SubstrateChains.includes(chain as EventSupportingChainT))
+      getSubstrateSpecs(chain as EventSupportingChainT)
+        .then((newSpec) => {
+          if (newSpec?.types != undefined) listenerArgs[chain].spec = newSpec;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+    setupListener(chain as EventSupportingChainT, listenerArgs[chain]).then(
+      (subscriber) => {
+        subscribers[chain] = subscriber;
+      }
+    );
+  }
 }
 
+init();
 export let eventNode;
 if (argv.node) eventNode = createNode();
