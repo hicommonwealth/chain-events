@@ -194,10 +194,11 @@ export function getRabbitMQConfig(filepath?: string) {
 
 // TODO: implement check to make sure returned data is really a spec
 export async function getSubstrateSpecs(chain: EventSupportingChainT) {
-  let url: string =
-    process.env.NODE_ENV == 'production'
-      ? `https://commonwealth.im/api/getSubstrateSpec?chain=${chain}`
-      : `http://localhost:8080/api/getSubstrateSpec?chain=${chain}`;
+  let url: string = `${
+    process.env.SUBSTRATE_SPEC_ENDPOINT ||
+    'http://localhost:8080/api/getSubstrateSpec'
+  }?chain=${chain}`;
+
   console.log(`Getting ${chain} spec at url ${url}`);
 
   let data: any = await fetch(url)
@@ -257,7 +258,7 @@ export async function setupListener(
     return SubstrateEvents.subscribeEvents({
       chain: network,
       api,
-      handlers: handlers,
+      handlers,
       skipCatchup: listenerArg.skipCatchup,
       archival: listenerArg.archival,
       startBlock: listenerArg.startBlock,
@@ -277,7 +278,7 @@ export async function setupListener(
       chain: network,
       api,
       contractVersion,
-      handlers: handlers,
+      handlers,
       skipCatchup: listenerArg.skipCatchup,
       verbose: true,
     });
@@ -291,7 +292,7 @@ export async function setupListener(
     return MarlinEvents.subscribeEvents({
       chain: network,
       api,
-      handlers: handlers,
+      handlers,
       skipCatchup: listenerArg.skipCatchup,
       verbose: true,
     });
@@ -302,7 +303,7 @@ export async function setupListener(
     return Erc20Events.subscribeEvents({
       chain: network,
       api,
-      handlers: handlers,
+      handlers,
       skipCatchup: listenerArg.skipCatchup,
       verbose: true,
     });
@@ -347,8 +348,8 @@ export async function createListener(chain, options: any) {
   }
 }
 
-export let listenerArgs: { [key: string]: IListenerOptions } = {};
-export let subscribers: { [key: string]: IEventSubscriber<any, any> } = {};
+export const listenerArgs: { [key: string]: IListenerOptions } = {};
+export const subscribers: { [key: string]: IEventSubscriber<any, any> } = {};
 let producer: IProducer;
 
 async function init() {

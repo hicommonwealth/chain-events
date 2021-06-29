@@ -9,6 +9,7 @@ import {
 import { EventSupportingChainT, IChainEventKind } from '../src';
 
 export function createNode() {
+  const port = process.env.EVENT_NODE_PORT || 8081;
   const app = express();
 
   // request body as JSON (Content-Type = application/json)
@@ -152,8 +153,8 @@ export function createNode() {
     }
   });
 
-  app.listen(8081, () => {
-    console.log(`Events node started at http://localhost:${8081}`);
+  app.listen(port, () => {
+    console.log(`Events node started at http://localhost:${port}`);
   });
 
   return app;
