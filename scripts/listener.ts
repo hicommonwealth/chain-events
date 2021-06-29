@@ -177,7 +177,7 @@ async function getTokenLists() {
 }
 
 // returns either the RabbitMQ config specified by the filepath or the default config
-function getRabbitMQConfig(filepath: string) {
+export function getRabbitMQConfig(filepath?: string) {
   if (typeof filepath == 'string' && filepath.length == 0) return config;
   else {
     try {
@@ -185,7 +185,6 @@ function getRabbitMQConfig(filepath: string) {
       return JSON.parse(raw.toString());
     } catch (error) {
       console.error(`Failed to load the configuration file at: ${filepath}`);
-      console.error(error);
       console.warn('Using default RabbitMQ configuration');
       return config;
     }
@@ -352,15 +351,11 @@ async function init() {
   }
 
   let cf = argv.config;
-  if (cf) {
-    for (const chain of cf) {
-      createListener(chain.network, chain);
-    }
-  } else {
-    createListener(argv.network, argv);
-  }
+  if (cf) for (const chain of cf) createListener(chain.network, chain);
+  else createListener(argv.network, argv);
 }
 
-init();
 export let eventNode;
-if (argv.node) eventNode = createNode();
+init().then(() => {
+  if (argv.eventNode) eventNode = createNode();
+});

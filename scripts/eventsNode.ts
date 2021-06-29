@@ -114,7 +114,7 @@ export function createNode() {
    */
   app.post('/setExcludedEvents', (req, res) => {
     const chain: EventSupportingChainT = req.body.chain;
-    const excludedEvents: IChainEventKind[] = req.body.spec;
+    const excludedEvents: IChainEventKind[] = req.body.excludedEvents;
 
     if (!chain || !excludedEvents) {
       res.status(400).send('ERROR - Chain or excluded events is not defined');

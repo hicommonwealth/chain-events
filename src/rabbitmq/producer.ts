@@ -1,32 +1,31 @@
 import Rascal from 'rascal';
 
-// import { factory, formatFilename } from '../logging';
-import { CWEvent, IChainEventKind, IEventHandler } from '../interfaces';
+import { CWEvent, IEventHandler } from '../interfaces';
 
-import config from './RabbitMQconfig.json';
 import { listenerArgs } from '../../scripts/listener';
-
-export interface StorageFilterConfig {
-  excludedEvents?: IChainEventKind[];
-}
 
 export interface IProducer extends IEventHandler {
   broker: Rascal.BrokerAsPromised;
-  filterConfig: StorageFilterConfig;
   init: () => Promise<void>;
 }
 
 export class Producer implements IProducer {
   public broker;
-  public filterConfig: StorageFilterConfig = {};
+  private _publisher;
+  private _vhost;
 
-  constructor(private readonly _rabbitMQConfig: {}) {
-    this._rabbitMQConfig = _rabbitMQConfig;
-    // if (!!_rabbitMQConfig) this._rabbitMQConfig = _rabbitMQConfig;
+  constructor(private readonly _rabbitMQConfig: any) {
+    // sets _vhost as the first vhost in the configuration passed
+    this._vhost =
+      _rabbitMQConfig.vhosts[Object.keys(_rabbitMQConfig.vhosts)[0]];
+
+    // sets the publisher as the first publisher in _vhost
+    this._publisher = Object.keys(this._vhost.publications)[0];
   }
 
   public async init(): Promise<void> {
-    const cnct = config.vhosts['/'].connection;
+    // this assumes the vhost is '/' --> change soon
+    const cnct = this._vhost.connection;
     console.info(
       `Rascal connecting to RabbitMQ: ${cnct.protocol}://${cnct.user}:*****@${cnct.hostname}:${cnct.port}/`
     );
@@ -55,7 +54,7 @@ export class Producer implements IProducer {
   public async handle(event: CWEvent): Promise<any> {
     if (Producer._shouldSkip(event)) return;
     try {
-      const publication = await this.broker.publish('eventsPub', event);
+      const publication = await this.broker.publish(this._publisher, event);
       publication.on('error', (err, messageId) => {
         console.error(`Publisher error ${err}, ${messageId}`);
       });
@@ -66,6 +65,5 @@ export class Producer implements IProducer {
 
   private static _shouldSkip(event: CWEvent): boolean {
     return !!listenerArgs[event.chain].excludedEvents.includes(event.data.kind);
-    // return !!this.filterConfig.excludedEvents?.includes(event.data.kind);
   }
 }

@@ -1,6 +1,6 @@
 [
   {
-    "network": "edgeware",
+    "network": "kusama",
     "url": "",
     "archival": false,
     "skipCatchup": true
