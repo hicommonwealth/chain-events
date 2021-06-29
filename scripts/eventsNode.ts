@@ -6,8 +6,9 @@ import {
   createListener,
 } from './listener';
 
-import { EventSupportingChainT, IChainEventKind } from '../src';
+import { IChainEventKind, isSupportedChain } from '../src';
 
+// TODO: setup the chain supported check as middleware
 export function createNode() {
   const port = process.env.EVENT_NODE_PORT || 8081;
   const app = express();
@@ -23,20 +24,22 @@ export function createNode() {
    * }
    */
   app.post('/updateSpec', async (req, res) => {
-    const chain: EventSupportingChainT = req.body.chain;
+    const chain = req.body.chain;
     const spec: {} = req.body.spec;
 
     if (!chain || !spec) {
-      res
+      return res
         .status(400)
         .json({ error: `${!chain ? 'chain' : 'spec'} is not defined` });
-      return;
     }
 
-    if (listenerArgs[chain] == null) {
-      res.status(400).json({ error: `No subscription to ${chain} found` });
-      return;
-    }
+    if (!isSupportedChain(chain))
+      return res.status(400).json({ error: `${chain} is not supported` });
+
+    if (listenerArgs[chain] == null)
+      return res
+        .status(400)
+        .json({ error: `No subscription to ${chain} found` });
 
     try {
       subscribers[chain].unsubscribe();
@@ -64,7 +67,7 @@ export function createNode() {
    * }
    */
   app.post('/addListener', (req, res) => {
-    const chain: EventSupportingChainT = req.body.chain;
+    const chain: string = req.body.chain;
     const options = req.body.options;
 
     if (!chain || !options) {
@@ -73,6 +76,9 @@ export function createNode() {
         .json({ error: `${!chain ? 'chain' : 'options'} is not defined` });
       return;
     }
+
+    if (!isSupportedChain(chain))
+      return res.status(400).json({ error: `${chain} is not supported` });
 
     if (subscribers[chain]) {
       res
@@ -97,12 +103,15 @@ export function createNode() {
    * }
    */
   app.post('/removeListener', (req, res) => {
-    const chain: EventSupportingChainT = req.body.chain;
+    const chain: string = req.body.chain;
 
     if (!chain) {
       res.status(400).json({ error: 'Chain is not defined' });
       return;
     }
+
+    if (!isSupportedChain(chain))
+      return res.status(400).json({ error: `${chain} is not supported` });
 
     if (listenerArgs[chain] == null) {
       res.status(400).json({ error: `No subscription to ${chain} found` });
@@ -128,7 +137,7 @@ export function createNode() {
    * }
    */
   app.post('/setExcludedEvents', (req, res) => {
-    const chain: EventSupportingChainT = req.body.chain;
+    const chain: string = req.body.chain;
     const excludedEvents: IChainEventKind[] = req.body.excludedEvents;
 
     if (!chain || !excludedEvents) {
@@ -137,6 +146,9 @@ export function createNode() {
         .json({ error: 'ERROR - Chain or excluded events is not defined' });
       return;
     }
+
+    if (!isSupportedChain(chain))
+      return res.status(400).json({ error: `${chain} is not supported` });
 
     if (listenerArgs[chain] == null) {
       res

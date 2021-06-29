@@ -10,7 +10,7 @@ import chai from 'chai';
 
 const { assert } = chai;
 
-describe('EventNode integration tests', () => {
+describe.only('EventNode integration tests', () => {
   let listenerOption = {
     network: 'polkadot',
     archival: false,
@@ -68,6 +68,18 @@ describe('EventNode integration tests', () => {
 
       return;
     });
+
+    it('should fail if the chain is not supported', async () => {
+      const res = await fetch('http://localhost:8081/addListener', {
+        method: 'POST',
+        body: JSON.stringify({
+          chain: 'some-random-chain',
+          options: listenerOption,
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      assert.equal(res.status, 400);
+    });
   });
 
   describe('Tests for updating specs', () => {
@@ -123,6 +135,22 @@ describe('EventNode integration tests', () => {
         method: 'POST',
         body: JSON.stringify({
           chain: 'kusama',
+          spec: spec,
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      assert.equal(res.status, 400);
+
+      return;
+    });
+
+    it('should fail if the chain is not supported', async () => {
+      const spec = await getSubstrateSpecs('polkadot');
+      const res = await fetch('http://localhost:8081/updateSpec', {
+        method: 'POST',
+        body: JSON.stringify({
+          chain: 'some-random-chain',
           spec: spec,
         }),
         headers: { 'Content-Type': 'application/json' },
@@ -191,6 +219,20 @@ describe('EventNode integration tests', () => {
       assert.equal(res.status, 400);
       return;
     });
+
+    it('should fail if the chain is not supported', async () => {
+      const res = await fetch('http://localhost:8081/setExcludedEvents', {
+        method: 'POST',
+        body: JSON.stringify({
+          chain: 'some-random-chain',
+          excludedEvents: ['random-test-event'],
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      assert.equal(res.status, 400);
+      return;
+    });
   });
 
   describe('Tests for removing a listener', () => {
@@ -203,6 +245,28 @@ describe('EventNode integration tests', () => {
       assert.equal(res.status, 200);
       assert.isUndefined(listenerArgs['polkadot']);
       assert.isUndefined(subscribers['polkadot']);
+
+      return;
+    });
+
+    it('should fail if the chain is not supported', async () => {
+      const res = await fetch('http://localhost:8081/removeListener', {
+        method: 'POST',
+        body: JSON.stringify({ chain: 'some-random-chain' }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      assert.equal(res.status, 400);
+
+      return;
+    });
+
+    it('should fail if the listener does not exist', async () => {
+      const res = await fetch('http://localhost:8081/removeListener', {
+        method: 'POST',
+        body: JSON.stringify({ chain: 'edgeware' }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      assert.equal(res.status, 400);
 
       return;
     });
