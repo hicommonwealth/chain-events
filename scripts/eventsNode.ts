@@ -4,9 +4,12 @@ import {
   subscribers,
   setupListener,
   createListener,
+  storageFetchers,
 } from './listener';
 
-import { IChainEventKind, isSupportedChain } from '../src';
+import { chainSupportedBy, IChainEventKind, isSupportedChain } from '../src';
+import { StorageFetcher } from '../src/substrate';
+import { EventChains as SubstrateEventChains } from '../src/substrate/types';
 
 // TODO: setup the chain supported check as middleware
 export function createNode() {
@@ -59,6 +62,7 @@ export function createNode() {
     }
   });
 
+  // should adding a listener also instantiate a new storageFetcher for supported chains?
   /**
    * Adds a listener to an active chain-events node.
    * {
@@ -162,6 +166,46 @@ export function createNode() {
       res.status(200).json({ message: 'Success' });
     } catch (error) {
       res.status(400).json(error);
+    }
+  });
+
+  // addressArr may be large so get request is not suitable
+  app.post('/getIdentity', async (req, res) => {
+    const chain: string = req.body.chain;
+    const addressArr: string[] = req.body.addresses;
+
+    if (!chain || !addressArr) {
+      res.status(400).json({
+        error: `The ${!chain ? 'chain' : 'address array'} is not defined`,
+      });
+      return;
+    }
+
+    if (subscribers[chain] == null) {
+      res
+        .status(400)
+        .json({ error: `ERROR - There is no active listener for ${chain}` });
+      return;
+    }
+
+    // This may change if supporting other chain identities
+    if (!chainSupportedBy(chain, SubstrateEventChains)) {
+      return res
+        .status(400)
+        .json({ message: `${chain} is not a Substrate chain` });
+    }
+
+    try {
+      if (!storageFetchers[chain])
+        storageFetchers[chain] = new StorageFetcher(subscribers[chain].api);
+
+      return res.status(200).json({
+        identityEvents: await storageFetchers[chain].fetchIdentities(
+          addressArr
+        ),
+      });
+    } catch (error) {
+      res.status(400).json({ error: error });
     }
   });
 

@@ -18,6 +18,7 @@ import { CloverSpec } from './specs/clover';
 // @ts-ignore
 import config from '../src/rabbitmq/RabbitMQconfig.json';
 
+import { StorageFetcher } from '../src/substrate';
 import {
   EventSupportingChains,
   EventSupportingChainT,
@@ -318,7 +319,10 @@ export async function setupListener(
  * @param chain The name of the chain to listen to
  * @param options An object containing the desired settings for the listener (see ReadMe.md)
  */
-export async function createListener(chain, options: any) {
+export async function createListener(
+  chain: EventSupportingChainT,
+  options: any
+) {
   listenerArgs[chain] = {
     archival: !!options.archival,
     startBlock: options.startBlock ?? 0,
@@ -329,9 +333,9 @@ export async function createListener(chain, options: any) {
     excludedEvents: options.excludedEvents || [],
   };
 
-  if (SubstrateChains.includes(chain)) {
+  if (chainSupportedBy(chain, SubstrateChains)) {
     try {
-      const newSpec = await getSubstrateSpecs(chain as EventSupportingChainT);
+      const newSpec = await getSubstrateSpecs(chain);
       if (newSpec?.types != undefined) listenerArgs[chain].spec = newSpec;
     } catch (error) {
       console.log(error);
@@ -339,17 +343,27 @@ export async function createListener(chain, options: any) {
   }
 
   try {
-    subscribers[chain] = await setupListener(
-      chain as EventSupportingChainT,
-      listenerArgs[chain]
-    );
+    subscribers[chain] = await setupListener(chain, listenerArgs[chain]);
   } catch (error) {
     console.log(error);
   }
 }
 
+export async function deleteListener(chain: EventSupportingChainT) {
+  try {
+    subscribers[chain].unsubscribe();
+    subscribers[chain] = undefined;
+    listenerArgs[chain] = undefined;
+    storageFetchers[chain] = undefined;
+    return;
+  } catch (error) {
+    return error;
+  }
+}
+
 export const listenerArgs: { [key: string]: IListenerOptions } = {};
 export const subscribers: { [key: string]: IEventSubscriber<any, any> } = {};
+export const storageFetchers: { [key: string]: StorageFetcher } = {};
 let producer: IProducer;
 
 async function init() {

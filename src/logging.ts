@@ -17,7 +17,6 @@ export const formatFilename = (name: string): string => {
   return t[t.length - 1];
 };
 
-// TODO: getting ChainEvents log factory already exists error when factory name is "ChainEvents"
 export const factory = LFService.createNamedLoggerFactory(
   'ChainEvents',
   options

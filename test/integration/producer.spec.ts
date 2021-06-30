@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import { listenerArgs } from '../../scripts/listener';
 
 // Assumes: A live local CW server, a live local RabbitMQ server
-describe.only('RabbitMQ producer integration tests', () => {
+describe('RabbitMQ producer integration tests', () => {
   let producer, consumer;
 
   it('should initialize a RabbitMQ producer with the default config', async function () {

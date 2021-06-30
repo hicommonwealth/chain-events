@@ -7,6 +7,7 @@ import {
 
 import fetch from 'node-fetch';
 import chai from 'chai';
+import { id } from 'ethers/utils';
 
 const { assert } = chai;
 
@@ -235,6 +236,71 @@ describe.only('EventNode integration tests', () => {
     });
   });
 
+  describe('Tests for getting chain identities', () => {
+    it('should return an array of chain identity events', async () => {
+      const res = await fetch('http://localhost:8081/getIdentity', {
+        method: 'POST',
+        body: JSON.stringify({
+          // this address belongs to a current council member - test will fail
+          // if he/she changes their chain identity details
+          chain: 'polkadot',
+          addresses: ['1629Shw6w88GnyXyyUbRtX7YFipQnjScGKcWr1BaRiMhvmAg'],
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      assert.equal(res.status, 200);
+
+      const identityEvents = (await res.json()).identityEvents;
+      assert.equal(identityEvents[0].data.kind, 'identity-set');
+      assert.equal(
+        identityEvents[0].data.who,
+        '1629Shw6w88GnyXyyUbRtX7YFipQnjScGKcWr1BaRiMhvmAg'
+      );
+      assert.equal(identityEvents[0].data.displayName, 'Patract');
+
+      return;
+    });
+
+    it('should fail if chain or addresses is null', async () => {
+      let res = await fetch('http://localhost:8081/getIdentity', {
+        method: 'POST',
+        body: JSON.stringify({
+          chain: 'polkadot',
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      assert.equal(res.status, 400);
+
+      res = await fetch('http://localhost:8081/getIdentity', {
+        method: 'POST',
+        body: JSON.stringify({
+          addressArr: ['1629Shw6w88GnyXyyUbRtX7YFipQnjScGKcWr1BaRiMhvmAg'],
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      assert.equal(res.status, 400);
+
+      return;
+    });
+
+    it('should fail if there is no listener for the given chain', async () => {
+      const res = await fetch('http://localhost:8081/getIdentity', {
+        method: 'POST',
+        body: JSON.stringify({
+          // this address belongs to a current council member - test will fail
+          // if he/she changes their chain identity details
+          chain: 'kusama',
+          addressArr: ['1629Shw6w88GnyXyyUbRtX7YFipQnjScGKcWr1BaRiMhvmAg'],
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      assert.equal(res.status, 400);
+
+      return;
+    });
+  });
+
+  // NOTE: THIS TEST SHOULD ALWAYS BE LAST AS IT REMOVES THE POLKADOT LISTENER
   describe('Tests for removing a listener', () => {
     it('Should remove an active listener', async () => {
       const res = await fetch('http://localhost:8081/removeListener', {
