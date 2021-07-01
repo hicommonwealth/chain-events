@@ -110,7 +110,7 @@ async function init() {
   else createListener(argv.network, argv);
 }
 
-// let eventNode;
-// init().then(() => {
-//   if (argv.eventNode) eventNode = createNode();
-// });
+let eventNode;
+init().then(() => {
+  if (argv.eventNode) eventNode = createNode();
+});
