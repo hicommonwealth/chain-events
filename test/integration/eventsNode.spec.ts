@@ -1,13 +1,11 @@
-import { createNode } from '../../scripts/eventsNode';
-import {
-  getSubstrateSpecs,
-  listenerArgs,
-  subscribers,
-} from '../../scripts/listener';
+import { createNode } from '../../src/eventsNode';
+import { getRabbitMQConfig } from '../../src/listener/util';
+import { listeners } from '../../src/listener';
 
 import fetch from 'node-fetch';
+// @ts-ignore
 import chai from 'chai';
-import { id } from 'ethers/utils';
+import { getSubstrateSpecs } from '../../src/listener/util';
 
 const { assert } = chai;
 
@@ -30,7 +28,7 @@ describe.only('EventNode integration tests', () => {
       assert.equal(res.status, 200);
 
       // TODO: test spec
-      let la = listenerArgs['polkadot'];
+      let la = listeners['polkadot'].args;
       assert.equal(la.archival, false);
       assert.equal(la.startBlock, 0);
       assert.equal(la.url, 'wss://rpc.polkadot.io');
@@ -101,7 +99,7 @@ describe.only('EventNode integration tests', () => {
 
       assert.equal(res.status, 200);
       //@ts-ignore
-      assert.isTrue(listenerArgs['polkadot'].spec.fakeSpec);
+      assert.isTrue(listeners['polkadot'].args.spec.fakeSpec);
 
       return;
     });
@@ -176,7 +174,7 @@ describe.only('EventNode integration tests', () => {
 
       assert.equal(res.status, 200);
       assert.equal(
-        listenerArgs['polkadot'].excludedEvents[0],
+        listeners['polkadot'].args.excludedEvents[0],
         'random-test-event'
       );
 
@@ -309,9 +307,7 @@ describe.only('EventNode integration tests', () => {
         headers: { 'Content-Type': 'application/json' },
       });
       assert.equal(res.status, 200);
-      assert.isUndefined(listenerArgs['polkadot']);
-      assert.isUndefined(subscribers['polkadot']);
-
+      assert.isUndefined(listeners['polkadot']);
       return;
     });
 

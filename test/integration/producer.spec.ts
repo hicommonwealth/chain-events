@@ -1,11 +1,11 @@
 import { Producer } from '../../src/rabbitmq/producer';
-import { getRabbitMQConfig } from '../../scripts/listener';
+import { getRabbitMQConfig } from '../../src/listener/util';
 import Rascal from 'rascal';
 import { assert } from 'chai';
-import { listenerArgs } from '../../scripts/listener';
+import { listeners } from '../../src/listener';
 
 // Assumes: A live local CW server, a live local RabbitMQ server
-describe('RabbitMQ producer integration tests', () => {
+describe.only('RabbitMQ producer integration tests', () => {
   let producer, consumer;
 
   it('should initialize a RabbitMQ producer with the default config', async function () {
@@ -48,15 +48,17 @@ describe('RabbitMQ producer integration tests', () => {
       assert.equal(content.received, 123);
     });
 
-    listenerArgs['polkadot'] = {
-      archival: false,
-      contract: undefined,
-      // @ts-ignore
-      excludedEvents: ['skip'],
-      skipCatchup: false,
-      spec: undefined,
-      startBlock: 0,
-      url: '',
+    listeners['polkadot'] = {
+      args: {
+        archival: false,
+        contract: undefined,
+        // @ts-ignore
+        excludedEvents: ['skip'],
+        skipCatchup: false,
+        spec: undefined,
+        startBlock: 0,
+        url: '',
+      },
     };
 
     producer.handle({

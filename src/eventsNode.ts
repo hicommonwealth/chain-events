@@ -1,15 +1,13 @@
 import express from 'express';
-import {
-  listenerArgs,
-  subscribers,
-  setupListener,
-  createListener,
-  storageFetchers,
-} from './listener';
+import { createListener } from './listener/createListener';
+import { setupListener } from './listener/setupListener';
+import { listeners } from './listener';
 
-import { chainSupportedBy, IChainEventKind, isSupportedChain } from '../src';
-import { StorageFetcher } from '../src/substrate';
-import { EventChains as SubstrateEventChains } from '../src/substrate/types';
+import { chainSupportedBy, IChainEventKind, isSupportedChain } from './index';
+import { StorageFetcher } from './substrate';
+import { EventChains as SubstrateEventChains } from './substrate/types';
+
+import { deleteListener } from './listener/util';
 
 // TODO: setup the chain supported check as middleware
 export function createNode() {
@@ -39,20 +37,23 @@ export function createNode() {
     if (!isSupportedChain(chain))
       return res.status(400).json({ error: `${chain} is not supported` });
 
-    if (listenerArgs[chain] == null)
+    if (listeners[chain] == null)
       return res
         .status(400)
         .json({ error: `No subscription to ${chain} found` });
 
     try {
-      subscribers[chain].unsubscribe();
+      listeners[chain].subscriber.unsubscribe();
 
       // turn on catchup in order to retrieve events not collected during downtime
-      listenerArgs[chain].skipCatchup = false;
+      listeners[chain].args.skipCatchup = false;
 
-      listenerArgs[chain].spec = spec;
+      listeners[chain].args.spec = spec;
 
-      subscribers[chain] = await setupListener(chain, listenerArgs[chain]);
+      listeners[chain].subscriber = await setupListener(
+        chain,
+        listeners[chain].args
+      );
       res.status(200).json({ message: 'Success' });
       return;
     } catch (error) {
@@ -84,7 +85,7 @@ export function createNode() {
     if (!isSupportedChain(chain))
       return res.status(400).json({ error: `${chain} is not supported` });
 
-    if (subscribers[chain]) {
+    if (listeners[chain]?.subscriber) {
       res
         .status(400)
         .json({ error: `Listener for ${chain} is already active` });
@@ -117,15 +118,13 @@ export function createNode() {
     if (!isSupportedChain(chain))
       return res.status(400).json({ error: `${chain} is not supported` });
 
-    if (listenerArgs[chain] == null) {
+    if (listeners[chain] == null) {
       res.status(400).json({ error: `No subscription to ${chain} found` });
       return;
     }
 
     try {
-      subscribers[chain].unsubscribe();
-      subscribers[chain] = undefined;
-      listenerArgs[chain] = undefined;
+      deleteListener(chain);
       res.status(200).json({ message: 'Success' });
     } catch (error) {
       res.status(400).json({ error: error });
@@ -154,7 +153,7 @@ export function createNode() {
     if (!isSupportedChain(chain))
       return res.status(400).json({ error: `${chain} is not supported` });
 
-    if (listenerArgs[chain] == null) {
+    if (listeners[chain] == null) {
       res
         .status(400)
         .json({ error: `ERROR - There is no active listener for ${chain}` });
@@ -162,7 +161,7 @@ export function createNode() {
     }
 
     try {
-      listenerArgs[chain].excludedEvents = excludedEvents;
+      listeners[chain].args.excludedEvents = excludedEvents;
       res.status(200).json({ message: 'Success' });
     } catch (error) {
       res.status(400).json(error);
@@ -181,7 +180,7 @@ export function createNode() {
       return;
     }
 
-    if (subscribers[chain] == null) {
+    if (listeners[chain]?.subscriber == null) {
       res
         .status(400)
         .json({ error: `ERROR - There is no active listener for ${chain}` });
@@ -196,11 +195,13 @@ export function createNode() {
     }
 
     try {
-      if (!storageFetchers[chain])
-        storageFetchers[chain] = new StorageFetcher(subscribers[chain].api);
+      if (!listeners[chain].storageFetcher)
+        listeners[chain].storageFetcher = new StorageFetcher(
+          listeners[chain].subscriber.api
+        );
 
       return res.status(200).json({
-        identityEvents: await storageFetchers[chain].fetchIdentities(
+        identityEvents: await listeners[chain].storageFetcher.fetchIdentities(
           addressArr
         ),
       });

@@ -2,7 +2,7 @@ import Rascal from 'rascal';
 
 import { CWEvent, IEventHandler } from '../interfaces';
 
-import { listenerArgs } from '../../scripts/listener';
+import { listeners } from '../listener';
 
 export interface IProducer extends IEventHandler {
   broker: Rascal.BrokerAsPromised;
@@ -64,6 +64,8 @@ export class Producer implements IProducer {
   }
 
   private static _shouldSkip(event: CWEvent): boolean {
-    return !!listenerArgs[event.chain].excludedEvents.includes(event.data.kind);
+    return !!listeners[event.chain].args.excludedEvents.includes(
+      event.data.kind
+    );
   }
 }

@@ -18,6 +18,7 @@
     "test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts ./test/unit/**/*.spec.ts",
     "lint": "eslint src/ test/",
     "listen": "ts-node -T ./scripts/listener.ts",
+    "start-node": "ts-node -T scripts/startNode.ts",
     "listen-archival": "ts-node -T ./scripts/listener.ts -n edgeware-local -a true",
     "scrape": "ts-node -T ./scripts/scraper.ts",
     "ganache": "ganache-cli -m \"Alice\" -p 9545 -l 800000000 --allowUnlimitedContractSize",
