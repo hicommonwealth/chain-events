@@ -4,8 +4,8 @@ import { setupListener } from './listener/setupListener';
 import { listeners } from './listener';
 
 import { chainSupportedBy, IChainEventKind, isSupportedChain } from './index';
-import { StorageFetcher } from './substrate';
-import { EventChains as SubstrateEventChains } from './substrate/types';
+import { StorageFetcher } from './chains/substrate';
+import { EventChains as SubstrateEventChains } from './chains/substrate/types';
 
 import { deleteListener } from './listener/util';
 

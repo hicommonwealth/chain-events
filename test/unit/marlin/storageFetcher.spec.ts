@@ -1,8 +1,8 @@
 import chai from 'chai';
 import { BigNumber } from 'ethers/utils';
 
-import { StorageFetcher } from '../../../src/marlin/storageFetcher';
-import { EventKind, Proposal } from '../../../src/marlin/types';
+import { StorageFetcher } from '../../../src/chains/marlin/storageFetcher';
+import { EventKind, Proposal } from '../../../src/chains/marlin/types';
 import { MPond } from '../../../eth/types/MPond';
 import { GovernorAlpha } from '../../../eth/types/GovernorAlpha';
 import { Timelock } from '../../../eth/types/Timelock';

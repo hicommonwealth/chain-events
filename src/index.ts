@@ -1,9 +1,9 @@
 export * from './interfaces';
-export * as MolochEvents from './moloch/index';
-export * as MolochTypes from './moloch/types';
-export * as MarlinEvents from './marlin/index';
-export * as MarlinTypes from './marlin/types';
-export * as SubstrateEvents from './substrate/index';
-export * as SubstrateTypes from './substrate/types';
-export * as Erc20Events from './erc20/index';
-export * as Erc20Types from './erc20/types';
+export * as MolochEvents from './chains/moloch/index';
+export * as MolochTypes from './chains/moloch/types';
+export * as MarlinEvents from './chains/marlin/index';
+export * as MarlinTypes from './chains/marlin/types';
+export * as SubstrateEvents from './chains/substrate/index';
+export * as SubstrateTypes from './chains/substrate/types';
+export * as Erc20Events from './chains/erc20/index';
+export * as Erc20Types from './chains/erc20/types';

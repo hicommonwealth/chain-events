@@ -12,7 +12,7 @@ import {
   MolochEvents,
   SubstrateEvents,
 } from '../index';
-import { EventKind as SubstrateEventKind } from '../substrate/types';
+import { EventKind as SubstrateEventKind } from '../chains/substrate/types';
 import { getTokenLists, StandaloneEventHandler } from './util';
 
 /**

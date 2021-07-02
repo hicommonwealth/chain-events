@@ -1,7 +1,7 @@
 import chai from 'chai';
 
-import { Processor } from '../../../src/marlin/processor';
-import { Api, RawEvent, EventKind } from '../../../src/marlin/types';
+import { Processor } from '../../../src/chains/marlin/processor';
+import { Api, RawEvent, EventKind } from '../../../src/chains/marlin/types';
 
 const { assert } = chai;
 

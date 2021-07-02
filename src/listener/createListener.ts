@@ -1,6 +1,6 @@
 import { chainSupportedBy, EventSupportingChainT } from '../interfaces';
 import { listeners } from './index';
-import { EventChains as SubstrateChains } from '../substrate/types';
+import { EventChains as SubstrateChains } from '../chains/substrate/types';
 
 import { getSubstrateSpecs } from './util';
 import { setupListener } from './setupListener';
@@ -50,14 +50,14 @@ export const contracts = {
  */
 export async function createListener(
   chain: EventSupportingChainT,
-  options: any
+  options: { [key: string]: any }
 ) {
   listeners[chain] = {
     args: {
       archival: !!options.archival,
       startBlock: options.startBlock ?? 0,
       url: options.url || networkUrls[chain],
-      spec: networkSpecs[chain] || {},
+      spec: options.spec || networkSpecs[chain] || {},
       contract: options.contractAddress || contracts[chain],
       skipCatchup: !!options.skipCatchup,
       excludedEvents: options.excludedEvents || [],

@@ -2,12 +2,12 @@
  * Defines general interfaces for chain event fetching and processing.
  */
 
-import * as SubstrateTypes from './substrate/types';
-import * as MolochTypes from './moloch/types';
-import * as MarlinTypes from './marlin/types';
-import * as Erc20Types from './erc20/types';
+import * as SubstrateTypes from './chains/substrate/types';
+import * as MolochTypes from './chains/moloch/types';
+import * as MarlinTypes from './chains/marlin/types';
+import * as Erc20Types from './chains/erc20/types';
 import { RegisteredTypes } from '@polkadot/types/types';
-import { StorageFetcher } from './substrate';
+import { StorageFetcher } from './chains/substrate';
 
 // add other events here as union types
 export type IChainEntityKind =
