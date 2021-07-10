@@ -1,11 +1,12 @@
-import { listeners } from '../src/listener';
+import { listeners, startProducer } from '../src/listener';
 import { createListener } from '../src/listener/createListener';
-import { deleteListener } from '../src/listener/util';
+import { deleteListener, getRabbitMQConfig } from '../src/listener/util';
 import { factory, formatFilename } from '../src/logging';
 import { StorageFetcher } from '../src/chains/substrate';
 import Identity from '../src/identity';
 import { Pool } from 'pg';
 import _ from 'underscore';
+import { producer } from '../src/listener';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -17,6 +18,10 @@ export const DATABASE_URI =
   !process.env.DATABASE_URL || process.env.NODE_ENV === 'development'
     ? 'postgresql://commonwealth:edgeware@localhost/commonwealth'
     : process.env.DATABASE_URL;
+
+const envIden = process.env.HANDLE_Identity;
+export const HANDLE_IDENTITY =
+  envIden === 'publish' || envIden === 'handle' ? envIden : null;
 
 // The number of minutes to wait between each run -- rounded to the nearest whole number
 export const REPEAT_TIME = Math.round(Number(process.env.REPEAT_TIME)) || 10;
@@ -39,7 +44,6 @@ async function dbNodeProcess() {
     (chain, index) =>
       index % NUM_CHAIN_EVENT_NODES === CHAIN_EVENTS_WORKER_NUMBER
   );
-  // const myChains = myChainData.map((x) => x.id);
 
   // initialize listeners first (before dealing with identity)
   // TODO: fork off listeners as their own processes if needed (requires major changes to listener/handler structure)
@@ -53,7 +57,7 @@ async function dbNodeProcess() {
         skipCatchup: false,
       });
     }
-    // check for updated specs and restarted the listener if there are
+    // restart the listener if specs were updated
     else {
       if (!_.isEqual(chain.spec, listeners[chain.id].args.spec)) {
         deleteListener(chain.id);
@@ -65,6 +69,12 @@ async function dbNodeProcess() {
         });
       }
     }
+  }
+
+  if (HANDLE_IDENTITY == null) {
+    await pool.end();
+    log.info('Finished scheduled process.');
+    return;
   }
 
   // loop through chains again this time dealing with identity
@@ -95,12 +105,17 @@ async function dbNodeProcess() {
     // if no identity events are found the go to next chain
     if (identityEvents.length == 0) continue;
 
-    // initialize identity handler
-    const identityHandler = new Identity(chain.id, pool);
+    if (HANDLE_IDENTITY === 'handle') {
+      // initialize identity handler
+      const identityHandler = new Identity(chain.id, pool);
 
-    await Promise.all(
-      identityEvents.map((e) => identityHandler.handle(e, null))
-    );
+      await Promise.all(
+        identityEvents.map((e) => identityHandler.handle(e, null))
+      );
+    } else if (HANDLE_IDENTITY === 'publish') {
+      for (const e of identityEvents)
+        await producer.customPublish(e, 'identityPub');
+    }
 
     query = `DELETE * FROM "IdentityCache" WHERE "chain"=(eChain) VALUE($1);`;
     await pool.query(query, [chain]);
@@ -108,11 +123,17 @@ async function dbNodeProcess() {
 
   await pool.end();
   log.info('Finished scheduled process.');
+  return;
 }
 
 // begin process
 log.info('db-node initialization');
-dbNodeProcess().then(() => {
-  // first run may take some time so start the clock after its done
-  setInterval(dbNodeProcess, REPEAT_TIME * 60000);
-});
+
+startProducer(getRabbitMQConfig())
+  .then(() => {
+    return dbNodeProcess();
+  })
+  .then(() => {
+    // first run may take some time so start the clock after its done
+    setInterval(dbNodeProcess, REPEAT_TIME * 60000);
+  });

@@ -7,11 +7,12 @@ import { listeners } from '../listener';
 export interface IProducer extends IEventHandler {
   broker: Rascal.BrokerAsPromised;
   init: () => Promise<void>;
+  customPublish: (data: any, publisherName: string) => Promise<void>;
 }
 
 export class Producer implements IProducer {
   public broker;
-  private readonly _publisher;
+  private readonly _publishers;
   private _vhost;
 
   constructor(private readonly _rabbitMQConfig: any) {
@@ -19,8 +20,8 @@ export class Producer implements IProducer {
     this._vhost =
       _rabbitMQConfig.vhosts[Object.keys(_rabbitMQConfig.vhosts)[0]];
 
-    // sets the publisher as the first publisher in _vhost
-    this._publisher = Object.keys(this._vhost.publications)[0];
+    // array of publishers
+    this._publishers = Object.keys(this._vhost.publications);
   }
 
   public async init(): Promise<void> {
@@ -51,10 +52,25 @@ export class Producer implements IProducer {
     });
   }
 
+  // handler method used by the chain-event listeners/subscribers
   public async handle(event: CWEvent): Promise<any> {
     if (Producer._shouldSkip(event)) return;
     try {
-      const publication = await this.broker.publish(this._publisher, event);
+      const publication = await this.broker.publish(this._publishers[0], event);
+      publication.on('error', (err, messageId) => {
+        console.error(`Publisher error ${err}, ${messageId}`);
+      });
+    } catch (err) {
+      throw new Error(`Rascal config error: ${err.message}`);
+    }
+  }
+
+  public async customPublish(data: any, publisherName: string): Promise<any> {
+    if (!this._publishers[publisherName])
+      throw new Error('Publisher is not defined');
+
+    try {
+      const publication = await this.broker.publish(publisherName, data);
       publication.on('error', (err, messageId) => {
         console.error(`Publisher error ${err}, ${messageId}`);
       });
