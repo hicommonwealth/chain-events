@@ -1,27 +1,16 @@
 import { SubstrateTypes } from 'index';
 import { CWEvent, IChainEventData, IEventHandler } from './interfaces';
-import { Pool } from 'pg';
 import _ from 'underscore';
 
 export default class extends IEventHandler {
-  private client;
+  private _pool;
 
-  constructor(private readonly _models, private readonly _chain: string) {
+  constructor(private readonly _chain: string, private readonly pool) {
     super();
+    this._pool = pool;
   }
 
-  public async init(): Promise<void> {
-    const pool = new Pool();
-    this.client = await pool.connect();
-  }
-
-  public closeClient(): void {
-    // EXTREMELY important to remember to use this once the handler instance is
-    // no longer being used
-    this.client.release();
-  }
-
-  /**
+  /**pg
    * Handles an identity-related event by writing the corresponding update into
    * the database.
    */
@@ -36,18 +25,16 @@ export default class extends IEventHandler {
       return dbEvent;
     }
 
-    if (!this.client) {
+    if (!this._pool) {
       console.info('PG client not initialized');
       return dbEvent;
     }
 
     try {
-      await this.client.query('BEGIN');
-
       // fetch OffchainProfile corresponding to address
       const { who } = event.data;
 
-      const profiles = await this.client.query(
+      const profiles = await this._pool.query(
         `SELECT * FROM "Addresses" WHERE "address"=(eAddress) AND "chain"=(eChain) VALUES($1, $2)`,
         [who, this._chain]
       );
@@ -56,7 +43,7 @@ export default class extends IEventHandler {
 
       // update profile data depending on event
       if (event.data.kind === SubstrateTypes.EventKind.IdentitySet) {
-        await this.client.query(
+        await this._pool.query(
           `UPDATE "OffchainProfiles" SET "identity"=(eIdentity), "judgements"=(eJudgement) WHERE "address_id"=(eAddressId) VALUES($1, $2, $3)`,
           [
             event.data.displayName,
@@ -82,7 +69,7 @@ export default class extends IEventHandler {
           return dbEvent;
         }
 
-        await this.client.query(
+        await this._pool.query(
           `UPDATE "OffchainProfiles" SET "judgements"=(eJudgements) WHERE "address_id"=(eAddressId) VALUES($1, $2)`,
           [
             { [event.data.registrar]: event.data.judgement },
@@ -90,19 +77,15 @@ export default class extends IEventHandler {
           ]
         );
       } else {
-        await this.client.query(
+        await this._pool.query(
           `UPDATE "OffchainProfiles" SET "identity"=(eIdentity),"judgements"=(eJudgements) WHERE "address_id"=(eAddressId) VALUES($1, $2, $3)`,
           [null, null, profiles[0].address_id]
         );
       }
-
-      await this.client.query('COMMIT');
     } catch (error) {
-      await this.client.query('ROLLBACK');
       throw error;
     }
 
-    // TODO: remove row from identity cache table
     return dbEvent;
   }
 }

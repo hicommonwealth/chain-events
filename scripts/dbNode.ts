@@ -2,10 +2,12 @@ import { listeners } from '../src/listener';
 import { createListener } from '../src/listener/createListener';
 import { deleteListener } from '../src/listener/util';
 import { factory, formatFilename } from '../src/logging';
+import { StorageFetcher } from '../src/chains/substrate';
+import Identity from '../src/identity';
+import { Pool } from 'pg';
+import _ from 'underscore';
 
 const log = factory.getLogger(formatFilename(__filename));
-
-const { Client } = require('pg');
 
 export const CHAIN_EVENTS_WORKER_NUMBER: number =
   Number(process.env.WORKER_NUMBER) || 0;
@@ -19,70 +21,45 @@ export const DATABASE_URI =
 // The number of minutes to wait between each run -- rounded to the nearest whole number
 export const REPEAT_TIME = Math.round(Number(process.env.REPEAT_TIME)) || 10;
 
-const client = new Client({
-  connectionString: DATABASE_URI,
-});
-
-async function pollDatabase(queries: string[]): Promise<any[]> {
-  try {
-    log.info('Connecting to the database');
-    await client.connect();
-  } catch (err) {
-    log.error('A connection error occurred\n', err);
-    return;
-  }
-
-  const res = [];
-  try {
-    for (const query of queries) res.push(await client.query(query));
-  } catch (error) {
-    log.error('An error occurred while querying the database', error);
-    throw error;
-  } finally {
-    await client.end();
-  }
-
-  log.info('Queries complete and connection closed.');
-  return res;
-}
-
 // TODO: API-WS from infinitely attempting reconnection i.e. mainnet1
 async function dbNodeProcess() {
-  const queries = [
-    `SELECT "Chains"."id", "substrate_spec", "url", "ChainNodes"."chain" FROM "Chains" JOIN "ChainNodes" ON "Chains"."id"="ChainNodes"."chain" WHERE "Chains"."has_chain_events_listener"='true';`,
-    // `SELECT * FROM "Addresses" WHERE "created_at" > current_timestamp - interval '${REPEAT_TIME} minutes';`,
-    // `SELECT "address" FROM "Addresses" WHERE "fetchedOnChainProfile"=false;`,
-    `SELECT * FROM "IdentityCache";`, // TODO: filter for myChains if possible
-  ];
+  const pool = new Pool({
+    connectionString: DATABASE_URI,
+  });
 
-  const res = await pollDatabase(queries);
-  const chains = res[0].rows;
-  const identitiesToFetch = res[1].rows;
-  const myChainData = chains.filter(
+  pool.on('error', (err, client) => {
+    console.error('Unexpected error on idle client', err);
+    // TODO: handle this
+  });
+
+  let query = `SELECT "Chains"."id", "substrate_spec", "url", "ChainNodes"."chain" FROM "Chains" JOIN "ChainNodes" ON "Chains"."id"="ChainNodes"."chain" WHERE "Chains"."has_chain_events_listener"='true';`;
+
+  const allChains = (await pool.query(query))[0].rows;
+  const myChainData = allChains.filter(
     (chain, index) =>
       index % NUM_CHAIN_EVENT_NODES === CHAIN_EVENTS_WORKER_NUMBER
   );
-  const myChains = myChainData.map((x) => x.id);
+  // const myChains = myChainData.map((x) => x.id);
 
+  // initialize listeners first (before dealing with identity)
   // TODO: fork off listeners as their own processes if needed (requires major changes to listener/handler structure)
   for (const chain of myChainData) {
     // start listeners that aren't already active
     if (!listeners[chain.id]) {
       await createListener(chain.id, {
         archival: false,
-        url: chains.url,
+        url: chain.url,
         spec: chain.spec,
         skipCatchup: false,
       });
     }
     // check for updated specs and restarted the listener if there are
     else {
-      // TODO: fix this comparison
-      if (chain.spec != listeners[chain.id].args.spec) {
+      if (!_.isEqual(chain.spec, listeners[chain.id].args.spec)) {
         deleteListener(chain.id);
         await createListener(chain.id, {
           archival: false,
-          url: chains.url,
+          url: chain.url,
           spec: chain.spec,
           skipCatchup: false,
         });
@@ -90,24 +67,52 @@ async function dbNodeProcess() {
     }
   }
 
-  for (const identity of identitiesToFetch) {
-    if (myChains.includes(identity.chain)) {
-      // TODO: initialize storageFetcher in createListener
-      let identityEvents = await listeners[
-        identity.chain
-      ].storageFetcher.fetchIdentities([]);
+  // loop through chains again this time dealing with identity
+  for (const chain of myChainData) {
+    // fetch identities to fetch on this chain
+    query = `SELECT * FROM "IdentityCache" WHERE "chain"=(eChain) VALUE($1);`;
 
-      // TODO: handle the identity events
-      for (const event of identityEvents) {
+    const identitiesToFetch = (await pool.query(query, [chain]))[0].rows.map(
+      (c) => {
+        c.address;
       }
+    );
 
-      // TODO: clear the identity cache of the rows that were successfully processed
-    }
+    // if no identities are cached go to next chain
+    if (identitiesToFetch.length == 0) continue;
+
+    // initialize storage fetcher if it doesn't exist
+    if (!listeners[chain.id].storageFetcher)
+      listeners[chain.id].storageFetcher = new StorageFetcher(
+        listeners[chain.id].subscriber.api
+      );
+
+    // get identity events
+    let identityEvents = await listeners[
+      chain.id
+    ].storageFetcher.fetchIdentities([]);
+
+    // if no identity events are found the go to next chain
+    if (identityEvents.length == 0) continue;
+
+    // initialize identity handler
+    const identityHandler = new Identity(chain.id, pool);
+
+    await Promise.all(
+      identityEvents.map((e) => identityHandler.handle(e, null))
+    );
+
+    query = `DELETE * FROM "IdentityCache" WHERE "chain"=(eChain) VALUE($1);`;
+    await pool.query(query, [chain]);
   }
+
+  await pool.end();
   log.info('Finished scheduled process.');
 }
 
 // begin process
 log.info('db-node initialization');
-dbNodeProcess();
-setInterval(dbNodeProcess, REPEAT_TIME * 60000);
+dbNodeProcess().then(() => {
+  // first run may take some time so start the clock after its done
+  setInterval(dbNodeProcess, REPEAT_TIME * 60000);
+});
