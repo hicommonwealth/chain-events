@@ -64,7 +64,8 @@ export async function createListener(
     },
   };
 
-  if (chainSupportedBy(chain, SubstrateChains)) {
+  // only retrieve specs if it isn't specified in options
+  if (!options.spec && chainSupportedBy(chain, SubstrateChains)) {
     try {
       const newSpec = await getSubstrateSpecs(chain);
       if (newSpec?.types != undefined) listeners[chain].args.spec = newSpec;

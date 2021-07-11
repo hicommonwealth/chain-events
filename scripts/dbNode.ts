@@ -7,19 +7,17 @@ import Identity from '../src/identity';
 import { Pool } from 'pg';
 import _ from 'underscore';
 import { producer } from '../src/listener';
+import format from 'pg-format';
 
 const log = factory.getLogger(formatFilename(__filename));
-
-export const CHAIN_EVENTS_WORKER_NUMBER: number =
-  Number(process.env.WORKER_NUMBER) || 0;
-export const NUM_CHAIN_EVENT_NODES: number =
-  Number(process.env.NUM_CHAIN_EVENT_NODES) || 1;
+export const WORKER_NUMBER: number = Number(process.env.WORKER_NUMBER) || 0;
+export const NUM_WORKERS: number = Number(process.env.NUM_WORKERS) || 1;
 export const DATABASE_URI =
   !process.env.DATABASE_URL || process.env.NODE_ENV === 'development'
     ? 'postgresql://commonwealth:edgeware@localhost/commonwealth'
     : process.env.DATABASE_URL;
 
-const envIden = process.env.HANDLE_Identity;
+const envIden = process.env.HANDLE_IDENTITY;
 export const HANDLE_IDENTITY =
   envIden === 'publish' || envIden === 'handle' ? envIden : null;
 
@@ -39,10 +37,9 @@ async function dbNodeProcess() {
 
   let query = `SELECT "Chains"."id", "substrate_spec", "url", "ChainNodes"."chain" FROM "Chains" JOIN "ChainNodes" ON "Chains"."id"="ChainNodes"."chain" WHERE "Chains"."has_chain_events_listener"='true';`;
 
-  const allChains = (await pool.query(query))[0].rows;
+  const allChains = (await pool.query(query)).rows;
   const myChainData = allChains.filter(
-    (chain, index) =>
-      index % NUM_CHAIN_EVENT_NODES === CHAIN_EVENTS_WORKER_NUMBER
+    (chain, index) => index % NUM_WORKERS === WORKER_NUMBER
   );
 
   // initialize listeners first (before dealing with identity)
@@ -50,6 +47,7 @@ async function dbNodeProcess() {
   for (const chain of myChainData) {
     // start listeners that aren't already active
     if (!listeners[chain.id]) {
+      log.info(`Starting listener for ${chain.id}...`);
       await createListener(chain.id, {
         archival: false,
         url: chain.url,
@@ -60,6 +58,7 @@ async function dbNodeProcess() {
     // restart the listener if specs were updated
     else {
       if (!_.isEqual(chain.spec, listeners[chain.id].args.spec)) {
+        log.info(`Spec for ${chain} changed... restarting listener`);
         deleteListener(chain.id);
         await createListener(chain.id, {
           archival: false,
@@ -79,17 +78,21 @@ async function dbNodeProcess() {
 
   // loop through chains again this time dealing with identity
   for (const chain of myChainData) {
+    log.info(`Fetching identities on ${chain.id}`);
     // fetch identities to fetch on this chain
-    query = `SELECT * FROM "IdentityCache" WHERE "chain"=(eChain) VALUE($1);`;
-
-    const identitiesToFetch = (await pool.query(query, [chain]))[0].rows.map(
-      (c) => {
-        c.address;
-      }
+    query = format(
+      `SELECT * FROM "IdentityCaches" WHERE "chain"=%L;`,
+      chain.id
+    );
+    const identitiesToFetch = (await pool.query(query)).rows.map(
+      (c) => c.address
     );
 
     // if no identities are cached go to next chain
-    if (identitiesToFetch.length == 0) continue;
+    if (identitiesToFetch.length == 0) {
+      log.info(`No identities to fetch for ${chain.id}`);
+      continue;
+    }
 
     // initialize storage fetcher if it doesn't exist
     if (!listeners[chain.id].storageFetcher)
@@ -100,10 +103,13 @@ async function dbNodeProcess() {
     // get identity events
     let identityEvents = await listeners[
       chain.id
-    ].storageFetcher.fetchIdentities([]);
+    ].storageFetcher.fetchIdentities(identitiesToFetch);
 
     // if no identity events are found the go to next chain
-    if (identityEvents.length == 0) continue;
+    if (identityEvents.length == 0) {
+      log.info(`No identity events for ${chain.id}`);
+      continue;
+    }
 
     if (HANDLE_IDENTITY === 'handle') {
       // initialize identity handler
@@ -117,8 +123,10 @@ async function dbNodeProcess() {
         await producer.customPublish(e, 'identityPub');
     }
 
-    query = `DELETE * FROM "IdentityCache" WHERE "chain"=(eChain) VALUE($1);`;
-    await pool.query(query, [chain]);
+    query = format(`DELETE FROM "IdentityCaches" WHERE "chain"=%L;`, chain.id);
+    await pool.query(query);
+
+    log.info(`Identity cache for ${chain.id} cleared`);
   }
 
   await pool.end();
@@ -129,7 +137,10 @@ async function dbNodeProcess() {
 // begin process
 log.info('db-node initialization');
 
-startProducer(getRabbitMQConfig())
+// if we need to publish identity events to a queue use the appropriate config file
+let rbbtMqConfig =
+  HANDLE_IDENTITY == 'publish' ? './WithIdentityQueueConfig.json' : null;
+startProducer(getRabbitMQConfig(rbbtMqConfig))
   .then(() => {
     return dbNodeProcess();
   })

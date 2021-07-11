@@ -30,6 +30,7 @@ export function deleteListener(chain: EventSupportingChainT) {
 // returns either the RabbitMQ config specified by the filepath or the default config
 export function getRabbitMQConfig(filepath?: string) {
   if (typeof filepath == 'string' && filepath.length == 0) return config;
+  else if (filepath == undefined) return config;
   else {
     try {
       let raw = fs.readFileSync(filepath);

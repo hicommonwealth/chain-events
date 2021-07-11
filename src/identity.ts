@@ -1,6 +1,7 @@
-import { SubstrateTypes } from 'index';
+import { Types as SubstrateTypes } from '../src/chains/substrate/index';
 import { CWEvent, IChainEventData, IEventHandler } from './interfaces';
 import _ from 'underscore';
+import { format } from 'pg-format';
 
 export default class extends IEventHandler {
   private _pool;
@@ -34,23 +35,24 @@ export default class extends IEventHandler {
       // fetch OffchainProfile corresponding to address
       const { who } = event.data;
 
-      const profiles = await this._pool.query(
-        `SELECT * FROM "Addresses" WHERE "address"=(eAddress) AND "chain"=(eChain) VALUES($1, $2)`,
-        [who, this._chain]
+      let query = format(
+        `SELECT * FROM "Addresses" WHERE "address"=%L AND "chain"=%L;`,
+        who,
+        this._chain
       );
+      const profiles = await this._pool.query(query);
 
       if (profiles.length == 0) return dbEvent;
 
       // update profile data depending on event
       if (event.data.kind === SubstrateTypes.EventKind.IdentitySet) {
-        await this._pool.query(
-          `UPDATE "OffchainProfiles" SET "identity"=(eIdentity), "judgements"=(eJudgement) WHERE "address_id"=(eAddressId) VALUES($1, $2, $3)`,
-          [
-            event.data.displayName,
-            _.object<any>(event.data.judgements),
-            profiles[0].address_id,
-          ]
+        query = format(
+          `UPDATE "OffchainProfiles" SET "identity"=%L, "judgements"=%L WHERE "address_id"=%L;`,
+          event.data.displayName,
+          _.object<any>(event.data.judgements),
+          profiles[0].address_id
         );
+        await this._pool.query(query);
 
         let logName = who;
         if (profiles[0].data) {
@@ -68,19 +70,20 @@ export default class extends IEventHandler {
           );
           return dbEvent;
         }
-
-        await this._pool.query(
-          `UPDATE "OffchainProfiles" SET "judgements"=(eJudgements) WHERE "address_id"=(eAddressId) VALUES($1, $2)`,
-          [
-            { [event.data.registrar]: event.data.judgement },
-            profiles[0].address_id,
-          ]
+        query = format(
+          `UPDATE "OffchainProfiles" SET "judgements"=%L WHERE "address_id"=%L;`,
+          { [event.data.registrar]: event.data.judgement },
+          profiles[0].address_id
         );
+        await this._pool.query(query);
       } else {
-        await this._pool.query(
-          `UPDATE "OffchainProfiles" SET "identity"=(eIdentity),"judgements"=(eJudgements) WHERE "address_id"=(eAddressId) VALUES($1, $2, $3)`,
-          [null, null, profiles[0].address_id]
+        query = format(
+          `UPDATE "OffchainProfiles" SET "identity"=%L,"judgements"=%L WHERE "address_id"=%L;`,
+          null,
+          null,
+          profiles[0].address_id
         );
+        await this._pool.query(query);
       }
     } catch (error) {
       throw error;

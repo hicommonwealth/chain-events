@@ -66,7 +66,7 @@ export class Producer implements IProducer {
   }
 
   public async customPublish(data: any, publisherName: string): Promise<any> {
-    if (!this._publishers[publisherName])
+    if (!this._publishers.includes(publisherName))
       throw new Error('Publisher is not defined');
 
     try {
