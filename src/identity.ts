@@ -1,7 +1,7 @@
 import { Types as SubstrateTypes } from '../src/chains/substrate/index';
 import { CWEvent, IChainEventData, IEventHandler } from './interfaces';
 import _ from 'underscore';
-import { format } from 'pg-format';
+import format from 'pg-format';
 
 export default class extends IEventHandler {
   private _pool;
@@ -27,12 +27,12 @@ export default class extends IEventHandler {
     }
 
     if (!this._pool) {
-      console.info('PG client not initialized');
+      console.info('PG pool not initialized');
       return dbEvent;
     }
 
     try {
-      // fetch OffchainProfile corresponding to address
+      // fetch address_id from the Addresses table
       const { who } = event.data;
 
       let query = format(
@@ -40,7 +40,7 @@ export default class extends IEventHandler {
         who,
         this._chain
       );
-      const profiles = await this._pool.query(query);
+      const profiles = (await this._pool.query(query)).rows;
 
       if (profiles.length == 0) return dbEvent;
 
@@ -50,7 +50,7 @@ export default class extends IEventHandler {
           `UPDATE "OffchainProfiles" SET "identity"=%L, "judgements"=%L WHERE "address_id"=%L;`,
           event.data.displayName,
           _.object<any>(event.data.judgements),
-          profiles[0].address_id
+          profiles[0].id
         );
         await this._pool.query(query);
 
@@ -60,11 +60,21 @@ export default class extends IEventHandler {
           logName = name;
         }
         console.debug(
-          `Discovered name '${profiles[0].identity}' for ${logName}!`
+          `Discovered name '${event.data.displayName}' for ${logName}!`
         );
       } else if (event.data.kind === SubstrateTypes.EventKind.JudgementGiven) {
+        // check if there is already an identity
+        query = format(
+          `SELECT * FROM "OffchainProfiles" WHERE "address_id"=%L`,
+          profiles[0].id
+        );
+        const offChainProfile = (await this._pool.query(query)).rows;
+
+        if (!offChainProfile || offChainProfile.length == 0)
+          console.log(`No off-chain profile for ${profiles[0].address}`);
+
         // if we don't have an identity saved yet for a judgement, do nothing
-        if (!profiles[0].identity) {
+        if (!offChainProfile.identity) {
           console.warn(
             'No corresponding identity found for judgement! Needs identity-migration?'
           );
@@ -73,7 +83,7 @@ export default class extends IEventHandler {
         query = format(
           `UPDATE "OffchainProfiles" SET "judgements"=%L WHERE "address_id"=%L;`,
           { [event.data.registrar]: event.data.judgement },
-          profiles[0].address_id
+          profiles[0].id
         );
         await this._pool.query(query);
       } else {
@@ -81,7 +91,7 @@ export default class extends IEventHandler {
           `UPDATE "OffchainProfiles" SET "identity"=%L,"judgements"=%L WHERE "address_id"=%L;`,
           null,
           null,
-          profiles[0].address_id
+          profiles[0].id
         );
         await this._pool.query(query);
       }
