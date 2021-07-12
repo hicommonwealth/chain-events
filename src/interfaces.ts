@@ -2,10 +2,12 @@
  * Defines general interfaces for chain event fetching and processing.
  */
 
-import * as SubstrateTypes from './substrate/types';
-import * as MolochTypes from './moloch/types';
-import * as MarlinTypes from './marlin/types';
-import * as Erc20Types from './erc20/types';
+import * as SubstrateTypes from './chains/substrate/types';
+import * as MolochTypes from './chains/moloch/types';
+import * as MarlinTypes from './chains/marlin/types';
+import * as Erc20Types from './chains/erc20/types';
+import { RegisteredTypes } from '@polkadot/types/types';
+import { StorageFetcher } from './chains/substrate';
 
 // add other events here as union types
 export type IChainEntityKind =
@@ -62,6 +64,8 @@ export interface CWEvent<IEventData = IChainEventData> {
   excludeAddresses?: string[];
 
   data: IEventData;
+  chain?: EventSupportingChainT;
+  received?: number;
 }
 
 // handles individual events by sending them off to storage/notifying
@@ -155,6 +159,22 @@ export interface IEventTitle {
   title: string;
   description: string;
 }
+
+export interface IListenerOptions {
+  spec: RegisteredTypes | {};
+  startBlock: number;
+  skipCatchup: boolean;
+  archival: boolean;
+  url: string;
+  contract: string | undefined;
+  excludedEvents: IChainEventKind[];
+}
+
+export type ListenerT = {
+  args: IListenerOptions;
+  subscriber?: IEventSubscriber<any, any>;
+  storageFetcher?: StorageFetcher;
+};
 
 export type TitlerFilter = (kind: IChainEventKind) => IEventTitle;
 

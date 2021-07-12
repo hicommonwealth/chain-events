@@ -1,7 +1,7 @@
 import chai from 'chai';
 
-import { EventKind, RawEvent, Api } from '../../../src/marlin/types';
-import { Enrich } from '../../../src/marlin/filters/enricher';
+import { EventKind, RawEvent, Api } from '../../../src/chains/marlin/types';
+import { Enrich } from '../../../src/chains/marlin/filters/enricher';
 
 const { assert } = chai;
 

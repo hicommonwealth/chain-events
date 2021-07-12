@@ -25,8 +25,8 @@ import {
   IProposalExecuted,
   IQueueTransaction,
   IExecuteTransaction,
-} from '../../src/marlin/types';
-import { subscribeEvents } from '../../src/marlin/subscribeFunc';
+} from '../../src/chains/marlin/types';
+import { subscribeEvents } from '../../src/chains/marlin/subscribeFunc';
 import { IEventHandler, CWEvent, IChainEventData } from '../../src/interfaces';
 
 const { assert } = chai;

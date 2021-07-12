@@ -11,12 +11,15 @@
   "scripts": {
     "build": "tsc",
     "prepare": "npx install-peers",
+    "install-peers": "install-peers",
     "unit-test": "nyc ts-mocha --config ./.mocharc.json ./test/unit/**/*.spec.ts",
     "marlin-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/marlin.spec.ts",
     "integration-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts",
     "test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts ./test/unit/**/*.spec.ts",
     "lint": "eslint src/ test/",
     "listen": "ts-node -T ./scripts/listener.ts",
+    "start-node": "ts-node -T scripts/startNode.ts",
+    "db-events-node": "WORKER_NUMBER=6 NUM_WORKERS=29 NODE_ENV=development HANDLE_IDENTITY=publish ts-node -T scripts/dbNode.ts",
     "listen-archival": "ts-node -T ./scripts/listener.ts -n edgeware-local -a true",
     "scrape": "ts-node -T ./scripts/scraper.ts",
     "ganache": "ganache-cli -m \"Alice\" -p 9545 -l 800000000 --allowUnlimitedContractSize",
@@ -35,17 +38,23 @@
   },
   "homepage": "https://github.com/hicommonwealth/chain-events#readme",
   "peerDependencies": {
-    "@polkadot/api": "4.9.2",
-    "@polkadot/api-derive": "4.9.2",
-    "@polkadot/types": "4.9.2",
-    "@polkadot/util": "^6.3.1"
+    "@polkadot/api": "4.16.2",
+    "@polkadot/api-derive": "4.16.2",
+    "@polkadot/types": "4.16.2",
+    "@polkadot/util": "^6.10.1"
   },
   "dependencies": {
     "@edgeware/node-types": "^3.3.3",
+    "amqplib": "^0.8.0",
     "bn.js": "^5.1.3",
     "ethereum-block-by-date": "^1.2.2",
     "ethers": "^4.0.39",
+    "express": "^4.17.1",
     "lodash": "^4.17.21",
+    "node-fetch": "^2.6.1",
+    "pg": "^8.6.0",
+    "pg-format": "^1.0.4",
+    "rascal": "^13.0.3",
     "sleep-promise": "^8.0.1",
     "typescript-logging": "^0.6.4",
     "underscore": "^1.10.2",
@@ -84,7 +93,7 @@
     "ts-mocha": "^8.0.0",
     "ts-node": "^8.10.2",
     "typechain": "^2.0.0",
-    "typescript": "^3.8.2",
+    "typescript": "^4.3.4",
     "yargs": "^16.1.0"
   }
 }

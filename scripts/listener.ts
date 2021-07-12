@@ -1,55 +1,28 @@
 import * as yargs from 'yargs';
-import fetch from 'node-fetch';
-import type { RegisteredTypes } from '@polkadot/types/types';
-import { spec as EdgewareSpec } from '@edgeware/node-types';
-import { HydraDXSpec } from './specs/hydraDX';
-import { KulupuSpec } from './specs/kulupu';
-import { StafiSpec } from './specs/stafi';
-import { CloverSpec } from './specs/clover';
+import { getRabbitMQConfig } from '../src/listener/util';
+import { createListener } from '../src/listener/createListener';
+import { createNode } from '../src/eventsNode';
+
 import {
-  chainSupportedBy,
-  IEventHandler,
-  CWEvent,
-  SubstrateEvents,
-  MarlinEvents,
-  MolochEvents,
-  Erc20Events,
   EventSupportingChains,
-} from '../dist/index';
-const networkUrls = {
-  clover: 'wss://api.clover.finance',
-  hydradx: 'wss://rpc-01.snakenet.hydradx.io',
-  edgeware: 'ws://mainnet1.edgewa.re:9944',
-  'edgeware-local': 'ws://localhost:9944',
-  'edgeware-testnet': 'wss://beresheet1.edgewa.re',
-  kusama: 'wss://kusama-rpc.polkadot.io',
-  polkadot: 'wss://rpc.polkadot.io',
-  kulupu: 'ws://rpc.kulupu.corepaper.org/ws',
-  stafi: 'wss://scan-rpc.stafi.io/ws',
-  moloch: 'wss://mainnet.infura.io/ws',
-  'moloch-local': 'ws://127.0.0.1:9545',
-  marlin: 'wss://mainnet.infura.io/ws',
-  'marlin-local': 'ws://127.0.0.1:9545',
-} as const;
-const networkSpecs: { [chain: string]: RegisteredTypes } = {
-  clover: CloverSpec,
-  hydradx: HydraDXSpec,
-  kulupu: KulupuSpec,
-  edgeware: EdgewareSpec,
-  'edgeware-local': EdgewareSpec,
-  'edgeware-testnet': EdgewareSpec,
-  stafi: StafiSpec,
-};
-const contracts = {
-  moloch: '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
-  'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
-};
+  chainSupportedBy,
+  SubstrateEvents,
+  MolochEvents,
+} from '../src';
+
+import * as fs from 'fs';
+import { startProducer } from '../src/listener';
+
 const argv = yargs
   .options({
+    config: {
+      alias: 'z',
+      type: 'string',
+      description: 'path to config file to use to initiate multiple listeners',
+    },
     network: {
       alias: 'n',
       choices: EventSupportingChains,
-      demandOption: true,
       description: 'chain to listen on',
     },
     url: {
@@ -73,6 +46,45 @@ const argv = yargs
       description:
         'when running in archival mode, which block should we start from',
     },
+    rabbitMQ: {
+      alias: 'q',
+      type: 'string',
+      description: 'Push events to queue in RabbitMQ',
+    },
+    skipCatchup: {
+      alias: 's',
+      type: 'boolean',
+      description:
+        'Whether to attempt to retrieve historical events not collected due to down-time',
+    },
+    eventNode: {
+      alias: 'e',
+      type: 'boolean',
+      description: 'Whether to run chain events as a node',
+    },
+  })
+  .conflicts('config', [
+    'network',
+    'url',
+    'contractAddress',
+    'archival',
+    'startBlock',
+    'skipCatchup',
+  ])
+  .coerce('rabbitMQ', getRabbitMQConfig)
+  .coerce('config', (filepath) => {
+    if (typeof filepath == 'string' && filepath.length == 0)
+      throw new Error('Config filepath invalid');
+    else {
+      try {
+        let raw = fs.readFileSync(filepath);
+        return JSON.parse(raw.toString());
+      } catch (error) {
+        console.error(`Failed to load the configuration file at: ${filepath}`);
+        console.error(error);
+        throw new Error('Error occurred while loading the config file');
+      }
+    }
   })
   .check((data) => {
     if (
@@ -89,98 +101,16 @@ const argv = yargs
     }
     return true;
   }).argv;
-const archival: boolean = argv.archival;
-// if running in archival mode then which block shall we star from
-const startBlock: number = argv.startBlock ?? 0;
-const network = argv.network;
-const url: string = argv.url || networkUrls[network];
-const spec = networkSpecs[network] || {};
-const contract: string | undefined = argv.contractAddress || contracts[network];
-class StandaloneEventHandler extends IEventHandler {
-  public async handle(event: CWEvent): Promise<any> {
-    console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-  }
+
+async function init() {
+  if (argv.rabbitMQ) await startProducer(argv.rabbitMQ);
+
+  let cf = argv.config;
+  if (cf) for (const chain of cf) createListener(chain.network, chain);
+  else createListener(argv.network, argv);
 }
-const skipCatchup = false;
-const tokenListUrls = [
-  'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokenlist.aave.eth.link',
-  'https://gateway.ipfs.io/ipns/tokens.uniswap.org',
-  'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link',
-];
-async function getTokenLists() {
-  var data: any = await Promise.all(
-    tokenListUrls.map((url) =>
-      fetch(url)
-        .then((o) => o.json())
-        .catch((e) => console.error(e))
-    )
-  );
-  data = data.map((o) => o && o.tokens).flat();
-  data = data.filter((o) => o); //remove undefined
-  return data;
-}
-console.log(`Connecting to ${network} on url ${url}...`);
-if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
-  SubstrateEvents.createApi(url, spec).then(async (api) => {
-    const fetcher = new SubstrateEvents.StorageFetcher(api);
-    try {
-      await fetcher.fetch();
-    } catch (err) {
-      console.log(err);
-      console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
-    }
-    SubstrateEvents.subscribeEvents({
-      chain: network,
-      api,
-      handlers: [new StandaloneEventHandler()],
-      skipCatchup,
-      archival,
-      startBlock,
-      verbose: true,
-      enricherConfig: { balanceTransferThresholdPermill: 1_000 }, // 0.1% of total issuance
-    });
-  });
-} else if (chainSupportedBy(network, MolochEvents.Types.EventChains)) {
-  const contractVersion = 1;
-  if (!contract) throw new Error(`no contract address for ${network}`);
-  MolochEvents.createApi(url, contractVersion, contract).then((api) => {
-    MolochEvents.subscribeEvents({
-      chain: network,
-      api,
-      contractVersion,
-      handlers: [new StandaloneEventHandler()],
-      skipCatchup,
-      verbose: true,
-    });
-  });
-} else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
-  const contracts = {
-    comp: '0xEa2923b099b4B588FdFAD47201d747e3b9599A5f', // TESTNET
-    governorAlpha: '0xeDAA76873524f6A203De2Fa792AD97E459Fca6Ff', // TESTNET
-    timelock: '0x7d89D52c464051FcCbe35918cf966e2135a17c43', // TESTNET
-  };
-  MarlinEvents.createApi(url, contracts).then((api) => {
-    MarlinEvents.subscribeEvents({
-      chain: network,
-      api,
-      handlers: [new StandaloneEventHandler()],
-      skipCatchup,
-      verbose: true,
-    });
-  });
-} else if (chainSupportedBy(network, Erc20Events.Types.EventChains)) {
-  async function erc20Subscribe() {
-    let tokens = await getTokenLists();
-    let tokenAddresses = tokens.map((o) => o.address);
-    Erc20Events.createApi(url, tokenAddresses).then((api) => {
-      Erc20Events.subscribeEvents({
-        chain: network,
-        api,
-        handlers: [new StandaloneEventHandler()],
-        skipCatchup,
-        verbose: true,
-      });
-    });
-  }
-  erc20Subscribe();
-}
+
+let eventNode;
+init().then(() => {
+  if (argv.eventNode) eventNode = createNode();
+});

@@ -2,8 +2,8 @@ import { EventEmitter } from 'events';
 
 import chai from 'chai';
 
-import { Subscriber } from '../../../src/marlin/subscriber';
-import { Api, RawEvent } from '../../../src/marlin/types';
+import { Subscriber } from '../../../src/chains/marlin/subscriber';
+import { Api, RawEvent } from '../../../src/chains/marlin/types';
 
 const { assert } = chai;
 
