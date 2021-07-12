@@ -63,6 +63,8 @@ export class Subscriber extends IEventSubscriber<ApiPromise, Block> {
       log.info(`Unsubscribing from ${this._versionName}`);
       this._subscription();
       this._subscription = null;
+    } else {
+      log.info(`No subscriber to unsubscribe from`);
     }
   }
 }

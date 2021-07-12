@@ -6,7 +6,7 @@ import * as SubstrateTypes from './chains/substrate/types';
 import * as MolochTypes from './chains/moloch/types';
 import * as MarlinTypes from './chains/marlin/types';
 import * as Erc20Types from './chains/erc20/types';
-import { RegisteredTypes } from '@polkadot/types/types';
+import { IEvent, RegisteredTypes } from '@polkadot/types/types';
 import { StorageFetcher } from './chains/substrate';
 
 // add other events here as union types
@@ -175,6 +175,14 @@ export type ListenerT = {
   subscriber?: IEventSubscriber<any, any>;
   storageFetcher?: StorageFetcher;
 };
+
+export interface Listener {
+  args: IListenerOptions;
+  subscriber?: IEventSubscriber<any, any>;
+  storageFetcher?: StorageFetcher;
+  handleEvent: (event: CWEvent) => void;
+  processBlock: (block: Block) => void;
+}
 
 export type TitlerFilter = (kind: IChainEventKind) => IEventTitle;
 
