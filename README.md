@@ -193,3 +193,20 @@ Each chain implements several abstract classes, described in [interfaces.ts](./s
     * `Label` takes a specific ChainEvent and produces an object with a heading, a label, and a linkUrl, useful for creating human-readable UIs around particular events. The `linkUrl` property in particular is currently specific to [Commonwealth](https://commonwealth.im/), but may in the future be generalized.
 
 Note that every item on this list may not be implemented for every chain (e.g. Moloch does not have a `Poller`), but the combination of these components provides the pieces to create a more usable application-usable event stream than what is exposed on the chain.
+
+### Usage as Commonwealth Chain-Events DB Node
+Running chain-events as a CW DB node lets us run a cluster of chain-events node each with multiple listeners without
+needing for each of them to be aware of each other or implementing load-balancing. This is achieved by having the chain
+events DB nodes poll the database for the information that is specific to them.
+
+####Environment Variables
+- `NUM_WORKERS`: The total number of chain-events DB nodes in the cluster. This is used to ensure even separation of
+                listeners among the different chain-events DB nodes.
+- `WORKER_NUMBER`: The unique number id that this chain-events DB node should have. Must be between 0 and NUM_WORKERS-1
+- `HANDLE_IDENTITY`: ("handle" || "publish" || null)
+  - handle: The node will directly update the database with identity data
+  - publish: The node will publish identity events to an identity queue
+  - null: The node will not query the identity cache
+  
+- `NODE_ENV`: ("production" || "development") - optional
+- `DATABASE_URL`: The url of the database to connect to. If `NODE_ENV` = production this url is the default.

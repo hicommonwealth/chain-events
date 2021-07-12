@@ -119,8 +119,10 @@ async function dbNodeProcess() {
         identityEvents.map((e) => identityHandler.handle(e, null))
       );
     } else if (HANDLE_IDENTITY === 'publish') {
-      for (const e of identityEvents)
-        await producer.customPublish(e, 'identityPub');
+      for (const event of identityEvents) {
+        event.chain = chain.id; // augment event with chain
+        await producer.customPublish(event, 'identityPub');
+      }
     }
 
     query = format(`DELETE FROM "IdentityCaches" WHERE "chain"=%L;`, chain.id);
