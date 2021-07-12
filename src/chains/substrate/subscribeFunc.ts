@@ -91,12 +91,6 @@ export const subscribeEvents: SubscribeFunc<
     let prevResult = null;
     for (const handler of handlers) {
       try {
-        // if (JSON.stringify(handler).includes('broker')) {
-        //   event.chain = chain;
-        //   event.received = Date.now();
-        //   log.info('>>>>>>>>>>>>>>>>Handler Found');
-        // }
-
         event.chain = chain;
         event.received = Date.now();
 
