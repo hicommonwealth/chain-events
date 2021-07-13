@@ -166,7 +166,7 @@ export interface IListenerOptions {
   skipCatchup: boolean;
   archival: boolean;
   url: string;
-  contract: string | undefined;
+  contract?: string | undefined;
   excludedEvents: IChainEventKind[];
 }
 

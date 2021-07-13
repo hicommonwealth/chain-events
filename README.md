@@ -130,6 +130,76 @@ See manyListenerConfigEx.json for an example configuration
 
 
 ## Library Usage
+The easiest usage of the package involves using the Listener class which initializes the various components.
+```typescript
+import { Listener as SubstrateListener } from "";
+
+// create a listener instance
+const listener = new SubstrateListener();
+
+// initialize the listener
+await listener.init();
+
+// subscribe/listen to events on the specified chain
+await listener.subscribe();
+````
+
+The Listener classes have a variety functions that facilitate using the listener.
+
+##### Updating the substrate spec
+```typescript
+await listener.updateSpec({yourNewSpec})
+```
+
+##### Updating the url the listener should use
+```typescript
+await listener.updateUrl('yourNewUrl')
+```
+
+##### Changing the event handlers
+The event handlers are accessible through the `eventHandlers` property.
+The eventHandlers property is defined as follows:
+
+```
+eventHandlers: {
+  [handlerName: string]: {
+    "handler": IEventHandler,
+    "excludedEvents": SubstrateEvents[]
+  }
+}
+```
+Thus, to change an event handler, or the events that it ignores simply access it directly:
+```typescript
+// change the handler of "myEventHandler"
+listener.eventHandlers["myEventHandler"].handler = newHandler;
+```
+
+##### Changing the excluded events
+As described above you can change the events that a handler ignores either directly in the execution of the handler
+or by setting "excludedEvents" like so:
+```typescript
+// change the events "myEventHandler" excludes
+listener.eventHandlers["myEventHandler"].excludedEvents = ["someEventKind", "anotherEventKind"]
+```
+
+### Provided Handlers
+##### RabbitMQ Producer
+##### HTTP Post Handler
+##### Single Event Handler
+
+### Custom Handlers
+A custom handler is necessary in many cases depending on what you are trying to build. Thankfully creating your own
+is very easy!
+
+Just extend the `IEventHandler` and implement the `handle` method:
+```typescript
+class ExampleEventHandler extends IEventHandler {
+  public async handle(event: CWEvent): Promise<void> {
+    // your code goes here
+  }
+}
+```
+
 
 The easiest usage of the package involves calling `subscribeEvents` directly, which initializes the various components automatically. Do this for Substrate as follows.
 
@@ -210,3 +280,6 @@ events DB nodes poll the database for the information that is specific to them.
   
 - `NODE_ENV`: ("production" || "development") - optional
 - `DATABASE_URL`: The url of the database to connect to. If `NODE_ENV` = production this url is the default.
+
+
+
