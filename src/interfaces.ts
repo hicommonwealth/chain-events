@@ -105,6 +105,7 @@ export interface IDisconnectedRange {
   endBlock?: number;
 }
 
+// for interacting directly with subscriberFunc
 export interface ISubscribeOptions<Api> {
   chain: EventSupportingChainT;
   api: Api;
@@ -160,13 +161,13 @@ export interface IEventTitle {
   description: string;
 }
 
+// for interacting with the Listener class -- not the same as ISubscriberOptions
+// this does not include API or chain
 export interface IListenerOptions {
-  spec: RegisteredTypes | {};
   startBlock: number;
   skipCatchup: boolean;
   archival: boolean;
   url: string;
-  contract?: string | undefined;
   excludedEvents: IChainEventKind[];
 }
 
@@ -176,13 +177,13 @@ export type ListenerT = {
   storageFetcher?: StorageFetcher;
 };
 
-export interface Listener {
-  args: IListenerOptions;
-  subscriber?: IEventSubscriber<any, any>;
-  storageFetcher?: StorageFetcher;
-  handleEvent: (event: CWEvent) => void;
-  processBlock: (block: Block) => void;
-}
+// export interface Listener {
+//   args: IListenerOptions;
+//   subscriber?: IEventSubscriber<any, any>;
+//   storageFetcher?: StorageFetcher;
+//   handleEvent: (event: CWEvent) => void;
+//   processBlock: (block: Block) => void;
+// }
 
 export type TitlerFilter = (kind: IChainEventKind) => IEventTitle;
 

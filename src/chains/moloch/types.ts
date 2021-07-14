@@ -1,6 +1,6 @@
 import { Event } from 'ethers';
 
-import { ISubscribeOptions } from '../../interfaces';
+import { IListenerOptions, ISubscribeOptions } from '../../interfaces';
 
 import { Moloch1 } from './contractTypes/Moloch1';
 import { Moloch2 } from './contractTypes/Moloch2';
@@ -21,6 +21,11 @@ export type RawEvent = Event;
 
 export interface SubscribeOptions extends ISubscribeOptions<Api> {
   contractVersion: 1 | 2;
+}
+
+export interface ListenerOptions extends IListenerOptions {
+  contractVersion: 1 | 2;
+  contractAddress: string;
 }
 
 // eslint-disable-next-line no-shadow

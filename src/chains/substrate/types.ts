@@ -5,6 +5,8 @@ import {
   Event,
   IdentityJudgement as SubstrateJudgement,
 } from '@polkadot/types/interfaces';
+import { RegisteredTypes } from '@polkadot/types/types';
+import { IListenerOptions } from '../../interfaces';
 
 export const EventChains = [
   'clover',
@@ -19,6 +21,10 @@ export const EventChains = [
   'kulupu',
   'stafi',
 ] as const;
+
+export interface ISubstrateListenerOptions extends IListenerOptions {
+  spec: RegisteredTypes | {};
+}
 
 /**
  * To implement a new form of event, add it to this enum, and add its

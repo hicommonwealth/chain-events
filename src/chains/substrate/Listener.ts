@@ -1,4 +1,9 @@
-import { Block, IEventData, EventKind as SubstrateEvents } from './types';
+import {
+  Block,
+  IEventData,
+  EventKind as SubstrateEvents,
+  ISubstrateListenerOptions,
+} from './types';
 import {
   createApi,
   EnricherConfig,
@@ -31,7 +36,7 @@ import { EventChains as SubstrateChains } from './types';
 import { RegisteredTypes } from '@polkadot/types/types';
 
 export class Listener {
-  private readonly _listenerArgs: IListenerOptions;
+  private readonly _listenerArgs: ISubstrateListenerOptions;
   public enricherConfig: EnricherConfig;
   public eventHandlers: {
     [key: string]: {
@@ -40,7 +45,7 @@ export class Listener {
     };
   };
   // events to be excluded regardless of handler (overrides handler specific excluded events
-  private globalExcludedEvents: SubstrateEvents[];
+  public globalExcludedEvents: SubstrateEvents[];
   public _storageFetcher: IStorageFetcher<ApiPromise>;
   private _poller: IEventPoller<ApiPromise, Block>;
   private _subscriber: IEventSubscriber<ApiPromise, Block>;
@@ -90,9 +95,10 @@ export class Listener {
       this._poller = new Poller(this._api);
       this._processor = new Processor(this._api, this.enricherConfig);
       this._storageFetcher = new StorageFetcher(this._api);
+      this._subscriber = await new Subscriber(this._api, false);
     } catch (error) {
       console.error(
-        'Fatal error occurred while starting the Poller, Processor, and Fetcher'
+        'Fatal error occurred while starting the Poller, Processor, Subscriber, and Fetcher'
       );
       throw error;
     }
@@ -100,11 +106,11 @@ export class Listener {
 
   public async subscribe(): Promise<void> {
     if (!this._subscriber) {
-      console.log(`Subscriber for ${this._chain} is already active`);
+      console.log(
+        `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
+      );
       return;
     }
-
-    this._subscriber = await new Subscriber(this._api, false);
 
     // processed blocks missed during downtime
     if (!this.listenerArgs.skipCatchup) await this.processMissedBlocks();

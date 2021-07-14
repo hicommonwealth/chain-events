@@ -130,10 +130,12 @@ See manyListenerConfigEx.json for an example configuration
 
 
 ## Library Usage
-The easiest usage of the package involves using the Listener class which initializes the various components.
+The easiest usage of the package involves using the Listener class which initializes the various components. Do this
+for Substrate chains as follows:
 ```typescript
 import { Listener as SubstrateListener } from "";
 
+// TODO: listener argument docs
 // create a listener instance
 const listener = new SubstrateListener();
 
@@ -180,6 +182,10 @@ or by setting "excludedEvents" like so:
 ```typescript
 // change the events "myEventHandler" excludes
 listener.eventHandlers["myEventHandler"].excludedEvents = ["someEventKind", "anotherEventKind"]
+```
+You can also exclude events from all handlers at one by changing the globalExcludedEvents property like so:
+```typescript
+listener.globalExcludedEvents = ["someEventKind", "anotherEventKind"]
 ```
 
 ### Provided Handlers
@@ -282,4 +288,7 @@ events DB nodes poll the database for the information that is specific to them.
 - `DATABASE_URL`: The url of the database to connect to. If `NODE_ENV` = production this url is the default.
 
 
-
+TODO:
+Add HTTP POST handler
+Make the RabbitMQ consumer a parent class and then the producer handler should extend
+the consumer
