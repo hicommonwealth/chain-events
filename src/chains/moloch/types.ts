@@ -1,6 +1,6 @@
 import { Event } from 'ethers';
 
-import { IListenerOptions, ISubscribeOptions } from '../../interfaces';
+import { ISubscribeOptions } from '../../interfaces';
 
 import { Moloch1 } from './contractTypes/Moloch1';
 import { Moloch2 } from './contractTypes/Moloch2';

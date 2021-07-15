@@ -2,7 +2,6 @@ import { Event } from 'ethers';
 import { Web3Provider } from 'ethers/providers';
 
 import { Erc20 } from './contractTypes/Erc20';
-import { IListenerOptions } from '../../interfaces';
 
 // API is imported contracts classes
 interface IErc20Contracts {

@@ -6,7 +6,6 @@ import {
   IdentityJudgement as SubstrateJudgement,
 } from '@polkadot/types/interfaces';
 import { RegisteredTypes } from '@polkadot/types/types';
-import { IListenerOptions } from '../../interfaces';
 import { EnricherConfig } from './filters/enricher';
 
 export const EventChains = [
