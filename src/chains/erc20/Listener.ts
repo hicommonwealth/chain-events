@@ -1,9 +1,9 @@
 import {
-  ListenerOptions as MarlinListenerOptions,
-  EventKind as MarlinEvents,
+  ListenerOptions as erc20ListenerOptions,
+  EventKind as erc20Events,
   RawEvent,
   Api,
-  EventChains as MarlinChains,
+  EventChains as erc20Chains,
   IEventData,
 } from './types';
 
@@ -14,33 +14,25 @@ import {
   CWEvent,
   EventSupportingChainT,
   IChainEventKind,
-  IDisconnectedRange,
   IEventHandler,
   IEventProcessor,
   IEventSubscriber,
   IListenerOptions,
-  IStorageFetcher,
 } from '../../interfaces';
-import { networkSpecs, networkUrls } from '../../listener/createListener';
+import { networkUrls } from '../../listener/createListener';
 import { Processor } from './processor';
-import { StorageFetcher } from './storageFetcher';
-import Web3 from 'web3';
-import { Web3Provider } from 'ethers/providers';
-import { WebsocketProvider } from 'web3-core';
 import { Subscriber } from './subscriber';
-import EthDater from 'ethereum-block-by-date';
 
 export class Listener {
-  private readonly _listenerArgs: MarlinListenerOptions;
+  private readonly _listenerArgs: erc20ListenerOptions;
   public eventHandlers: {
     [key: string]: {
       handler: IEventHandler;
-      excludedEvents: MarlinEvents[];
+      excludedEvents: erc20Events[];
     };
   };
   // events to be excluded regardless of handler (overrides handler specific excluded events
-  public globalExcludedEvents: MarlinEvents[];
-  public _storageFetcher: IStorageFetcher<Api>;
+  public globalExcludedEvents: erc20Events[];
   private _subscriber: IEventSubscriber<Api, RawEvent>;
   private _processor: IEventProcessor<Api, RawEvent>;
   private _api: Api;
@@ -50,18 +42,14 @@ export class Listener {
 
   constructor(
     chain: EventSupportingChainT,
-    contractAddresses: {
-      comp: string;
-      governorAlpha: string;
-      timelock: string;
-    },
+    tokenAddresses: string[],
     url?: string,
     archival?: boolean,
     startBlock?: number,
     skipCatchup?: boolean,
     excludedEvents?: IChainEventKind[]
   ) {
-    if (!chainSupportedBy(chain, MarlinChains))
+    if (!chainSupportedBy(chain, erc20Chains))
       throw new Error(`${chain} is not a Substrate chain`);
 
     this._chain = chain;
@@ -71,7 +59,7 @@ export class Listener {
       url: url || networkUrls[chain],
       skipCatchup: !!skipCatchup,
       excludedEvents: excludedEvents || [],
-      contractAddresses,
+      tokenAddresses: tokenAddresses,
     };
   }
 
@@ -79,7 +67,7 @@ export class Listener {
     try {
       this._api = await createApi(
         this._listenerArgs.url,
-        this._listenerArgs.contractAddresses
+        this._listenerArgs.tokenAddresses
       );
     } catch (error) {
       console.error('Fatal error occurred while starting the API');
@@ -88,24 +76,10 @@ export class Listener {
 
     try {
       this._processor = new Processor(this._api);
-      this._subscriber = await new Subscriber(this._api, this._chain, false);
+      this._subscriber = new Subscriber(this._api, this._chain, false);
     } catch (error) {
       console.error(
         'Fatal error occurred while starting the Processor, and Subscriber'
-      );
-      throw error;
-    }
-
-    try {
-      const web3 = new Web3(
-        (this._api.comp.provider as Web3Provider)
-          ._web3Provider as WebsocketProvider
-      );
-      const dater = new EthDater(web3);
-      this._storageFetcher = new StorageFetcher(this._api, dater);
-    } catch (error) {
-      console.error(
-        'Fatal error occurred while starting the Ethereum dater and storage fetcher'
       );
       throw error;
     }
@@ -119,13 +93,9 @@ export class Listener {
       return;
     }
 
-    // processed blocks missed during downtime
-    if (!this.listenerArgs.skipCatchup) await this.processMissedBlocks();
-    else console.log('Skipping event catchup on startup!');
-
     try {
       console.info(
-        `Subscribing to Marlin contract: ${this._chain}, on url ${this._listenerArgs.url}`
+        `Subscribing to ERC20 contracts: ${this._chain}, on url ${this._listenerArgs.url}`
       );
       await this._subscriber.subscribe(this.processBlock);
       this._subscribed = true;
@@ -150,26 +120,8 @@ export class Listener {
     }
   }
 
-  public async updateContractAddress(
-    contractName: string,
-    address: string
-  ): Promise<void> {
-    if (contractName != ('comp' || 'governorAlpha' || 'timelock')) {
-      console.log('Contract is not supported');
-      return;
-    }
-    switch (contractName) {
-      case 'comp':
-        this._listenerArgs.contractAddresses.comp = address;
-        break;
-      case 'governorAlpha':
-        this._listenerArgs.contractAddresses.governorAlpha = address;
-        break;
-      case 'timelock':
-        this._listenerArgs.contractAddresses.timelock = address;
-        break;
-    }
-
+  public async updateTokenList(tokenAddresses: string[]): Promise<void> {
+    this._listenerArgs.tokenAddresses = tokenAddresses;
     await this.init();
     if (this._subscribed === true) await this.subscribe();
   }
@@ -202,42 +154,6 @@ export class Listener {
 
     // process events in sequence
     for (const cwEvent of cwEvents) await this.handleEvent(cwEvent);
-  }
-
-  private async processMissedBlocks(
-    discoverReconnectRange?: () => Promise<IDisconnectedRange>
-  ): Promise<void> {
-    if (!discoverReconnectRange) {
-      console.warn(
-        'No function to discover offline time found, skipping event catchup.'
-      );
-      return;
-    }
-    console.info(
-      `Fetching missed events since last startup of ${this._chain}...`
-    );
-    let offlineRange: IDisconnectedRange;
-    try {
-      offlineRange = await discoverReconnectRange();
-      if (!offlineRange) {
-        console.warn('No offline range found, skipping event catchup.');
-        return;
-      }
-    } catch (e) {
-      console.error(
-        `Could not discover offline range: ${e.message}. Skipping event catchup.`
-      );
-      return;
-    }
-
-    try {
-      const cwEvents = await this._storageFetcher.fetch(offlineRange);
-      for (const event of cwEvents) {
-        await this.handleEvent(event);
-      }
-    } catch (error) {
-      console.error(`Unable to fetch events from storage: ${error.message}`);
-    }
   }
 
   public get lastBlockNumber(): number {

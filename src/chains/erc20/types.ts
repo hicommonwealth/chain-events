@@ -2,11 +2,16 @@ import { Event } from 'ethers';
 import { Web3Provider } from 'ethers/providers';
 
 import { Erc20 } from './contractTypes/Erc20';
+import { IListenerOptions } from '../../interfaces';
 
 // API is imported contracts classes
 interface IErc20Contracts {
   tokens: Erc20[];
   provider: Web3Provider;
+}
+
+export interface ListenerOptions extends IListenerOptions {
+  tokenAddresses: string[];
 }
 
 export type Api = IErc20Contracts;

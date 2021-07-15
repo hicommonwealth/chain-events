@@ -92,6 +92,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
    * NOTE: throws on error! Make sure to wrap in try/catch!
    *
    * @param range Determines the range of blocks to query events within.
+   * @param fetchAllCompleted
    */
   public async fetch(
     range?: IDisconnectedRange,
