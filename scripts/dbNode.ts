@@ -121,7 +121,7 @@ async function dbNodeProcess() {
     } else if (HANDLE_IDENTITY === 'publish') {
       for (const event of identityEvents) {
         event.chain = chain.id; // augment event with chain
-        await producer.customPublish(event, 'identityPub');
+        await producer.publish(event, 'identityPub');
       }
     }
 

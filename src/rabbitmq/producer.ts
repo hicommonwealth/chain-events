@@ -1,18 +1,8 @@
 import Rascal from 'rascal';
 
-import { CWEvent, IEventHandler } from '../interfaces';
-
-import { listeners } from '../listener';
-
-export interface IProducer extends IEventHandler {
-  broker: Rascal.BrokerAsPromised;
-  init: () => Promise<void>;
-  customPublish: (data: any, publisherName: string) => Promise<void>;
-}
-
-export class Producer implements IProducer {
+export class RabbitMqProducer {
   public broker;
-  private readonly _publishers;
+  public readonly publishers;
   private _vhost;
 
   constructor(private readonly _rabbitMQConfig: any) {
@@ -21,7 +11,7 @@ export class Producer implements IProducer {
       _rabbitMQConfig.vhosts[Object.keys(_rabbitMQConfig.vhosts)[0]];
 
     // array of publishers
-    this._publishers = Object.keys(this._vhost.publications);
+    this.publishers = Object.keys(this._vhost.publications);
   }
 
   public async init(): Promise<void> {
@@ -52,21 +42,8 @@ export class Producer implements IProducer {
     });
   }
 
-  // handler method used by the chain-event listeners/subscribers
-  public async handle(event: CWEvent): Promise<any> {
-    if (Producer._shouldSkip(event)) return;
-    try {
-      const publication = await this.broker.publish(this._publishers[0], event);
-      publication.on('error', (err, messageId) => {
-        console.error(`Publisher error ${err}, ${messageId}`);
-      });
-    } catch (err) {
-      throw new Error(`Rascal config error: ${err.message}`);
-    }
-  }
-
-  public async customPublish(data: any, publisherName: string): Promise<any> {
-    if (!this._publishers.includes(publisherName))
+  public async publish(data: any, publisherName: string): Promise<any> {
+    if (!this.publishers.includes(publisherName))
       throw new Error('Publisher is not defined');
 
     try {
@@ -77,11 +54,5 @@ export class Producer implements IProducer {
     } catch (err) {
       throw new Error(`Rascal config error: ${err.message}`);
     }
-  }
-
-  private static _shouldSkip(event: CWEvent): boolean {
-    return !!listeners[event.chain].args.excludedEvents.includes(
-      event.data.kind
-    );
   }
 }
