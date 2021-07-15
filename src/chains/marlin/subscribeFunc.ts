@@ -25,8 +25,10 @@ const log = factory.getLogger(formatFilename(__filename));
 
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
- * @param url websocket endpoing to connect to, including ws[s]:// and port
  * @returns a promise resolving to an ApiPromise once the connection has been established
+ * @param ethNetworkUrl
+ * @param contractAddresses
+ * @param retryTimeMs
  */
 export async function createApi(
   ethNetworkUrl: string,

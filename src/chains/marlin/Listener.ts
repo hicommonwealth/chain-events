@@ -1,4 +1,15 @@
 import {
+  ListenerOptions as MarlinListenerOptions,
+  EventKind as MarlinEvents,
+  RawEvent,
+  Api,
+  EventChains as MarlinChains,
+  IEventData,
+} from './types';
+
+import { createApi } from './subscribeFunc';
+
+import {
   chainSupportedBy,
   CWEvent,
   EventSupportingChainT,
@@ -11,29 +22,24 @@ import {
   IStorageFetcher,
 } from '../../interfaces';
 import { networkSpecs, networkUrls } from '../../listener/createListener';
-import {
-  EventKind as MolochEventKinds,
-  Api,
-  RawEvent,
-  EventChains as molochChains,
-  ListenerOptions as MolochListenerOptions,
-  IEventData,
-} from '../moloch/types';
-import { createApi, Processor, StorageFetcher, Subscriber } from '../moloch';
-import EthDater from 'ethereum-block-by-date';
+import { Processor } from './processor';
+import { StorageFetcher } from './storageFetcher';
 import Web3 from 'web3';
 import { Web3Provider } from 'ethers/providers';
 import { WebsocketProvider } from 'web3-core';
+import { Subscriber } from './subscriber';
+import EthDater from 'ethereum-block-by-date';
 
 export class Listener {
-  private readonly _listenerArgs: MolochListenerOptions;
+  private readonly _listenerArgs: MarlinListenerOptions;
   public eventHandlers: {
     [key: string]: {
       handler: IEventHandler;
-      excludedEvents: MolochEventKinds[];
+      excludedEvents: MarlinEvents[];
     };
   };
-  public globalExcludedEvents: MolochEventKinds[];
+  // events to be excluded regardless of handler (overrides handler specific excluded events
+  public globalExcludedEvents: MarlinEvents[];
   public _storageFetcher: IStorageFetcher<Api>;
   private _subscriber: IEventSubscriber<Api, RawEvent>;
   private _processor: IEventProcessor<Api, RawEvent>;
@@ -44,16 +50,19 @@ export class Listener {
 
   constructor(
     chain: EventSupportingChainT,
-    contractVersion: 1 | 2,
-    contractAddress: string,
-    url: string,
+    contractAddresses: {
+      comp: string;
+      governorAlpha: string;
+      timelock: string;
+    },
+    url?: string,
     archival?: boolean,
     startBlock?: number,
     skipCatchup?: boolean,
     excludedEvents?: IChainEventKind[]
   ) {
-    if (!chainSupportedBy(chain, molochChains))
-      throw new Error(`${chain} is not a moloch network`);
+    if (!chainSupportedBy(chain, MarlinChains))
+      throw new Error(`${chain} is not a Substrate chain`);
 
     this._chain = chain;
     this._listenerArgs = {
@@ -62,18 +71,15 @@ export class Listener {
       url: url || networkUrls[chain],
       skipCatchup: !!skipCatchup,
       excludedEvents: excludedEvents || [],
-      contractAddress: contractAddress,
-      contractVersion: contractVersion,
+      contractAddresses,
     };
-    this._subscribed = false;
   }
 
   public async init(): Promise<void> {
     try {
       this._api = await createApi(
         this._listenerArgs.url,
-        this._listenerArgs.contractVersion,
-        this._listenerArgs.contractAddress
+        this._listenerArgs.contractAddresses
       );
     } catch (error) {
       console.error('Fatal error occurred while starting the API');
@@ -81,10 +87,7 @@ export class Listener {
     }
 
     try {
-      this._processor = new Processor(
-        this._api,
-        this._listenerArgs.contractVersion
-      );
+      this._processor = new Processor(this._api);
       this._subscriber = await new Subscriber(this._api, this._chain, false);
     } catch (error) {
       console.error(
@@ -92,16 +95,14 @@ export class Listener {
       );
       throw error;
     }
+
     try {
       const web3 = new Web3(
-        (this._api.provider as Web3Provider)._web3Provider as WebsocketProvider
+        (this._api.comp.provider as Web3Provider)
+          ._web3Provider as WebsocketProvider
       );
       const dater = new EthDater(web3);
-      this._storageFetcher = new StorageFetcher(
-        this._api,
-        this._listenerArgs.contractVersion,
-        dater
-      );
+      this._storageFetcher = new StorageFetcher(this._api, dater);
     } catch (error) {
       console.error(
         'Fatal error occurred while starting the Ethereum dater and storage fetcher'
@@ -133,7 +134,7 @@ export class Listener {
     }
   }
 
-  public unsubscribe(): Promise<void> {
+  public async unsubscribe(): Promise<void> {
     if (!this._subscriber) {
       console.log(
         `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
@@ -147,6 +148,30 @@ export class Listener {
       console.error('Fatal error occurred while unsubscribing');
       throw error;
     }
+  }
+
+  public async updateContractAddress(
+    contractName: string,
+    address: string
+  ): Promise<void> {
+    if (contractName != ('comp' || 'governorAlpha' || 'timelock')) {
+      console.log('Contract is not supported');
+      return;
+    }
+    switch (contractName) {
+      case 'comp':
+        this._listenerArgs.contractAddresses.comp = address;
+        break;
+      case 'governorAlpha':
+        this._listenerArgs.contractAddresses.governorAlpha = address;
+        break;
+      case 'timelock':
+        this._listenerArgs.contractAddresses.timelock = address;
+        break;
+    }
+
+    await this.init();
+    if (this._subscribed === true) await this.subscribe();
   }
 
   private async handleEvent(event: CWEvent<IEventData>): Promise<void> {
@@ -207,37 +232,12 @@ export class Listener {
 
     try {
       const cwEvents = await this._storageFetcher.fetch(offlineRange);
-
-      // process events in sequence
       for (const event of cwEvents) {
         await this.handleEvent(event);
       }
-    } catch (e) {
-      console.error(`Unable to fetch events from storage: ${e.message}`);
+    } catch (error) {
+      console.error(`Unable to fetch events from storage: ${error.message}`);
     }
-  }
-
-  public async updateContractVersion(version: 1 | 2): Promise<void> {
-    if (version === this._listenerArgs.contractVersion) {
-      console.log(`The contract version is already set to ${version}`);
-      return;
-    }
-
-    this._listenerArgs.contractVersion = version;
-    await this.init();
-    // only subscribe if the listener was already subscribed before the version change
-    if (this._subscribed === true) await this.subscribe();
-  }
-
-  public async updateContractAddress(address: string): Promise<void> {
-    if (address === this._listenerArgs.contractAddress) {
-      console.log(`The contract address is already set to ${address}`);
-      return;
-    }
-
-    this._listenerArgs.contractAddress = address;
-    await this.init();
-    if (this._subscribed === true) await this.subscribe();
   }
 
   public get lastBlockNumber(): number {

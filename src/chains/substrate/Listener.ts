@@ -37,7 +37,7 @@ import { RegisteredTypes } from '@polkadot/types/types';
 
 export class Listener {
   private readonly _listenerArgs: ISubstrateListenerOptions;
-  public enricherConfig: EnricherConfig;
+  public enricherConfig: EnricherConfig; // TODO add to ISubstrateListenerOptions?
   public eventHandlers: {
     [key: string]: {
       handler: IEventHandler;
@@ -53,6 +53,7 @@ export class Listener {
   private _api: ApiPromise;
   private _lastBlockNumber: number;
   private readonly _chain: string;
+  private _subscribed: boolean;
 
   constructor(
     chain: EventSupportingChainT,
@@ -121,6 +122,7 @@ export class Listener {
         `Subscribing to ${this._chain} on url ${this._listenerArgs.url}`
       );
       await this._subscriber.subscribe(this.processBlock);
+      this._subscribed = true;
     } catch (error) {
       console.error(`Subscription error: ${error.message}`);
     }
@@ -128,6 +130,7 @@ export class Listener {
 
   public async unsubscribe(): Promise<void> {
     this._subscriber.unsubscribe();
+    this._subscribed = false;
   }
 
   private async processMissedBlocks(
@@ -189,7 +192,7 @@ export class Listener {
 
     // restart api with new spec
     await this.init();
-    await this.subscribe();
+    if (this._subscribed === true) await this.subscribe();
   }
 
   public async updateUrl(url: string): Promise<void> {
@@ -197,7 +200,7 @@ export class Listener {
 
     // restart api with new url
     await this.init();
-    await this.subscribe();
+    if (this._subscribed === true) await this.subscribe();
   }
 
   private async handleEvent(event: CWEvent<IEventData>): Promise<void> {
