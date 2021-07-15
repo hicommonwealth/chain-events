@@ -235,7 +235,8 @@ export class Listener {
 
     const events: CWEvent[] = await this._processor.process(block);
 
-    for (const event of events) await this.handleEvent(event);
+    for (const event of events)
+      await this.handleEvent(event as CWEvent<IEventData>);
   }
 
   private cleanup(): void {

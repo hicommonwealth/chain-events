@@ -2,6 +2,14 @@ import * as yargs from 'yargs';
 import { getRabbitMQConfig } from '../src/listener/util';
 import { createListener } from '../src/listener/createListener';
 import { createNode } from '../src/eventsNode';
+import { EventChains as SubstrateChains } from '../src/chains/substrate/types';
+import { Listener as SubstrateListener } from '../src/chains/substrate/Listener';
+import { EventChains as MolochChains } from '../src/chains/moloch/types';
+import { Listener as MolochListener } from '../src/chains/moloch/Listener';
+import { EventChains as MarlinChains } from '../src/chains/marlin/types';
+import { Listener as MarlinListener } from '../src/chains/marlin/Listener';
+import { EventChains as Erc20Chain } from '../src/chains/erc20/types';
+import { Listener as Erc20Listener } from '../src/chains/erc20/Listener';
 
 import {
   EventSupportingChains,
@@ -103,14 +111,36 @@ const argv = yargs
   }).argv;
 
 async function init() {
-  if (argv.rabbitMQ) await startProducer(argv.rabbitMQ);
-
   let cf = argv.config;
   if (cf) for (const chain of cf) createListener(chain.network, chain);
   else createListener(argv.network, argv);
 }
 
-let eventNode;
-init().then(() => {
-  if (argv.eventNode) eventNode = createNode();
+// TODO: add listener options
+let listener;
+if (chainSupportedBy(argv.network, SubstrateChains)) {
+  // start a substrate listener
+  listener = new SubstrateListener();
+} else if (chainSupportedBy(argv.network, MolochChains)) {
+  listener = new MolochListener();
+} else if (chainSupportedBy(argv.network, MarlinChains)) {
+  listener = new MarlinListener();
+} else if (chainSupportedBy(argv.network, Erc20Chain)) {
+  listener = new Erc20Listener();
+}
+
+listener.init().then(async () => {
+  if (argv.rabbitMQ) {
+    // TODO: change this to return producer instance and add handler instance to the handlers of the listener
+    await startProducer(argv.rabbitMQ);
+  }
+
+  listener.subscribe();
 });
+//
+// let eventNode;
+// init().then(() => {
+//   if (argv.eventNode) eventNode = createNode();
+// });
+
+// TODO: possibly remove createListener and setupListener

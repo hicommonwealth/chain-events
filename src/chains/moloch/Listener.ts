@@ -176,7 +176,8 @@ export class Listener {
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
-    for (const cwEvent of cwEvents) await this.handleEvent(cwEvent);
+    for (const event of cwEvents)
+      await this.handleEvent(event as CWEvent<IEventData>);
   }
 
   private async processMissedBlocks(
@@ -210,7 +211,7 @@ export class Listener {
 
       // process events in sequence
       for (const event of cwEvents) {
-        await this.handleEvent(event);
+        await this.handleEvent(event as CWEvent<IEventData>);
       }
     } catch (e) {
       console.error(`Unable to fetch events from storage: ${e.message}`);

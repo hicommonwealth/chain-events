@@ -153,7 +153,8 @@ export class Listener {
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
-    for (const cwEvent of cwEvents) await this.handleEvent(cwEvent);
+    for (const event of cwEvents)
+      await this.handleEvent(event as CWEvent<IEventData>);
   }
 
   public get lastBlockNumber(): number {

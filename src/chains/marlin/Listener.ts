@@ -21,7 +21,7 @@ import {
   IListenerOptions,
   IStorageFetcher,
 } from '../../interfaces';
-import { networkSpecs, networkUrls } from '../../listener/createListener';
+import { networkUrls } from '../../listener/createListener';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
 import Web3 from 'web3';
@@ -201,7 +201,8 @@ export class Listener {
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
-    for (const cwEvent of cwEvents) await this.handleEvent(cwEvent);
+    for (const event of cwEvents)
+      await this.handleEvent(event as CWEvent<IEventData>);
   }
 
   private async processMissedBlocks(
@@ -233,7 +234,7 @@ export class Listener {
     try {
       const cwEvents = await this._storageFetcher.fetch(offlineRange);
       for (const event of cwEvents) {
-        await this.handleEvent(event);
+        await this.handleEvent(event as CWEvent<IEventData>);
       }
     } catch (error) {
       console.error(`Unable to fetch events from storage: ${error.message}`);
