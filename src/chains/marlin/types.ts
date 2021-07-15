@@ -22,7 +22,10 @@ interface IMarlinContracts {
   timelock: Timelock;
 }
 
-export interface ListenerOptions extends IListenerOptions {
+export interface ListenerOptions {
+  url: string;
+  startBlock: number;
+  skipCatchup: boolean;
   contractAddresses: {
     comp: string;
     governorAlpha: string;

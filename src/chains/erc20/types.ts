@@ -10,7 +10,8 @@ interface IErc20Contracts {
   provider: Web3Provider;
 }
 
-export interface ListenerOptions extends IListenerOptions {
+export interface ListenerOptions {
+  url: string;
   tokenAddresses: string[];
 }
 

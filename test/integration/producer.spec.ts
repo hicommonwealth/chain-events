@@ -1,5 +1,5 @@
 import { Producer } from '../../src/rabbitmq/producer';
-import { getRabbitMQConfig } from '../../src/listener/util';
+import { getRabbitMQConfig } from '../../src/util';
 import Rascal from 'rascal';
 import { assert } from 'chai';
 import { listeners } from '../../src/listener';

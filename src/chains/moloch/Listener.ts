@@ -2,15 +2,10 @@ import {
   chainSupportedBy,
   CWEvent,
   EventSupportingChainT,
-  IChainEventKind,
   IDisconnectedRange,
-  IEventHandler,
-  IEventProcessor,
-  IEventSubscriber,
-  IListenerOptions,
   IStorageFetcher,
 } from '../../interfaces';
-import { networkSpecs, networkUrls } from '../../listener/createListener';
+import { networkUrls } from '../../index';
 import {
   EventKind as MolochEventKinds,
   Api,
@@ -24,56 +19,44 @@ import EthDater from 'ethereum-block-by-date';
 import Web3 from 'web3';
 import { Web3Provider } from 'ethers/providers';
 import { WebsocketProvider } from 'web3-core';
+import { Listener as BaseListener } from '../../Listener';
 
-export class Listener {
-  private readonly _listenerArgs: MolochListenerOptions;
-  public eventHandlers: {
-    [key: string]: {
-      handler: IEventHandler;
-      excludedEvents: MolochEventKinds[];
-    };
-  };
+export class Listener extends BaseListener {
+  private readonly _options: MolochListenerOptions;
   public globalExcludedEvents: MolochEventKinds[];
   public _storageFetcher: IStorageFetcher<Api>;
-  private _subscriber: IEventSubscriber<Api, RawEvent>;
-  private _processor: IEventProcessor<Api, RawEvent>;
-  private _api: Api;
   private _lastBlockNumber: number;
-  private readonly _chain: string;
-  private _subscribed: boolean;
 
   constructor(
     chain: EventSupportingChainT,
     contractVersion: 1 | 2,
     contractAddress: string,
     url: string,
-    archival?: boolean,
     startBlock?: number,
     skipCatchup?: boolean,
-    excludedEvents?: IChainEventKind[]
+    verbose?: boolean
   ) {
-    if (!chainSupportedBy(chain, molochChains))
-      throw new Error(`${chain} is not a moloch network`);
+    super(chain, verbose);
+    if (!chainSupportedBy(this._chain, molochChains))
+      throw new Error(`${this._chain} is not a moloch network`);
 
-    this._chain = chain;
-    this._listenerArgs = {
-      archival: !!archival,
+    this._options = {
       startBlock: startBlock ?? 0,
       url: url || networkUrls[chain],
       skipCatchup: !!skipCatchup,
-      excludedEvents: excludedEvents || [],
       contractAddress: contractAddress,
       contractVersion: contractVersion,
     };
+
     this._subscribed = false;
   }
 
   public async init(): Promise<void> {
     try {
       this._api = await createApi(
-        this._listenerArgs.url,
-        this._listenerArgs.contractVersion,
-        this._listenerArgs.contractAddress
+        this._options.url,
+        this._options.contractVersion,
+        this._options.contractAddress
       );
     } catch (error) {
       console.error('Fatal error occurred while starting the API');
@@ -81,11 +64,12 @@ export class Listener {
     }
 
     try {
-      this._processor = new Processor(
+      this._processor = new Processor(this._api, this._options.contractVersion);
+      this._subscriber = await new Subscriber(
         this._api,
-        this._listenerArgs.contractVersion
+        this._chain,
+        this._verbose
       );
-      this._subscriber = await new Subscriber(this._api, this._chain, false);
     } catch (error) {
       console.error(
         'Fatal error occurred while starting the Processor, and Subscriber'
@@ -99,7 +83,7 @@ export class Listener {
       const dater = new EthDater(web3);
       this._storageFetcher = new StorageFetcher(
         this._api,
-        this._listenerArgs.contractVersion,
+        this._options.contractVersion,
         dater
       );
     } catch (error) {
@@ -124,7 +108,7 @@ export class Listener {
 
     try {
       console.info(
-        `Subscribing Moloch contract: ${this._chain}, on url ${this._listenerArgs.url}`
+        `Subscribing Moloch contract: ${this._chain}, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock);
       this._subscribed = true;
@@ -133,51 +117,11 @@ export class Listener {
     }
   }
 
-  public unsubscribe(): Promise<void> {
-    if (!this._subscriber) {
-      console.log(
-        `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
-      );
-      return;
-    }
-    try {
-      this._subscriber.unsubscribe();
-      this._subscribed = false;
-    } catch (error) {
-      console.error('Fatal error occurred while unsubscribing');
-      throw error;
-    }
-  }
-
-  private async handleEvent(event: CWEvent<IEventData>): Promise<void> {
-    let prevResult;
-
-    event.chain = this._chain as EventSupportingChainT;
-    event.received = Date.now();
-
-    for (const key in this.eventHandlers) {
-      const eventHandler = this.eventHandlers[key];
-      if (
-        this.globalExcludedEvents.includes(event.data.kind) ||
-        eventHandler.excludedEvents.includes(event.data.kind)
-      )
-        continue;
-
-      try {
-        prevResult = await eventHandler.handler.handle(event, prevResult);
-      } catch (err) {
-        console.error(`Event handle failure: ${err.message}`);
-        break;
-      }
-    }
-  }
-
-  private async processBlock(event: RawEvent): Promise<void> {
+  protected async processBlock(event: RawEvent): Promise<void> {
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
-    for (const event of cwEvents)
-      await this.handleEvent(event as CWEvent<IEventData>);
+    for (const cwEvent of cwEvents) await this.handleEvent(cwEvent);
   }
 
   private async processMissedBlocks(
@@ -219,24 +163,24 @@ export class Listener {
   }
 
   public async updateContractVersion(version: 1 | 2): Promise<void> {
-    if (version === this._listenerArgs.contractVersion) {
+    if (version === this._options.contractVersion) {
       console.log(`The contract version is already set to ${version}`);
       return;
     }
 
-    this._listenerArgs.contractVersion = version;
+    this._options.contractVersion = version;
     await this.init();
     // only subscribe if the listener was already subscribed before the version change
     if (this._subscribed === true) await this.subscribe();
   }
 
   public async updateContractAddress(address: string): Promise<void> {
-    if (address === this._listenerArgs.contractAddress) {
+    if (address === this._options.contractAddress) {
       console.log(`The contract address is already set to ${address}`);
       return;
     }
 
-    this._listenerArgs.contractAddress = address;
+    this._options.contractAddress = address;
     await this.init();
     if (this._subscribed === true) await this.subscribe();
   }
@@ -249,8 +193,8 @@ export class Listener {
     return this._chain;
   }
 
-  public get listenerArgs(): IListenerOptions {
-    return this._listenerArgs;
+  public get listenerArgs(): MolochListenerOptions {
+    return this._options;
   }
 
   public get subscribed(): boolean {

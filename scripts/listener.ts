@@ -1,7 +1,5 @@
 import * as yargs from 'yargs';
-import { getRabbitMQConfig } from '../src/listener/util';
-import { createListener } from '../src/listener/createListener';
-import { createNode } from '../src/eventsNode';
+import { getRabbitMQConfig } from '../src/util';
 import { EventChains as SubstrateChains } from '../src/chains/substrate/types';
 import { Listener as SubstrateListener } from '../src/chains/substrate/Listener';
 import { EventChains as MolochChains } from '../src/chains/moloch/types';
@@ -19,7 +17,7 @@ import {
 } from '../src';
 
 import * as fs from 'fs';
-import { startProducer } from '../src/listener';
+import { RabbitMqHandler } from '../src/handlers/rabbitmqHandler';
 
 const argv = yargs
   .options({
@@ -38,10 +36,26 @@ const argv = yargs
       type: 'string',
       description: 'node url',
     },
-    contractAddress: {
+    MolochContractAddress: {
       alias: 'c',
       type: 'string',
-      description: 'eth contract address',
+      description: 'Moloch contract address',
+    },
+    MolochContractVersion: {
+      alias: 'v',
+      type: 'number',
+      description: 'The version of the moloch contract to use',
+    },
+    MarlinContractAddresses: {
+      alias: 'd',
+      type: 'array',
+      description:
+        'An array of addresses for contracts in the following order: [comp, governorAlpha, timelock]',
+    },
+    Erc20TokenAddresses: {
+      alias: 'w',
+      type: 'array',
+      description: 'An array of token contract addresses',
     },
     archival: {
       alias: 'a',
@@ -65,20 +79,28 @@ const argv = yargs
       description:
         'Whether to attempt to retrieve historical events not collected due to down-time',
     },
-    eventNode: {
-      alias: 'e',
+    verbose: {
+      alias: 'v',
       type: 'boolean',
-      description: 'Whether to run chain events as a node',
+      description: 'Whether to run the listener in verbose mode or not',
     },
+    // TODO: should be separate script since listeners can be added through the api
+    // eventNode: {
+    //   alias: 'e',
+    //   type: 'boolean',
+    //   description: 'Whether to run chain events as a node',
+    // },
   })
-  .conflicts('config', [
-    'network',
-    'url',
-    'contractAddress',
-    'archival',
-    'startBlock',
-    'skipCatchup',
-  ])
+  .conflicts({
+    config: [
+      'network',
+      'url',
+      'MolochContractAddress',
+      'archival',
+      'startBlock',
+      'skipCatchup',
+    ],
+  })
   .coerce('rabbitMQ', getRabbitMQConfig)
   .coerce('config', (filepath) => {
     if (typeof filepath == 'string' && filepath.length == 0)
@@ -94,6 +116,10 @@ const argv = yargs
       }
     }
   })
+  .coerce('MolochContractVersion', (version) => {
+    if (!version) return;
+    if (version != (1 || 2)) return 2; // default contract version to 2
+  })
   .check((data) => {
     if (
       !chainSupportedBy(data.network, SubstrateEvents.Types.EventChains) &&
@@ -103,44 +129,83 @@ const argv = yargs
     }
     if (
       !chainSupportedBy(data.network, MolochEvents.Types.EventChains) &&
-      data.contractAddress
+      data.MolcohContractAddress
     ) {
       throw new Error('cannot pass contract address on non-moloch network');
     }
+    data.Erc20TokenAddresses.forEach((item) => {
+      if (typeof item != 'string')
+        throw new Error('Erc20 token addresses must be strings');
+    });
     return true;
   }).argv;
 
-async function init() {
-  let cf = argv.config;
-  if (cf) for (const chain of cf) createListener(chain.network, chain);
-  else createListener(argv.network, argv);
-}
-
-// TODO: add listener options
 let listener;
 if (chainSupportedBy(argv.network, SubstrateChains)) {
   // start a substrate listener
-  listener = new SubstrateListener();
+  listener = new SubstrateListener(
+    argv.network,
+    argv.url,
+    argv.spec,
+    argv.archival,
+    argv.startBlock,
+    argv.skipCatchup,
+    null,
+    argv.verbose
+  );
 } else if (chainSupportedBy(argv.network, MolochChains)) {
-  listener = new MolochListener();
+  listener = new MolochListener(
+    argv.network,
+    argv.MolochContractVersion as 1 | 2,
+    argv.MolochContractAddress,
+    argv.url,
+    argv.archival,
+    argv.startBlock,
+    argv.skipCatchup,
+    null,
+    argv.verbose
+  );
 } else if (chainSupportedBy(argv.network, MarlinChains)) {
-  listener = new MarlinListener();
+  const contractAddresses = {
+    comp: argv.MarlinContractAddress[0],
+    governorAlpha: argv.MarlinContractAddress[1],
+    timelock: argv.MarlinContractAddress[2],
+  };
+  listener = new MarlinListener(
+    argv.network,
+    contractAddresses,
+    argv.url,
+    argv.archival,
+    argv.startBlock,
+    argv.skipCatchup,
+    null,
+    argv.verbose
+  );
 } else if (chainSupportedBy(argv.network, Erc20Chain)) {
-  listener = new Erc20Listener();
+  listener = new Erc20Listener(
+    argv.network,
+    argv.Erc20TokenAddresses as string[], // addresses of contracts to track
+    argv.url, // ethNetowrkUrl aka the access point to ethereum
+    argv.archival,
+    argv.startBlock,
+    argv.skipCatchup,
+    null,
+    argv.verbose
+  );
 }
 
 listener.init().then(async () => {
+  // add any handlers here
+
   if (argv.rabbitMQ) {
-    // TODO: change this to return producer instance and add handler instance to the handlers of the listener
-    await startProducer(argv.rabbitMQ);
+    const producer = new RabbitMqHandler(argv.rabbitMQ);
+    await producer.init();
+    listener.eventHandlers['rabbitmq'] = {
+      handler: producer,
+      excludedEvents: [],
+    };
   }
 
-  listener.subscribe();
+  // start the subscription
+  await listener.subscribe();
 });
-//
-// let eventNode;
-// init().then(() => {
-//   if (argv.eventNode) eventNode = createNode();
-// });
-
-// TODO: possibly remove createListener and setupListener

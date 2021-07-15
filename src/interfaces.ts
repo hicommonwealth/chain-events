@@ -161,30 +161,6 @@ export interface IEventTitle {
   description: string;
 }
 
-// for interacting with the Listener class -- not the same as ISubscriberOptions
-// this does not include API or chain
-export interface IListenerOptions {
-  startBlock: number;
-  skipCatchup: boolean;
-  archival: boolean;
-  url: string;
-  excludedEvents: IChainEventKind[];
-}
-
-export type ListenerT = {
-  args: IListenerOptions;
-  subscriber?: IEventSubscriber<any, any>;
-  storageFetcher?: StorageFetcher;
-};
-
-// export interface Listener {
-//   args: IListenerOptions;
-//   subscriber?: IEventSubscriber<any, any>;
-//   storageFetcher?: StorageFetcher;
-//   handleEvent: (event: CWEvent) => void;
-//   processBlock: (block: Block) => void;
-// }
-
 export type TitlerFilter = (kind: IChainEventKind) => IEventTitle;
 
 export function entityToFieldName(entity: IChainEntityKind): string | null {

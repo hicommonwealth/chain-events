@@ -1,8 +1,6 @@
 import {
-  ListenerOptions as erc20ListenerOptions,
-  EventKind as erc20Events,
+  ListenerOptions as Erc20ListenerOptions,
   RawEvent,
-  Api,
   EventChains as erc20Chains,
   IEventData,
 } from './types';
@@ -13,61 +11,38 @@ import {
   chainSupportedBy,
   CWEvent,
   EventSupportingChainT,
-  IChainEventKind,
-  IEventHandler,
-  IEventProcessor,
-  IEventSubscriber,
-  IListenerOptions,
 } from '../../interfaces';
-import { networkUrls } from '../../listener/createListener';
+import { networkUrls } from '../../index';
 import { Processor } from './processor';
 import { Subscriber } from './subscriber';
+import { Listener as BaseListener } from '../../Listener';
 
-export class Listener {
-  private readonly _listenerArgs: erc20ListenerOptions;
-  public eventHandlers: {
-    [key: string]: {
-      handler: IEventHandler;
-      excludedEvents: erc20Events[];
-    };
-  };
-  // events to be excluded regardless of handler (overrides handler specific excluded events
-  public globalExcludedEvents: erc20Events[];
-  private _subscriber: IEventSubscriber<Api, RawEvent>;
-  private _processor: IEventProcessor<Api, RawEvent>;
-  private _api: Api;
-  private _lastBlockNumber: number;
-  private readonly _chain: string;
-  private _subscribed: boolean;
+export class Listener extends BaseListener {
+  private readonly _options: Erc20ListenerOptions;
 
   constructor(
     chain: EventSupportingChainT,
     tokenAddresses: string[],
     url?: string,
-    archival?: boolean,
-    startBlock?: number,
-    skipCatchup?: boolean,
-    excludedEvents?: IChainEventKind[]
+    verbose?: boolean
   ) {
-    if (!chainSupportedBy(chain, erc20Chains))
+    super(chain, verbose);
+    if (!chainSupportedBy(this._chain, erc20Chains))
       throw new Error(`${chain} is not a Substrate chain`);
 
-    this._chain = chain;
-    this._listenerArgs = {
-      archival: !!archival,
-      startBlock: startBlock ?? 0,
+    this._options = {
       url: url || networkUrls[chain],
-      skipCatchup: !!skipCatchup,
-      excludedEvents: excludedEvents || [],
       tokenAddresses: tokenAddresses,
     };
+
+    this._subscribed = false;
   }
 
   public async init(): Promise<void> {
     try {
       this._api = await createApi(
-        this._listenerArgs.url,
-        this._listenerArgs.tokenAddresses
+        this._options.url,
+        this._options.tokenAddresses
       );
     } catch (error) {
       console.error('Fatal error occurred while starting the API');
@@ -76,7 +51,7 @@ export class Listener {
 
     try {
       this._processor = new Processor(this._api);
-      this._subscriber = new Subscriber(this._api, this._chain, false);
+      this._subscriber = new Subscriber(this._api, this._chain, this._verbose);
     } catch (error) {
       console.error(
         'Fatal error occurred while starting the Processor, and Subscriber'
@@ -95,7 +70,7 @@ export class Listener {
 
     try {
       console.info(
-        `Subscribing to ERC20 contracts: ${this._chain}, on url ${this._listenerArgs.url}`
+        `Subscribing to ERC20 contracts: ${this._chain}, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock);
       this._subscribed = true;
@@ -121,35 +96,12 @@ export class Listener {
   }
 
   public async updateTokenList(tokenAddresses: string[]): Promise<void> {
-    this._listenerArgs.tokenAddresses = tokenAddresses;
+    this._options.tokenAddresses = tokenAddresses;
     await this.init();
     if (this._subscribed === true) await this.subscribe();
   }
 
-  private async handleEvent(event: CWEvent<IEventData>): Promise<void> {
-    let prevResult;
-
-    event.chain = this._chain as EventSupportingChainT;
-    event.received = Date.now();
-
-    for (const key in this.eventHandlers) {
-      const eventHandler = this.eventHandlers[key];
-      if (
-        this.globalExcludedEvents.includes(event.data.kind) ||
-        eventHandler.excludedEvents.includes(event.data.kind)
-      )
-        continue;
-
-      try {
-        prevResult = await eventHandler.handler.handle(event, prevResult);
-      } catch (err) {
-        console.error(`Event handle failure: ${err.message}`);
-        break;
-      }
-    }
-  }
-
-  private async processBlock(event: RawEvent): Promise<void> {
+  protected async processBlock(event: RawEvent): Promise<void> {
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
@@ -157,16 +109,12 @@ export class Listener {
       await this.handleEvent(event as CWEvent<IEventData>);
   }
 
-  public get lastBlockNumber(): number {
-    return this._lastBlockNumber;
-  }
-
   public get chain(): string {
     return this._chain;
   }
 
-  public get listenerArgs(): IListenerOptions {
-    return this._listenerArgs;
+  public get listenerArgs(): Erc20ListenerOptions {
+    return this._options;
   }
 
   public get subscribed(): boolean {

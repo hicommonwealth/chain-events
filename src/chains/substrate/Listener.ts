@@ -1,9 +1,4 @@
-import {
-  Block,
-  IEventData,
-  EventKind as SubstrateEvents,
-  ISubstrateListenerOptions,
-} from './types';
+import { Block, IEventData, ISubstrateListenerOptions } from './types';
 import {
   createApi,
   EnricherConfig,
@@ -17,43 +12,21 @@ import {
   chainSupportedBy,
   CWEvent,
   EventSupportingChainT,
-  IChainEventKind,
   IDisconnectedRange,
-  IEventHandler,
   IEventPoller,
-  IEventProcessor,
-  IEventSubscriber,
-  IListenerOptions,
   IStorageFetcher,
 } from '../../interfaces';
-import {
-  contracts,
-  networkSpecs,
-  networkUrls,
-} from '../../listener/createListener';
+import { networkSpecs, networkUrls } from '../../index';
+import { Listener as BaseListener } from '../../Listener';
 
 import { EventChains as SubstrateChains } from './types';
 import { RegisteredTypes } from '@polkadot/types/types';
 
-export class Listener {
-  private readonly _listenerArgs: ISubstrateListenerOptions;
-  public enricherConfig: EnricherConfig; // TODO add to ISubstrateListenerOptions?
-  public eventHandlers: {
-    [key: string]: {
-      handler: IEventHandler;
-      excludedEvents: SubstrateEvents[];
-    };
-  };
-  // events to be excluded regardless of handler (overrides handler specific excluded events
-  public globalExcludedEvents: SubstrateEvents[];
+export class Listener extends BaseListener {
+  private readonly _options: ISubstrateListenerOptions;
   public _storageFetcher: IStorageFetcher<ApiPromise>;
   private _poller: IEventPoller<ApiPromise, Block>;
-  private _subscriber: IEventSubscriber<ApiPromise, Block>;
-  private _processor: IEventProcessor<ApiPromise, Block>;
-  private _api: ApiPromise;
   private _lastBlockNumber: number;
-  private readonly _chain: string;
-  private _subscribed: boolean;
 
   constructor(
     chain: EventSupportingChainT,
@@ -62,29 +35,28 @@ export class Listener {
     archival?: boolean,
     startBlock?: number,
     skipCatchup?: boolean,
-    excludedEvents?: IChainEventKind[]
+    enricherConfig?: EnricherConfig,
+    verbose?: boolean
   ) {
-    if (!chainSupportedBy(chain, SubstrateChains))
-      throw new Error(`${chain} is not a Substrate chain`);
+    super(chain, verbose);
+    if (!chainSupportedBy(this._chain, SubstrateChains))
+      throw new Error(`${this._chain} is not a Substrate chain`);
 
-    this._chain = chain;
-    this._listenerArgs = {
+    this._options = {
       archival: !!archival,
       startBlock: startBlock ?? 0,
       url: url || networkUrls[chain],
       spec: spec || networkSpecs[chain] || {},
       skipCatchup: !!skipCatchup,
-      excludedEvents: excludedEvents || [],
-    }; // TODO add verbose to args
-    // TODO add enricherConfig to args and Processor inside of init() below
+      enricherConfig: enricherConfig || {},
+    };
+
+    this._subscribed = false;
   }
 
   public async init(): Promise<void> {
     try {
-      this._api = await createApi(
-        this._listenerArgs.url,
-        this._listenerArgs.spec
-      );
+      this._api = await createApi(this._options.url, this._options.spec);
 
       this._api.on('connected', this.processMissedBlocks);
     } catch (error) {
@@ -94,9 +66,9 @@ export class Listener {
 
     try {
       this._poller = new Poller(this._api);
-      this._processor = new Processor(this._api, this.enricherConfig);
+      this._processor = new Processor(this._api, this._options.enricherConfig);
       this._storageFetcher = new StorageFetcher(this._api);
-      this._subscriber = await new Subscriber(this._api, false);
+      this._subscriber = await new Subscriber(this._api, this._verbose);
     } catch (error) {
       console.error(
         'Fatal error occurred while starting the Poller, Processor, Subscriber, and Fetcher'
@@ -114,23 +86,16 @@ export class Listener {
     }
 
     // processed blocks missed during downtime
-    if (!this.listenerArgs.skipCatchup) await this.processMissedBlocks();
+    if (!this.options.skipCatchup) await this.processMissedBlocks();
     else console.log('Skipping event catchup on startup!');
 
     try {
-      console.info(
-        `Subscribing to ${this._chain} on url ${this._listenerArgs.url}`
-      );
+      console.info(`Subscribing to ${this._chain} on url ${this._options.url}`);
       await this._subscriber.subscribe(this.processBlock);
       this._subscribed = true;
     } catch (error) {
       console.error(`Subscription error: ${error.message}`);
     }
-  }
-
-  public async unsubscribe(): Promise<void> {
-    this._subscriber.unsubscribe();
-    this._subscribed = false;
   }
 
   private async processMissedBlocks(
@@ -188,7 +153,7 @@ export class Listener {
 
   public async updateSpec(spec: {}): Promise<void> {
     // set the new spec
-    this._listenerArgs.spec = spec;
+    this._options.spec = spec;
 
     // restart api with new spec
     await this.init();
@@ -196,37 +161,14 @@ export class Listener {
   }
 
   public async updateUrl(url: string): Promise<void> {
-    this._listenerArgs.url = url;
+    this._options.url = url;
 
     // restart api with new url
     await this.init();
     if (this._subscribed === true) await this.subscribe();
   }
 
-  private async handleEvent(event: CWEvent<IEventData>): Promise<void> {
-    let prevResult;
-
-    event.chain = this._chain as EventSupportingChainT;
-    event.received = Date.now();
-
-    for (const key in this.eventHandlers) {
-      const eventHandler = this.eventHandlers[key];
-      if (
-        this.globalExcludedEvents.includes(event.data.kind) ||
-        eventHandler.excludedEvents.includes(event.data.kind)
-      )
-        continue;
-
-      try {
-        prevResult = await eventHandler.handler.handle(event, prevResult);
-      } catch (err) {
-        console.error(`Event handle failure: ${err.message}`);
-        break;
-      }
-    }
-  }
-
-  private async processBlock(block: Block): Promise<void> {
+  protected async processBlock(block: Block): Promise<void> {
     // cache block number if needed for disconnection purposes
     const blockNumber = +block.header.number;
     if (!this._lastBlockNumber || blockNumber > this._lastBlockNumber) {
@@ -239,23 +181,11 @@ export class Listener {
       await this.handleEvent(event as CWEvent<IEventData>);
   }
 
-  private cleanup(): void {
-    // stop all services (subscriber/poller/fetcher/processor)
-    this._subscriber.unsubscribe();
-    this._poller = null;
-    this._processor = null;
-    this._api = null;
-  }
-
   public get lastBlockNumber(): number {
     return this._lastBlockNumber;
   }
 
-  public get chain(): string {
-    return this._chain;
-  }
-
-  public get listenerArgs(): IListenerOptions {
-    return this._listenerArgs;
+  public get options(): ISubstrateListenerOptions {
+    return this._options;
   }
 }

@@ -23,7 +23,10 @@ export interface SubscribeOptions extends ISubscribeOptions<Api> {
   contractVersion: 1 | 2;
 }
 
-export interface ListenerOptions extends IListenerOptions {
+export interface ListenerOptions {
+  url: string;
+  startBlock: number;
+  skipCatchup: boolean;
   contractVersion: 1 | 2;
   contractAddress: string;
 }

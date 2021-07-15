@@ -1,13 +1,16 @@
 import express from 'express';
-import { createListener } from './listener/createListener';
-import { setupListener } from './listener/setupListener';
-import { listeners } from './listener';
 
 import { chainSupportedBy, IChainEventKind, isSupportedChain } from './index';
 import { StorageFetcher } from './chains/substrate';
 import { EventChains as SubstrateEventChains } from './chains/substrate/types';
+import {
+  SubstrateListener,
+  MolochListener,
+  MarlinListener,
+  Erc20Listener,
+} from '../src/chains';
 
-import { deleteListener } from './listener/util';
+const listeners: { [key: string]: any } = {};
 
 // TODO: setup the chain supported check as middleware
 export function createNode() {
@@ -43,17 +46,7 @@ export function createNode() {
         .json({ error: `No subscription to ${chain} found` });
 
     try {
-      listeners[chain].subscriber.unsubscribe();
-
-      // turn on catchup in order to retrieve events not collected during downtime
-      listeners[chain].args.skipCatchup = false;
-
-      listeners[chain].args.spec = spec;
-
-      listeners[chain].subscriber = await setupListener(
-        chain,
-        listeners[chain].args
-      );
+      await listeners[chain].updateSpec(spec);
       res.status(200).json({ message: 'Success' });
       return;
     } catch (error) {

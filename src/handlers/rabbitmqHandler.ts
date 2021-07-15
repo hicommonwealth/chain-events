@@ -1,8 +1,11 @@
 import { CWEvent, IEventHandler } from '../interfaces';
 import { RabbitMqProducer } from '../rabbitmq/producer';
-import { listeners } from '../listener';
 
 export class RabbitMqHandler extends RabbitMqProducer implements IEventHandler {
+  constructor(_rabbitMQConfig: {}) {
+    super(_rabbitMQConfig);
+  }
+
   // handler method used by the chain-event listeners/subscribers
   public async handle(event: CWEvent): Promise<any> {
     try {

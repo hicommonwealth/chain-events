@@ -1,3 +1,3 @@
-import { createNode } from '../src/eventsNode';
+import { createNode } from '../src/server';
 
 const app = createNode();

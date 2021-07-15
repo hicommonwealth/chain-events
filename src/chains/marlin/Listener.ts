@@ -1,6 +1,5 @@
 import {
   ListenerOptions as MarlinListenerOptions,
-  EventKind as MarlinEvents,
   RawEvent,
   Api,
   EventChains as MarlinChains,
@@ -13,15 +12,10 @@ import {
   chainSupportedBy,
   CWEvent,
   EventSupportingChainT,
-  IChainEventKind,
   IDisconnectedRange,
-  IEventHandler,
-  IEventProcessor,
-  IEventSubscriber,
-  IListenerOptions,
   IStorageFetcher,
 } from '../../interfaces';
-import { networkUrls } from '../../listener/createListener';
+import { networkUrls } from '../../index';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
 import Web3 from 'web3';
@@ -29,24 +23,12 @@ import { Web3Provider } from 'ethers/providers';
 import { WebsocketProvider } from 'web3-core';
 import { Subscriber } from './subscriber';
 import EthDater from 'ethereum-block-by-date';
+import { Listener as BaseListener } from '../../Listener';
 
-export class Listener {
-  private readonly _listenerArgs: MarlinListenerOptions;
-  public eventHandlers: {
-    [key: string]: {
-      handler: IEventHandler;
-      excludedEvents: MarlinEvents[];
-    };
-  };
-  // events to be excluded regardless of handler (overrides handler specific excluded events
-  public globalExcludedEvents: MarlinEvents[];
+export class Listener extends BaseListener {
+  private readonly _options: MarlinListenerOptions;
   public _storageFetcher: IStorageFetcher<Api>;
-  private _subscriber: IEventSubscriber<Api, RawEvent>;
-  private _processor: IEventProcessor<Api, RawEvent>;
-  private _api: Api;
   private _lastBlockNumber: number;
-  private readonly _chain: string;
-  private _subscribed: boolean;
 
   constructor(
     chain: EventSupportingChainT,
@@ -56,30 +38,29 @@ export class Listener {
       timelock: string;
     },
     url?: string,
-    archival?: boolean,
     startBlock?: number,
     skipCatchup?: boolean,
-    excludedEvents?: IChainEventKind[]
+    verbose?: boolean
   ) {
-    if (!chainSupportedBy(chain, MarlinChains))
-      throw new Error(`${chain} is not a Substrate chain`);
+    super(chain, verbose);
+    if (!chainSupportedBy(this._chain, MarlinChains))
+      throw new Error(`${this._chain} is not a Substrate chain`);
 
-    this._chain = chain;
-    this._listenerArgs = {
-      archival: !!archival,
-      startBlock: startBlock ?? 0,
+    this._options = {
       url: url || networkUrls[chain],
+      startBlock: startBlock ?? 0,
       skipCatchup: !!skipCatchup,
-      excludedEvents: excludedEvents || [],
       contractAddresses,
     };
+
+    this._subscribed = false;
   }
 
   public async init(): Promise<void> {
     try {
       this._api = await createApi(
-        this._listenerArgs.url,
-        this._listenerArgs.contractAddresses
+        this._options.url,
+        this._options.contractAddresses
       );
     } catch (error) {
       console.error('Fatal error occurred while starting the API');
@@ -88,7 +69,11 @@ export class Listener {
 
     try {
       this._processor = new Processor(this._api);
-      this._subscriber = await new Subscriber(this._api, this._chain, false);
+      this._subscriber = await new Subscriber(
+        this._api,
+        this._chain,
+        this._verbose
+      );
     } catch (error) {
       console.error(
         'Fatal error occurred while starting the Processor, and Subscriber'
@@ -125,28 +110,12 @@ export class Listener {
 
     try {
       console.info(
-        `Subscribing to Marlin contract: ${this._chain}, on url ${this._listenerArgs.url}`
+        `Subscribing to Marlin contract: ${this._chain}, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock);
       this._subscribed = true;
     } catch (error) {
       console.error(`Subscription error: ${error.message}`);
-    }
-  }
-
-  public async unsubscribe(): Promise<void> {
-    if (!this._subscriber) {
-      console.log(
-        `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
-      );
-      return;
-    }
-    try {
-      this._subscriber.unsubscribe();
-      this._subscribed = false;
-    } catch (error) {
-      console.error('Fatal error occurred while unsubscribing');
-      throw error;
     }
   }
 
@@ -160,13 +129,13 @@ export class Listener {
     }
     switch (contractName) {
       case 'comp':
-        this._listenerArgs.contractAddresses.comp = address;
+        this._options.contractAddresses.comp = address;
         break;
       case 'governorAlpha':
-        this._listenerArgs.contractAddresses.governorAlpha = address;
+        this._options.contractAddresses.governorAlpha = address;
         break;
       case 'timelock':
-        this._listenerArgs.contractAddresses.timelock = address;
+        this._options.contractAddresses.timelock = address;
         break;
     }
 
@@ -174,30 +143,7 @@ export class Listener {
     if (this._subscribed === true) await this.subscribe();
   }
 
-  private async handleEvent(event: CWEvent<IEventData>): Promise<void> {
-    let prevResult;
-
-    event.chain = this._chain as EventSupportingChainT;
-    event.received = Date.now();
-
-    for (const key in this.eventHandlers) {
-      const eventHandler = this.eventHandlers[key];
-      if (
-        this.globalExcludedEvents.includes(event.data.kind) ||
-        eventHandler.excludedEvents.includes(event.data.kind)
-      )
-        continue;
-
-      try {
-        prevResult = await eventHandler.handler.handle(event, prevResult);
-      } catch (err) {
-        console.error(`Event handle failure: ${err.message}`);
-        break;
-      }
-    }
-  }
-
-  private async processBlock(event: RawEvent): Promise<void> {
+  protected async processBlock(event: RawEvent): Promise<void> {
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
@@ -249,8 +195,8 @@ export class Listener {
     return this._chain;
   }
 
-  public get listenerArgs(): IListenerOptions {
-    return this._listenerArgs;
+  public get listenerArgs(): MarlinListenerOptions {
+    return this._options;
   }
 
   public get subscribed(): boolean {

@@ -7,6 +7,7 @@ import {
 } from '@polkadot/types/interfaces';
 import { RegisteredTypes } from '@polkadot/types/types';
 import { IListenerOptions } from '../../interfaces';
+import { EnricherConfig } from './filters/enricher';
 
 export const EventChains = [
   'clover',
@@ -22,8 +23,13 @@ export const EventChains = [
   'stafi',
 ] as const;
 
-export interface ISubstrateListenerOptions extends IListenerOptions {
+export interface ISubstrateListenerOptions {
+  startBlock: number;
+  skipCatchup: boolean;
+  archival: boolean;
+  url: string;
   spec: RegisteredTypes | {};
+  enricherConfig: EnricherConfig;
 }
 
 /**
