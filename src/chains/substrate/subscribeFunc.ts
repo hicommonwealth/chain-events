@@ -8,7 +8,6 @@ import {
   ISubscribeOptions,
 } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
-import { Producer } from '../../rabbitmq/producer';
 
 import { Subscriber } from './subscriber';
 import { Poller } from './poller';

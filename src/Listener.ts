@@ -6,7 +6,6 @@ import {
   EventSupportingChainT,
   IChainEventData,
   CWEvent,
-  IListenerOptions,
 } from './interfaces';
 
 export abstract class Listener {
@@ -24,6 +23,7 @@ export abstract class Listener {
   protected _subscribed: boolean;
   protected readonly _chain: string;
   protected readonly _verbose: boolean;
+
   protected constructor(chain: EventSupportingChainT, verbose?: boolean) {
     this._chain = chain;
     this.eventHandlers = {};
@@ -74,5 +74,9 @@ export abstract class Listener {
 
   public get chain(): string {
     return this._chain;
+  }
+
+  public get subscribed(): boolean {
+    return this._subscribed;
   }
 }

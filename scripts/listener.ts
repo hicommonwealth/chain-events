@@ -1,13 +1,5 @@
 import * as yargs from 'yargs';
 import { createListener, getRabbitMQConfig } from '../src/util';
-import { EventChains as SubstrateChains } from '../src/chains/substrate/types';
-import { Listener as SubstrateListener } from '../src/chains/substrate/Listener';
-import { EventChains as MolochChains } from '../src/chains/moloch/types';
-import { Listener as MolochListener } from '../src/chains/moloch/Listener';
-import { EventChains as MarlinChains } from '../src/chains/marlin/types';
-import { Listener as MarlinListener } from '../src/chains/marlin/Listener';
-import { EventChains as Erc20Chain } from '../src/chains/erc20/types';
-import { Listener as Erc20Listener } from '../src/chains/erc20/Listener';
 
 import {
   EventSupportingChains,

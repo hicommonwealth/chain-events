@@ -1,11 +1,9 @@
 import { createNode } from '../../src/server';
 import { getRabbitMQConfig } from '../../src/util';
-import { listeners } from '../../src/listener';
 
 import fetch from 'node-fetch';
 // @ts-ignore
 import chai from 'chai';
-import { getSubstrateSpecs } from '../../src/util';
 
 const { assert } = chai;
 
