@@ -1,5 +1,5 @@
 import * as yargs from 'yargs';
-import { getRabbitMQConfig } from '../src/util';
+import { createListener, getRabbitMQConfig } from '../src/util';
 import { EventChains as SubstrateChains } from '../src/chains/substrate/types';
 import { Listener as SubstrateListener } from '../src/chains/substrate/Listener';
 import { EventChains as MolochChains } from '../src/chains/moloch/types';
@@ -141,71 +141,27 @@ const argv = yargs
   }).argv;
 
 let listener;
-if (chainSupportedBy(argv.network, SubstrateChains)) {
-  // start a substrate listener
-  listener = new SubstrateListener(
-    argv.network,
-    argv.url,
-    argv.spec,
-    argv.archival,
-    argv.startBlock,
-    argv.skipCatchup,
-    null,
-    argv.verbose
-  );
-} else if (chainSupportedBy(argv.network, MolochChains)) {
-  listener = new MolochListener(
-    argv.network,
-    argv.MolochContractVersion as 1 | 2,
-    argv.MolochContractAddress,
-    argv.url,
-    argv.archival,
-    argv.startBlock,
-    argv.skipCatchup,
-    null,
-    argv.verbose
-  );
-} else if (chainSupportedBy(argv.network, MarlinChains)) {
-  const contractAddresses = {
-    comp: argv.MarlinContractAddress[0],
-    governorAlpha: argv.MarlinContractAddress[1],
-    timelock: argv.MarlinContractAddress[2],
-  };
-  listener = new MarlinListener(
-    argv.network,
-    contractAddresses,
-    argv.url,
-    argv.archival,
-    argv.startBlock,
-    argv.skipCatchup,
-    null,
-    argv.verbose
-  );
-} else if (chainSupportedBy(argv.network, Erc20Chain)) {
-  listener = new Erc20Listener(
-    argv.network,
-    argv.Erc20TokenAddresses as string[], // addresses of contracts to track
-    argv.url, // ethNetowrkUrl aka the access point to ethereum
-    argv.archival,
-    argv.startBlock,
-    argv.skipCatchup,
-    null,
-    argv.verbose
-  );
-}
-
-listener.init().then(async () => {
-  // add any handlers here
-
-  if (argv.rabbitMQ) {
-    const producer = new RabbitMqHandler(argv.rabbitMQ);
-    await producer.init();
-    listener.eventHandlers['rabbitmq'] = {
-      handler: producer,
-      excludedEvents: [],
-    };
-  }
-
-  // start the subscription
-  await listener.subscribe();
+createListener(argv.network, argv as any).then((res) => {
+  if (res instanceof Error) throw res;
+  else listener = res;
 });
+
+if (listener) {
+  listener.init().then(async () => {
+    // add any handlers here
+
+    if (argv.rabbitMQ) {
+      const producer = new RabbitMqHandler(argv.rabbitMQ);
+      await producer.init();
+      listener.eventHandlers['rabbitmq'] = {
+        handler: producer,
+        excludedEvents: [],
+      };
+    }
+
+    // start the subscription
+    await listener.subscribe();
+  });
+} else {
+  throw new Error('Could not start the listener!');
+}

@@ -1,14 +1,7 @@
 import express from 'express';
 
-import { chainSupportedBy, IChainEventKind, isSupportedChain } from './index';
-import { StorageFetcher } from './chains/substrate';
-import { EventChains as SubstrateEventChains } from './chains/substrate/types';
-import {
-  SubstrateListener,
-  MolochListener,
-  MarlinListener,
-  Erc20Listener,
-} from '../src/chains';
+import { IChainEventKind, isSupportedChain } from './index';
+import { createListener } from './util';
 
 const listeners: { [key: string]: any } = {};
 
@@ -78,7 +71,7 @@ export function createNode() {
     if (!isSupportedChain(chain))
       return res.status(400).json({ error: `${chain} is not supported` });
 
-    if (listeners[chain]?.subscriber) {
+    if (listeners[chain]?.subscribed) {
       res
         .status(400)
         .json({ error: `Listener for ${chain} is already active` });
@@ -117,7 +110,7 @@ export function createNode() {
     }
 
     try {
-      deleteListener(chain);
+      listeners[chain] = null;
       res.status(200).json({ message: 'Success' });
     } catch (error) {
       res.status(400).json({ error: error });
@@ -132,7 +125,7 @@ export function createNode() {
    *   "excludedEvents: []
    * }
    */
-  app.post('/setExcludedEvents', (req, res) => {
+  app.post('/setGlobalExcludedEvents', (req, res) => {
     const chain: string = req.body.chain;
     const excludedEvents: IChainEventKind[] = req.body.excludedEvents;
 
@@ -154,7 +147,7 @@ export function createNode() {
     }
 
     try {
-      listeners[chain].args.excludedEvents = excludedEvents;
+      listeners[chain].globalExcludedEvents = excludedEvents;
       res.status(200).json({ message: 'Success' });
     } catch (error) {
       res.status(400).json(error);
@@ -162,46 +155,46 @@ export function createNode() {
   });
 
   // addressArr may be large so get request is not suitable
-  app.post('/getIdentity', async (req, res) => {
-    const chain: string = req.body.chain;
-    const addressArr: string[] = req.body.addresses;
-
-    if (!chain || !addressArr) {
-      res.status(400).json({
-        error: `The ${!chain ? 'chain' : 'address array'} is not defined`,
-      });
-      return;
-    }
-
-    if (listeners[chain]?.subscriber == null) {
-      res
-        .status(400)
-        .json({ error: `ERROR - There is no active listener for ${chain}` });
-      return;
-    }
-
-    // This may change if supporting other chain identities
-    if (!chainSupportedBy(chain, SubstrateEventChains)) {
-      return res
-        .status(400)
-        .json({ message: `${chain} is not a Substrate chain` });
-    }
-
-    try {
-      if (!listeners[chain].storageFetcher)
-        listeners[chain].storageFetcher = new StorageFetcher(
-          listeners[chain].subscriber.api
-        );
-
-      return res.status(200).json({
-        identityEvents: await listeners[chain].storageFetcher.fetchIdentities(
-          addressArr
-        ),
-      });
-    } catch (error) {
-      res.status(400).json({ error: error });
-    }
-  });
+  // app.post('/getIdentity', async (req, res) => {
+  //   const chain: string = req.body.chain;
+  //   const addressArr: string[] = req.body.addresses;
+  //
+  //   if (!chain || !addressArr) {
+  //     res.status(400).json({
+  //       error: `The ${!chain ? 'chain' : 'address array'} is not defined`,
+  //     });
+  //     return;
+  //   }
+  //
+  //   if (listeners[chain]?.subscribed == null) {
+  //     res
+  //       .status(400)
+  //       .json({ error: `ERROR - There is no active listener for ${chain}` });
+  //     return;
+  //   }
+  //
+  //   // This may change if supporting other chain identities
+  //   if (!chainSupportedBy(chain, SubstrateEventChains)) {
+  //     return res
+  //       .status(400)
+  //       .json({ message: `${chain} is not a Substrate chain` });
+  //   }
+  //
+  //   try {
+  //     if (!listeners[chain].storageFetcher)
+  //       listeners[chain].storageFetcher = new StorageFetcher(
+  //         listeners[chain].subscriber.api
+  //       );
+  //
+  //     return res.status(200).json({
+  //       identityEvents: await listeners[chain].storageFetcher.fetchIdentities(
+  //         addressArr
+  //       ),
+  //     });
+  //   } catch (error) {
+  //     res.status(400).json({ error: error });
+  //   }
+  // });
 
   app.listen(port, () => {
     console.log(`Events node started at http://localhost:${port}`);
