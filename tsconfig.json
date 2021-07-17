@@ -27,5 +27,6 @@
     "./dist",
     "./node_modules",
     "./test",
+    "./scripts"
   ]
 }

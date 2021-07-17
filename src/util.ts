@@ -15,10 +15,10 @@ import { Listener as Erc20Listener } from './chains/erc20/Listener';
 import { Listener } from './Listener';
 import {
   molochContracts,
-  networkSpecs,
   networkUrls,
   marlinContracts,
   Erc20TokenUrls,
+  networkSpecs,
 } from './index';
 
 // TODO: generalize this for any config file at any path

@@ -1,9 +1,9 @@
 import { RegisteredTypes } from '@polkadot/types/types';
-import { CloverSpec } from '../scripts/specs/clover';
-import { HydraDXSpec } from '../scripts/specs/hydraDX';
-import { KulupuSpec } from '../scripts/specs/kulupu';
+import { CloverSpec } from './specs/clover';
+import { HydraDXSpec } from './specs/hydraDX';
+import { KulupuSpec } from './specs/kulupu';
 import { spec as EdgewareSpec } from '@edgeware/node-types';
-import { StafiSpec } from '../scripts/specs/stafi';
+import { StafiSpec } from './specs/stafi';
 import { EventKind as SubstrateEventKind } from './chains/substrate/types';
 
 export * from './interfaces';
@@ -15,6 +15,10 @@ export * as SubstrateEvents from './chains/substrate/index';
 export * as SubstrateTypes from './chains/substrate/types';
 export * as Erc20Events from './chains/erc20/index';
 export * as Erc20Types from './chains/erc20/types';
+export * as SubstrateListener from './chains/substrate/Listener';
+export * as MolochListener from './chains/moloch/Listener';
+export * as MarlinListener from './chains/marlin/Listener';
+export * as Erc20Listener from './chains/erc20/Listener';
 
 // defaults
 export const networkUrls = {
@@ -32,6 +36,7 @@ export const networkUrls = {
   marlin: 'wss://mainnet.infura.io/ws',
   'marlin-local': 'ws://127.0.0.1:9545',
 } as const;
+
 export const networkSpecs: { [chain: string]: RegisteredTypes } = {
   clover: CloverSpec,
   hydradx: HydraDXSpec,
@@ -41,6 +46,7 @@ export const networkSpecs: { [chain: string]: RegisteredTypes } = {
   'edgeware-testnet': EdgewareSpec,
   stafi: StafiSpec,
 };
+
 export const molochContracts = {
   moloch: '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
