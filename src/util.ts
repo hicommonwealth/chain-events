@@ -2,7 +2,10 @@ import fs from 'fs';
 import config from './rabbitmq/RabbitMQconfig.json';
 import { chainSupportedBy } from './interfaces';
 import { EventChains as SubstrateChains } from './chains/substrate/types';
-import { Listener as SubstrateListener } from './chains/substrate';
+import {
+  EnricherConfig,
+  Listener as SubstrateListener,
+} from './chains/substrate';
 import { EventChains as MolochChains } from './chains/moloch/types';
 import { Listener as MolochListener } from './chains/moloch/Listener';
 import { EventChains as MarlinChains } from './chains/marlin/types';
@@ -10,6 +13,13 @@ import { Listener as MarlinListener } from './chains/marlin/Listener';
 import { EventChains as Erc20Chain } from './chains/erc20/types';
 import { Listener as Erc20Listener } from './chains/erc20/Listener';
 import { Listener } from './Listener';
+import {
+  molochContracts,
+  networkSpecs,
+  networkUrls,
+  marlinContracts,
+  Erc20TokenUrls,
+} from './index';
 
 // TODO: generalize this for any config file at any path
 // returns either the RabbitMQ config specified by the filepath or the default config
@@ -36,20 +46,21 @@ export function getRabbitMQConfig(filepath?: string) {
 export async function createListener(
   chain: string,
   options: {
-    Erc20TokenAddresses: string[];
-    MarlinContractAddress: {
+    Erc20TokenAddresses?: string[];
+    MarlinContractAddress?: {
       comp: string;
       governorAlpha: string;
       timelock: string;
     };
-    MolochContractAddress: string;
-    MolochContractVersion: 1 | 2;
+    MolochContractAddress?: string;
+    MolochContractVersion?: 1 | 2;
     verbose?: boolean;
     skipCatchup?: boolean;
     startBlock?: number;
     archival?: boolean;
     spec?: {};
-    url: string;
+    url?: string;
+    enricherConfig?: EnricherConfig;
   }
 ): Promise<Listener> {
   let listener;
@@ -59,44 +70,47 @@ export async function createListener(
       // start a substrate listener
       listener = new SubstrateListener(
         chain,
-        options.url,
-        options.spec,
-        options.archival,
-        options.startBlock,
-        options.skipCatchup,
-        {},
-        options.verbose
+        options.url || networkUrls[chain],
+        options.spec || networkSpecs[chain] || {},
+        !!options.archival,
+        options.startBlock || 0,
+        !!options.skipCatchup,
+        options.enricherConfig || {},
+        !!options.verbose
       );
     } else if (chainSupportedBy(chain, MolochChains)) {
       listener = new MolochListener(
         chain,
-        options.MolochContractVersion as 1 | 2,
-        options.MolochContractAddress,
-        options.url,
-        options.startBlock,
-        options.skipCatchup,
-        options.verbose
+        options.MolochContractVersion == 1 || options.MolochContractVersion == 2
+          ? options.MolochContractVersion
+          : 2,
+        options.MolochContractAddress || molochContracts[chain],
+        options.url || networkUrls[chain],
+        options.startBlock || 0,
+        !!options.skipCatchup,
+        !!options.verbose
       );
     } else if (chainSupportedBy(chain, MarlinChains)) {
       const contractAddresses = {
-        comp: options.MarlinContractAddress[0],
-        governorAlpha: options.MarlinContractAddress[1],
-        timelock: options.MarlinContractAddress[2],
+        comp: options.MarlinContractAddress[0] || marlinContracts.comp,
+        governorAlpha:
+          options.MarlinContractAddress[1] || marlinContracts.governorAlpha,
+        timelock: options.MarlinContractAddress[2] || marlinContracts.timelock,
       };
       listener = new MarlinListener(
         chain,
         contractAddresses,
-        options.url,
-        options.startBlock,
-        options.skipCatchup,
-        options.verbose
+        options.url || networkUrls[chain],
+        options.startBlock || 0,
+        !!options.skipCatchup,
+        !!options.verbose
       );
     } else if (chainSupportedBy(chain, Erc20Chain)) {
       listener = new Erc20Listener(
         chain,
-        options.Erc20TokenAddresses as string[], // addresses of contracts to track
-        options.url, // ethNetowrkUrl aka the access point to ethereum
-        options.verbose
+        (options.Erc20TokenAddresses as string[]) || Erc20TokenUrls, // addresses of contracts to track
+        options.url || networkUrls[chain], // ethNetowrkUrl aka the access point to ethereum
+        !!options.verbose
       );
     }
   } catch (error) {

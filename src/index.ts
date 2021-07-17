@@ -45,12 +45,12 @@ export const molochContracts = {
   moloch: '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
 };
-const marlinContracts = {
+export const marlinContracts = {
   comp: '0xEa2923b099b4B588FdFAD47201d747e3b9599A5f', // TESTNET
   governorAlpha: '0xeDAA76873524f6A203De2Fa792AD97E459Fca6Ff', // TESTNET
   timelock: '0x7d89D52c464051FcCbe35918cf966e2135a17c43', // TESTNET
 };
-const Erc20TokenUrls = [
+export const Erc20TokenUrls = [
   'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokenlist.aave.eth.link',
   'https://gateway.ipfs.io/ipns/tokens.uniswap.org',
   'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link',
