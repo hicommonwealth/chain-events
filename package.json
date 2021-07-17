@@ -25,7 +25,7 @@
     "ganache": "ganache-cli -m \"Alice\" -p 9545 -l 800000000 --allowUnlimitedContractSize",
     "batch-poll": "ts-node -T ./scripts/batchPoller.ts",
     "preyalcpublish": "tsc",
-    "postinstall": "npx install-peers && tsc --outDir ./build"
+    "postinstall": "npm install-peers && tsc --outDir ./build"
   },
   "engines": {
     "node": ">=14"
