@@ -17,6 +17,6 @@ export declare class Listener extends BaseListener {
     private processMissedBlocks;
     get lastBlockNumber(): number;
     get chain(): string;
-    get listenerArgs(): MarlinListenerOptions;
+    get options(): MarlinListenerOptions;
     get subscribed(): boolean;
 }

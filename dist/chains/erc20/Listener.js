@@ -98,7 +98,7 @@ class Listener extends Listener_1.Listener {
     get chain() {
         return this._chain;
     }
-    get listenerArgs() {
+    get options() {
         return this._options;
     }
     get subscribed() {

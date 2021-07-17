@@ -113,7 +113,7 @@ export class Listener extends BaseListener {
     return this._chain;
   }
 
-  public get listenerArgs(): Erc20ListenerOptions {
+  public get options(): Erc20ListenerOptions {
     return this._options;
   }
 

@@ -21,4 +21,5 @@ export declare abstract class Listener {
     protected abstract processBlock(block: any): Promise<void>;
     get chain(): string;
     get subscribed(): boolean;
+    abstract get options(): {};
 }

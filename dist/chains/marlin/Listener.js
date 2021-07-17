@@ -72,7 +72,7 @@ class Listener extends Listener_1.Listener {
                 return;
             }
             // processed blocks missed during downtime
-            if (!this.listenerArgs.skipCatchup)
+            if (!this._options.skipCatchup)
                 yield this.processMissedBlocks();
             else
                 console.log('Skipping event catchup on startup!');
@@ -152,7 +152,7 @@ class Listener extends Listener_1.Listener {
     get chain() {
         return this._chain;
     }
-    get listenerArgs() {
+    get options() {
         return this._options;
     }
     get subscribed() {

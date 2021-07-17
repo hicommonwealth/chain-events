@@ -15,6 +15,6 @@ export declare class Listener extends BaseListener {
     updateContractAddress(address: string): Promise<void>;
     get lastBlockNumber(): number;
     get chain(): string;
-    get listenerArgs(): MolochListenerOptions;
+    get options(): MolochListenerOptions;
     get subscribed(): boolean;
 }

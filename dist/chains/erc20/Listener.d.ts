@@ -10,6 +10,6 @@ export declare class Listener extends BaseListener {
     updateTokenList(tokenAddresses: string[]): Promise<void>;
     protected processBlock(event: RawEvent): Promise<void>;
     get chain(): string;
-    get listenerArgs(): Erc20ListenerOptions;
+    get options(): Erc20ListenerOptions;
     get subscribed(): boolean;
 }

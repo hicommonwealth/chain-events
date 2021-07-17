@@ -103,7 +103,7 @@ export class Listener extends BaseListener {
     }
 
     // processed blocks missed during downtime
-    if (!this.listenerArgs.skipCatchup) await this.processMissedBlocks();
+    if (!this._options.skipCatchup) await this.processMissedBlocks();
     else console.log('Skipping event catchup on startup!');
 
     try {
@@ -193,7 +193,7 @@ export class Listener extends BaseListener {
     return this._chain;
   }
 
-  public get listenerArgs(): MolochListenerOptions {
+  public get options(): MolochListenerOptions {
     return this._options;
   }
 
