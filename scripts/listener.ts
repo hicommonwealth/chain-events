@@ -125,35 +125,39 @@ const argv = yargs
     ) {
       throw new Error('cannot pass contract address on non-moloch network');
     }
-    data.Erc20TokenAddresses.forEach((item) => {
-      if (typeof item != 'string')
-        throw new Error('Erc20 token addresses must be strings');
-    });
+    if (data.Erc20TokenAddresses) {
+      data.Erc20TokenAddresses.forEach((item) => {
+        if (typeof item != 'string')
+          throw new Error('Erc20 token addresses must be strings');
+      });
+    }
     return true;
   }).argv;
 
 let listener;
-createListener(argv.network, argv as any).then((res) => {
-  if (res instanceof Error) throw res;
-  else listener = res;
-});
+createListener(argv.network, argv as any)
+  .then((res) => {
+    if (res instanceof Error) throw res;
+    else listener = res;
+  })
+  .then(() => {
+    if (listener) {
+      listener.init().then(async () => {
+        // add any handlers here
 
-if (listener) {
-  listener.init().then(async () => {
-    // add any handlers here
+        if (argv.rabbitMQ) {
+          const producer = new RabbitMqHandler(argv.rabbitMQ);
+          await producer.init();
+          listener.eventHandlers['rabbitmq'] = {
+            handler: producer,
+            excludedEvents: [],
+          };
+        }
 
-    if (argv.rabbitMQ) {
-      const producer = new RabbitMqHandler(argv.rabbitMQ);
-      await producer.init();
-      listener.eventHandlers['rabbitmq'] = {
-        handler: producer,
-        excludedEvents: [],
-      };
+        // start the subscription
+        await listener.subscribe();
+      });
+    } else {
+      throw new Error('Could not start the listener!');
     }
-
-    // start the subscription
-    await listener.subscribe();
   });
-} else {
-  throw new Error('Could not start the listener!');
-}

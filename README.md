@@ -286,9 +286,3 @@ events DB nodes poll the database for the information that is specific to them.
   
 - `NODE_ENV`: ("production" || "development") - optional
 - `DATABASE_URL`: The url of the database to connect to. If `NODE_ENV` = production this url is the default.
-
-
-TODO:
-Add HTTP POST handler
-Make the RabbitMQ consumer a parent class and then the producer handler should extend
-the consumer

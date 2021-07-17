@@ -26,7 +26,7 @@ export class Listener extends BaseListener {
   private readonly _options: ISubstrateListenerOptions;
   public _storageFetcher: IStorageFetcher<ApiPromise>;
   private _poller: IEventPoller<ApiPromise, Block>;
-  private _lastBlockNumber: number;
+  public _lastBlockNumber: number;
 
   constructor(
     chain: EventSupportingChainT,
@@ -91,7 +91,7 @@ export class Listener extends BaseListener {
 
     try {
       console.info(`Subscribing to ${this._chain} on url ${this._options.url}`);
-      await this._subscriber.subscribe(this.processBlock);
+      await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
       console.error(`Subscription error: ${error.message}`);
@@ -177,8 +177,9 @@ export class Listener extends BaseListener {
 
     const events: CWEvent[] = await this._processor.process(block);
 
-    for (const event of events)
-      await this.handleEvent(event as CWEvent<IEventData>);
+    for (const event of events) {
+      await this.handleEvent(event as any);
+    }
   }
 
   public get lastBlockNumber(): number {

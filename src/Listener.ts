@@ -28,6 +28,7 @@ export abstract class Listener {
     this._chain = chain;
     this.eventHandlers = {};
     this._verbose = !!verbose;
+    this.globalExcludedEvents = [];
   }
 
   public abstract init(): Promise<void>;
@@ -40,8 +41,8 @@ export abstract class Listener {
       return;
     }
 
-    if (this._subscribed) {
-      console.log(`The listener for ${this._chain} is already subscribed`);
+    if (!this._subscribed) {
+      console.log(`The listener for ${this._chain} is not subscribed`);
       return;
     }
 

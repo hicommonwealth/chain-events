@@ -72,7 +72,7 @@ export class Listener extends BaseListener {
       console.info(
         `Subscribing to ERC20 contracts: ${this._chain}, on url ${this._options.url}`
       );
-      await this._subscriber.subscribe(this.processBlock);
+      await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
       console.error(`Subscription error: ${error.message}`);
