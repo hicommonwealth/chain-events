@@ -15,6 +15,7 @@ export * as Erc20Listener from './chains/erc20/Listener';
 export { createListener, getRabbitMQConfig } from '../src/util';
 export * from './handlers';
 export * from './rabbitmq/producer';
+export * from './Listener';
 export declare const networkUrls: {
     readonly clover: "wss://api.clover.finance";
     readonly hydradx: "wss://rpc-01.snakenet.hydradx.io";
