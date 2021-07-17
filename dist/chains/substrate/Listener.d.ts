@@ -19,4 +19,5 @@ export declare class Listener extends BaseListener {
     protected processBlock(block: Block): Promise<void>;
     get lastBlockNumber(): number;
     get options(): ISubstrateListenerOptions;
+    get storageFetcher(): IStorageFetcher<ApiPromise>;
 }

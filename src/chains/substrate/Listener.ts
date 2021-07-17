@@ -189,4 +189,8 @@ export class Listener extends BaseListener {
   public get options(): ISubstrateListenerOptions {
     return this._options;
   }
+
+  public get storageFetcher(): IStorageFetcher<ApiPromise> {
+    return this._storageFetcher;
+  }
 }

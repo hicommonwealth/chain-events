@@ -150,6 +150,9 @@ class Listener extends Listener_1.Listener {
     get options() {
         return this._options;
     }
+    get storageFetcher() {
+        return this._storageFetcher;
+    }
 }
 exports.Listener = Listener;
 //# sourceMappingURL=Listener.js.map
