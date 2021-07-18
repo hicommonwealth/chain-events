@@ -19,7 +19,7 @@ export * as SubstrateListener from './chains/substrate/Listener';
 export * as MolochListener from './chains/moloch/Listener';
 export * as MarlinListener from './chains/marlin/Listener';
 export * as Erc20Listener from './chains/erc20/Listener';
-export { createListener, getRabbitMQConfig } from '../src/util';
+export { createListener, getRabbitMQConfig } from './util';
 export * from './handlers';
 export * from './rabbitmq/producer';
 export * from './Listener';
@@ -64,10 +64,4 @@ export const Erc20TokenUrls = [
   'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokenlist.aave.eth.link',
   'https://gateway.ipfs.io/ipns/tokens.uniswap.org',
   'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link',
-];
-const excludedEvents = [
-  SubstrateEventKind.Reward,
-  SubstrateEventKind.TreasuryRewardMinting,
-  SubstrateEventKind.TreasuryRewardMintingV2,
-  SubstrateEventKind.HeartbeatReceived,
 ];

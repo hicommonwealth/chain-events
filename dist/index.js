@@ -28,7 +28,6 @@ const hydraDX_1 = require("./specs/hydraDX");
 const kulupu_1 = require("./specs/kulupu");
 const node_types_1 = require("@edgeware/node-types");
 const stafi_1 = require("./specs/stafi");
-const types_1 = require("./chains/substrate/types");
 __exportStar(require("./interfaces"), exports);
 exports.MolochEvents = __importStar(require("./chains/moloch/index"));
 exports.MolochTypes = __importStar(require("./chains/moloch/types"));
@@ -42,7 +41,7 @@ exports.SubstrateListener = __importStar(require("./chains/substrate/Listener"))
 exports.MolochListener = __importStar(require("./chains/moloch/Listener"));
 exports.MarlinListener = __importStar(require("./chains/marlin/Listener"));
 exports.Erc20Listener = __importStar(require("./chains/erc20/Listener"));
-var util_1 = require("../src/util");
+var util_1 = require("./util");
 Object.defineProperty(exports, "createListener", { enumerable: true, get: function () { return util_1.createListener; } });
 Object.defineProperty(exports, "getRabbitMQConfig", { enumerable: true, get: function () { return util_1.getRabbitMQConfig; } });
 __exportStar(require("./handlers"), exports);
@@ -86,11 +85,5 @@ exports.Erc20TokenUrls = [
     'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokenlist.aave.eth.link',
     'https://gateway.ipfs.io/ipns/tokens.uniswap.org',
     'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link',
-];
-const excludedEvents = [
-    types_1.EventKind.Reward,
-    types_1.EventKind.TreasuryRewardMinting,
-    types_1.EventKind.TreasuryRewardMintingV2,
-    types_1.EventKind.HeartbeatReceived,
 ];
 //# sourceMappingURL=index.js.map
