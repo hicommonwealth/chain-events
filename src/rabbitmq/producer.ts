@@ -1,4 +1,4 @@
-// import Rascal from 'rascal';
+import Rascal from 'rascal';
 
 export class RabbitMqProducer {
   public broker;
@@ -20,9 +20,9 @@ export class RabbitMqProducer {
     console.info(
       `Rascal connecting to RabbitMQ: ${cnct.protocol}://${cnct.user}:*****@${cnct.hostname}:${cnct.port}/`
     );
-    // this.broker = await Rascal.BrokerAsPromised.create(
-    //   Rascal.withDefaultConfig(this._rabbitMQConfig)
-    // );
+    this.broker = await Rascal.BrokerAsPromised.create(
+      Rascal.withDefaultConfig(this._rabbitMQConfig)
+    );
 
     this.broker.on('error', console.error);
     this.broker.on('vhost_initialized', ({ vhost, connectionUrl }) => {
