@@ -19,7 +19,7 @@ class RabbitMqHandler extends producer_1.RabbitMqProducer {
     handle(event) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const publication = yield this.broker.publish(this.publishers[0], event);
+                const publication = yield this.broker.publish(event, this.publishers[0]);
                 publication.on('error', (err, messageId) => {
                     console.error(`Publisher error ${err}, ${messageId}`);
                 });

@@ -9,7 +9,7 @@ export class RabbitMqHandler extends RabbitMqProducer implements IEventHandler {
   // handler method used by the chain-event listeners/subscribers
   public async handle(event: CWEvent): Promise<any> {
     try {
-      const publication = await this.broker.publish(this.publishers[0], event);
+      const publication = await this.broker.publish(event, this.publishers[0]);
       publication.on('error', (err, messageId) => {
         console.error(`Publisher error ${err}, ${messageId}`);
       });

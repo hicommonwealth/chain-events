@@ -4,7 +4,6 @@ import { HydraDXSpec } from './specs/hydraDX';
 import { KulupuSpec } from './specs/kulupu';
 import { spec as EdgewareSpec } from '@edgeware/node-types';
 import { StafiSpec } from './specs/stafi';
-import { EventKind as SubstrateEventKind } from './chains/substrate/types';
 
 export * from './interfaces';
 export * as MolochEvents from './chains/moloch/index';
