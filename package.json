@@ -54,7 +54,7 @@
     "node-fetch": "^2.6.1",
     "pg": "^8.6.0",
     "pg-format": "^1.0.4",
-    "rascal": "^13.1.0",
+    "rascal": "^13.0.3",
     "sleep-promise": "^8.0.1",
     "typescript-logging": "^0.6.4",
     "underscore": "^1.10.2",
