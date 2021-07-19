@@ -1311,7 +1311,7 @@ color-name@~1.1.4:
 
 combined-stream@^1.0.6, combined-stream@^1.0.8, combined-stream@~1.0.6:
   version "1.0.8"
-  resolved "https://registry.npmjs.org/combined-stream/-/combined-stream-1.0.8.tgz"
+  resolved "https://registry.yarnpkg.com/combined-stream/-/combined-stream-1.0.8.tgz#c3d45a8b34fd730631a110a8a2520682b31d5a7f"
   integrity sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==
   dependencies:
     delayed-stream "~1.0.0"
@@ -1395,7 +1395,7 @@ cookie@0.4.0:
 
 cookiejar@^2.1.1, cookiejar@^2.1.2:
   version "2.1.2"
-  resolved "https://registry.npmjs.org/cookiejar/-/cookiejar-2.1.2.tgz"
+  resolved "https://registry.yarnpkg.com/cookiejar/-/cookiejar-2.1.2.tgz#dd8a235530752f988f9a0844f3fc589e3111125c"
   integrity sha512-Mw+adcfzPxcPeI+0WlvRrr/3lGVO0bD75SxX6811cxSh1Wbxx7xZBGK1eVtDf6si8rg2lhnUjsVLMFMfbRIuwA==
 
 core-js-pure@^3.15.0:
@@ -4501,7 +4501,7 @@ range-parser@~1.2.1:
   resolved "https://registry.npmjs.org/range-parser/-/range-parser-1.2.1.tgz"
   integrity sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==
 
-rascal@^13.0.3:
+rascal@^13.1.0:
   version "13.1.0"
   resolved "https://registry.yarnpkg.com/rascal/-/rascal-13.1.0.tgz#29b8ae0caebbec03de0c5c0ba68e49077a2fec57"
   integrity sha512-D1rpRCrwsG50lcnJyNkHQI7cXION0VowOf+ZZtvTYPizBsLuEqeLkqyCW0gdH/9RTXdWPn3KG31/FuCgaUH3mw==
