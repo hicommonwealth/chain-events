@@ -8,7 +8,7 @@ import * as Erc20Types from './chains/erc20/types';
 export declare type IChainEntityKind = SubstrateTypes.EntityKind | MolochTypes.EntityKind | MarlinTypes.EntityKind;
 export declare type IChainEventData = SubstrateTypes.IEventData | MolochTypes.IEventData | MarlinTypes.IEventData | Erc20Types.IEventData;
 export declare type IChainEventKind = SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind | Erc20Types.EventKind;
-export declare const ChainEventKinds: (MolochTypes.EventKind | MarlinTypes.EventKind | Erc20Types.EventKind | SubstrateTypes.EventKind)[];
+export declare const ChainEventKinds: (SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind | Erc20Types.EventKind)[];
 export declare const EventSupportingChains: readonly ["clover", "edgeware", "edgeware-local", "edgeware-testnet", "hydradx", "kusama", "kusama-local", "polkadot", "polkadot-local", "kulupu", "stafi", "moloch", "moloch-local", "marlin", "marlin-local", "erc20"];
 export declare type EventSupportingChainT = typeof EventSupportingChains[number];
 export declare function chainSupportedBy<T extends readonly string[]>(c: string, eventChains: T): c is T[number];
