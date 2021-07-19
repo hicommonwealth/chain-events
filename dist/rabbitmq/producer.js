@@ -1,4 +1,5 @@
 "use strict";
+// import Rascal from 'rascal';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,12 +9,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RabbitMqProducer = void 0;
-const rascal_1 = __importDefault(require("rascal"));
 class RabbitMqProducer {
     constructor(_rabbitMQConfig) {
         this._rabbitMQConfig = _rabbitMQConfig;
@@ -28,7 +25,9 @@ class RabbitMqProducer {
             // this assumes the vhost is '/' --> change soon
             const cnct = this._vhost.connection;
             console.info(`Rascal connecting to RabbitMQ: ${cnct.protocol}://${cnct.user}:*****@${cnct.hostname}:${cnct.port}/`);
-            this.broker = yield rascal_1.default.BrokerAsPromised.create(rascal_1.default.withDefaultConfig(this._rabbitMQConfig));
+            // this.broker = await Rascal.BrokerAsPromised.create(
+            //   Rascal.withDefaultConfig(this._rabbitMQConfig)
+            // );
             this.broker.on('error', console.error);
             this.broker.on('vhost_initialized', ({ vhost, connectionUrl }) => {
                 console.info(`Vhost: ${vhost} was initialised using connection: ${connectionUrl}`);

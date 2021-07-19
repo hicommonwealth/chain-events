@@ -18,10 +18,10 @@ export * as SubstrateListener from './chains/substrate/Listener';
 export * as MolochListener from './chains/moloch/Listener';
 export * as MarlinListener from './chains/marlin/Listener';
 export * as Erc20Listener from './chains/erc20/Listener';
-// export { createListener, getRabbitMQConfig } from './util';
+export { createListener, getRabbitMQConfig } from './util';
 export * from './handlers';
-// export * from './rabbitmq/producer';
-// export * from './Listener';
+export * from './rabbitmq/producer';
+export * from './Listener';
 
 // defaults
 export const networkUrls = {

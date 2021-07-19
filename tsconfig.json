@@ -21,12 +21,12 @@
     ]
   },
   "include": [
-    "./src"
+    "./src",
   ],
   "exclude": [
     "./dist",
     "./node_modules",
     "./test",
-    "./scripts",
+    "./scripts"
   ]
 }
