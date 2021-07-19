@@ -21,17 +21,12 @@
     ]
   },
   "include": [
-    "./src/chains",
-    "./interface",
-    "./Listener",
-    "./logging",
+    "./src"
   ],
   "exclude": [
     "./dist",
     "./node_modules",
     "./test",
     "./scripts",
-    "./src/rabbitmq",
-    "./src/handlers/rabbitmqHandler.ts"
   ]
 }

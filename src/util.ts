@@ -118,7 +118,7 @@ export async function createListener(
   }
 
   try {
-    listener.init();
+    await listener.init();
   } catch (error) {
     console.error(`Failed to initialize the listener`);
     return error;

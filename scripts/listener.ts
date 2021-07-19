@@ -9,7 +9,7 @@ import {
 } from '../src';
 
 import * as fs from 'fs';
-import { RabbitMqHandler } from '../src/handlers/rabbitmqHandler';
+import { LoggingHandler, RabbitMqHandler } from '../src/handlers';
 
 const argv = yargs
   .options({
@@ -34,7 +34,7 @@ const argv = yargs
       description: 'Moloch contract address',
     },
     MolochContractVersion: {
-      alias: 'v',
+      alias: 'mcv',
       type: 'number',
       description: 'The version of the moloch contract to use',
     },
@@ -136,28 +136,31 @@ const argv = yargs
 
 let listener;
 createListener(argv.network, argv as any)
-  .then((res) => {
+  .then(async (res) => {
     if (res instanceof Error) throw res;
     else listener = res;
-  })
-  .then(() => {
-    if (listener) {
-      listener.init().then(async () => {
-        // add any handlers here
 
-        if (argv.rabbitMQ) {
-          const producer = new RabbitMqHandler(argv.rabbitMQ);
-          await producer.init();
-          listener.eventHandlers['rabbitmq'] = {
-            handler: producer,
-            excludedEvents: [],
-          };
-        }
+    // add any handlers
 
-        // start the subscription
-        await listener.subscribe();
-      });
-    } else {
-      throw new Error('Could not start the listener!');
+    if (argv.rabbitMQ) {
+      const producer = new RabbitMqHandler(argv.rabbitMQ);
+      await producer.init();
+      listener.eventHandlers['rabbitmq'] = {
+        handler: producer,
+        excludedEvents: [],
+      };
     }
+
+    if (argv.verbose) {
+      const logger = new LoggingHandler();
+      listener.eventHandlers['logger'] = {
+        handler: logger,
+        excludedEvents: [],
+      };
+    }
+
+    await listener.subscribe();
+  })
+  .catch((error) => {
+    throw error;
   });
