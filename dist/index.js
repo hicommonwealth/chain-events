@@ -45,7 +45,7 @@ var util_1 = require("./util");
 Object.defineProperty(exports, "createListener", { enumerable: true, get: function () { return util_1.createListener; } });
 Object.defineProperty(exports, "getRabbitMQConfig", { enumerable: true, get: function () { return util_1.getRabbitMQConfig; } });
 __exportStar(require("./handlers"), exports);
-// export * from './rabbitmq/producer';
+__exportStar(require("./rabbitmq/producer"), exports);
 __exportStar(require("./Listener"), exports);
 // defaults
 exports.networkUrls = {
