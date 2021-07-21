@@ -14,14 +14,6 @@ export * as SubstrateEvents from './chains/substrate/index';
 export * as SubstrateTypes from './chains/substrate/types';
 export * as Erc20Events from './chains/erc20/index';
 export * as Erc20Types from './chains/erc20/types';
-export * as SubstrateListener from './chains/substrate/Listener';
-export * as MolochListener from './chains/moloch/Listener';
-export * as MarlinListener from './chains/marlin/Listener';
-export * as Erc20Listener from './chains/erc20/Listener';
-export { createListener, getRabbitMQConfig } from './util';
-export * from './handlers';
-export * from './rabbitmq/producer';
-export * from './Listener';
 
 // defaults
 export const networkUrls = {

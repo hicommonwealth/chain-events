@@ -22,12 +22,14 @@
     ]
   },
   "include": [
-    "./src",
+    "./src/"
   ],
   "exclude": [
     "./dist",
     "./node_modules",
     "./test",
-    "./scripts"
+    "./scripts",
+    "./src/handlers",
+    "./src/rabbitmq"
   ]
 }
