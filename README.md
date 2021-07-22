@@ -199,12 +199,19 @@ is very easy!
 
 Just extend the `IEventHandler` and implement the `handle` method:
 ```typescript
-class ExampleEventHandler extends IEventHandler {
+import {CWEvent, IEventHandler} from "chain-event-types"
+
+class ExampleEventHandler implements IEventHandler {
   public async handle(event: CWEvent): Promise<void> {
     // your code goes here
   }
 }
 ```
+
+In order to use chain-event-types in your project you will need to install chain-event-types from
+'git+https://github.com/timolegros/chain-events.git#build.types' and have the following dev dependencies:
+- '@polkadot/types'
+- '@polkadot/api'
 
 
 The easiest usage of the package involves calling `subscribeEvents` directly, which initializes the various components automatically. Do this for Substrate as follows.
