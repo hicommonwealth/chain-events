@@ -1,10 +1,9 @@
 import { RegisteredTypes } from '@polkadot/types/types';
-import { CloverSpec } from '../scripts/specs/clover';
-import { HydraDXSpec } from '../scripts/specs/hydraDX';
-import { KulupuSpec } from '../scripts/specs/kulupu';
+import { CloverSpec } from './specs/clover';
+import { HydraDXSpec } from './specs/hydraDX';
+import { KulupuSpec } from './specs/kulupu';
 import { spec as EdgewareSpec } from '@edgeware/node-types';
-import { StafiSpec } from '../scripts/specs/stafi';
-import { EventKind as SubstrateEventKind } from './chains/substrate/types';
+import { StafiSpec } from './specs/stafi';
 
 export * from './interfaces';
 export * as MolochEvents from './chains/moloch/index';
@@ -32,6 +31,7 @@ export const networkUrls = {
   marlin: 'wss://mainnet.infura.io/ws',
   'marlin-local': 'ws://127.0.0.1:9545',
 } as const;
+
 export const networkSpecs: { [chain: string]: RegisteredTypes } = {
   clover: CloverSpec,
   hydradx: HydraDXSpec,
@@ -41,6 +41,7 @@ export const networkSpecs: { [chain: string]: RegisteredTypes } = {
   'edgeware-testnet': EdgewareSpec,
   stafi: StafiSpec,
 };
+
 export const molochContracts = {
   moloch: '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
@@ -54,10 +55,4 @@ export const Erc20TokenUrls = [
   'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokenlist.aave.eth.link',
   'https://gateway.ipfs.io/ipns/tokens.uniswap.org',
   'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link',
-];
-const excludedEvents = [
-  SubstrateEventKind.Reward,
-  SubstrateEventKind.TreasuryRewardMinting,
-  SubstrateEventKind.TreasuryRewardMintingV2,
-  SubstrateEventKind.HeartbeatReceived,
 ];

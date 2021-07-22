@@ -1,17 +1,18 @@
 {
   "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "./dist",
     "allowJs": true,
     "target": "es6",
     "moduleResolution": "node",
     "module": "commonjs",
     "allowSyntheticDefaultImports": true,
-    "outDir": "./dist",
     "baseUrl": "./src",
     "paths": {
       "@polkadot/api/augment": ["./node_modules/@edgeware/node-types/interfaces/augment-api.d.ts"],
-      "@polkadot/types/augment": ["./node_modules/@edgeware/node-types/interfaces/augment-types.d.ts"],
+      "@polkadot/types/augment": ["./node_modules/@edgeware/node-types/interfaces/augment-types.d.ts"]
     },
-    "declaration": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "downlevelIteration": true,
@@ -21,12 +22,16 @@
     ]
   },
   "include": [
-    "./src",
+    "./src/",
+    "./src/chains/erc20/contractTypes/Erc20.d.ts",
+    "./src/chains/erc20/contractTypes/index.d.ts",
   ],
   "exclude": [
     "./dist",
     "./node_modules",
     "./test",
-    "./scripts"
+    "./scripts",
+    "./src/handlers",
+    "./src/rabbitmq"
   ]
 }

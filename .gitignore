@@ -6,7 +6,6 @@ yarn-error.log
 .nyc_output/
 coverage/
 .env
-dist/
 *.tgz
 
 .yalc/

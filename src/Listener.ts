@@ -32,7 +32,9 @@ export abstract class Listener {
   }
 
   public abstract init(): Promise<void>;
+
   public abstract subscribe(): Promise<void>;
+
   public async unsubscribe(): Promise<void> {
     if (!this._subscriber) {
       console.log(
@@ -49,6 +51,7 @@ export abstract class Listener {
     this._subscriber.unsubscribe();
     this._subscribed = false;
   }
+
   protected async handleEvent(event: CWEvent<IChainEventData>): Promise<void> {
     let prevResult;
 
@@ -71,6 +74,7 @@ export abstract class Listener {
       }
     }
   }
+
   protected abstract processBlock(block: any): Promise<void>;
 
   public get chain(): string {
@@ -80,4 +84,6 @@ export abstract class Listener {
   public get subscribed(): boolean {
     return this._subscribed;
   }
+
+  public abstract get options(): {};
 }
