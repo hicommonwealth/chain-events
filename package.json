@@ -10,7 +10,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "build-types": "tsc --project tsconfig.types.json",
+    "build-types": "tsc --project tsconfig.types.json --outDir dist && copyfiles -u 1 \"src/**/*.d.ts\" dist",
     "prepare": "npx install-peers",
     "install-peers": "install-peers",
     "unit-test": "nyc ts-mocha --config ./.mocharc.json ./test/unit/**/*.spec.ts",
@@ -79,6 +79,7 @@
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "chai": "^4.2.0",
+    "copyfiles": "^2.4.1",
     "eslint": "^7.14.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-config-prettier": "^6.10.1",

@@ -22,7 +22,9 @@
     ]
   },
   "include": [
-    "./src/"
+    "./src/",
+    "./src/chains/erc20/contractTypes/Erc20.d.ts",
+    "./src/chains/erc20/contractTypes/index.d.ts",
   ],
   "exclude": [
     "./dist",
