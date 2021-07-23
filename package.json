@@ -9,7 +9,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc --project tsconfig.json",
+    "build": "tsc --project tsconfig.json && copyfiles -u 1 \"./src/**/*.d.ts\" \"dist\"",
     "prepare": "npx install-peers",
     "install-peers": "install-peers",
     "unit-test": "nyc ts-mocha --config ./.mocharc.json ./test/unit/**/*.spec.ts",
