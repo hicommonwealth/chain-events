@@ -1,7 +1,7 @@
 {
-  "name": "@commonwealth/chain-events",
+  "name": "@commonwealth/chain-events-types",
   "version": "0.6.5",
-  "description": "Listen to various chains for events.",
+  "description": "Types for Chain-Events.",
   "license": "GPL-3.0",
   "files": [
     "dist/"
@@ -9,22 +9,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc --project tsconfig.json",
-    "prepare": "npx install-peers",
-    "install-peers": "install-peers",
-    "unit-test": "nyc ts-mocha --config ./.mocharc.json ./test/unit/**/*.spec.ts",
-    "marlin-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/marlin.spec.ts",
-    "integration-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts",
-    "test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts ./test/unit/**/*.spec.ts",
-    "lint": "eslint src/ test/",
-    "listen": "ts-node -T ./scripts/listener.ts",
-    "start-node": "ts-node -T scripts/startNode.ts",
-    "db-events-node": "WORKER_NUMBER=6 NUM_WORKERS=29 NODE_ENV=development HANDLE_IDENTITY=publish ts-node -T scripts/dbNode.ts",
-    "listen-archival": "ts-node -T ./scripts/listener.ts -n edgeware-local -a true",
-    "scrape": "ts-node -T ./scripts/scraper.ts",
-    "ganache": "ganache-cli -m \"Alice\" -p 9545 -l 800000000 --allowUnlimitedContractSize",
-    "batch-poll": "ts-node -T ./scripts/batchPoller.ts",
-    "preyalcpublish": "tsc"
+    "build-types": "tsc --project ./tsconfig.types.json && copyfiles -u 1 \\\"../src/**/*.d.ts\\\" dist",
+    "prepublish": "yarn build-types"
   },
   "engines": {
     "node": "14.x"
@@ -37,13 +23,9 @@
     "url": "https://github.com/hicommonwealth/chain-events/issues"
   },
   "homepage": "https://github.com/hicommonwealth/chain-events#readme",
-  "peerDependencies": {
-    "@polkadot/api": "4.16.2",
-    "@polkadot/api-derive": "4.16.2",
-    "@polkadot/types": "4.16.2",
-    "@polkadot/util": "^6.10.1"
-  },
   "dependencies": {
+    "@polkadot/api": "4.16.2",
+    "@polkadot/types": "4.16.2",
     "@edgeware/node-types": "^3.3.3",
     "amqplib": "^0.8.0",
     "bn.js": "^5.1.3",

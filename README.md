@@ -67,6 +67,15 @@ First ensure you bump the package version in the [package.json](./package.json) 
 ~/chain-events$ npm publish [--tag <tag>]
 ```
 
+## Publishing Types
+First navigate to [types](./types) then bump the package version and publish.
+
+```bash
+~/chain-events/types$ npm publish [--tag <tag>] --dry-run
+~/chain-events/types$ npm publish [--tag <tag>]
+```
+
+
 ## Standalone Usage
 
 This package includes an "event listener" script located at [listener.ts](./scripts/listener.ts), 

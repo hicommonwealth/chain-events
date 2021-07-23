@@ -8,7 +8,7 @@
     "moduleResolution": "node",
     "module": "commonjs",
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "./src",
+    "baseUrl": "../src",
     "paths": {
       "@polkadot/api/augment": ["./node_modules/@edgeware/node-types/interfaces/augment-api.d.ts"],
       "@polkadot/types/augment": ["./node_modules/@edgeware/node-types/interfaces/augment-types.d.ts"]
@@ -18,20 +18,18 @@
     "downlevelIteration": true,
     "sourceMap": true,
     "typeRoots": [
-      "./node_modules/@types"
+      "../node_modules/@types"
     ]
   },
   "include": [
-    "./src/",
-    "./src/chains/erc20/contractTypes/Erc20.d.ts",
-    "./src/chains/erc20/contractTypes/index.d.ts",
+    "../src/",
   ],
   "exclude": [
-    "./dist",
-    "./node_modules",
-    "./test",
-    "./scripts",
-    "./src/handlers",
-    "./src/rabbitmq"
+    "../dist",
+    "../node_modules",
+    "../test",
+    "../scripts",
+    "../src/handlers",
+    "../src/rabbitmq"
   ]
 }
