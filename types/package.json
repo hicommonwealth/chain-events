@@ -9,7 +9,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build-types": "tsc --project ./tsconfig.types.json && copyfiles -u 1 \\\"../src/**/*.d.ts\\\" dist",
+    "build-types": "tsc --project ./tsconfig.types.json --outDir ../dist && cd .. && copyfiles -u 1 \"./src/**/*.d.ts\" \"dist\"",
     "prepublish": "yarn build-types"
   },
   "engines": {
