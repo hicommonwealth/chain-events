@@ -19,4 +19,3 @@ class LoggingHandler extends interfaces_1.IEventHandler {
     }
 }
 exports.LoggingHandler = LoggingHandler;
-//# sourceMappingURL=LoggingHandler.js.map

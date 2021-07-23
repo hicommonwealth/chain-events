@@ -91,4 +91,3 @@ const _abi = [
         type: "function"
     }
 ];
-//# sourceMappingURL=OwnableFactory.js.map

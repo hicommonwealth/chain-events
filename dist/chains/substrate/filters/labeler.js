@@ -766,4 +766,3 @@ const Label = (blockNumber, chainId, data) => {
     }
 };
 exports.Label = Label;
-//# sourceMappingURL=labeler.js.map

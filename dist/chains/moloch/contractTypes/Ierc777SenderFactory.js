@@ -52,4 +52,3 @@ const _abi = [
         type: "function"
     }
 ];
-//# sourceMappingURL=Ierc777SenderFactory.js.map

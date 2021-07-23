@@ -53,4 +53,3 @@ const Title = (kind) => {
     }
 };
 exports.Title = Title;
-//# sourceMappingURL=titler.js.map

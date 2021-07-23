@@ -25,4 +25,3 @@ function currentPoints(api, era, hash, validators) {
     });
 }
 exports.currentPoints = currentPoints;
-//# sourceMappingURL=currentPoint.js.map

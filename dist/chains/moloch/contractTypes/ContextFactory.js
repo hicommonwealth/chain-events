@@ -18,4 +18,3 @@ const _abi = [
         type: "constructor"
     }
 ];
-//# sourceMappingURL=ContextFactory.js.map

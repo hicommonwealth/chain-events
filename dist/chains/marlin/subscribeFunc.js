@@ -172,4 +172,3 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
     return subscriber;
 });
 exports.subscribeEvents = subscribeEvents;
-//# sourceMappingURL=subscribeFunc.js.map

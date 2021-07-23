@@ -31,4 +31,3 @@ function ParseType(version, name) {
     }
 }
 exports.ParseType = ParseType;
-//# sourceMappingURL=type_parser.js.map

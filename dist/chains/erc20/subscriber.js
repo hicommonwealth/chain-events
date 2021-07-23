@@ -69,4 +69,3 @@ class Subscriber extends interfaces_1.IEventSubscriber {
     }
 }
 exports.Subscriber = Subscriber;
-//# sourceMappingURL=subscriber.js.map

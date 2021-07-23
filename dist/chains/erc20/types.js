@@ -19,4 +19,3 @@ class Token {
 }
 exports.Token = Token;
 exports.EventKinds = Object.values(EventKind);
-//# sourceMappingURL=types.js.map

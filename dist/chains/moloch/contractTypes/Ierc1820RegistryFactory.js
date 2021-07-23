@@ -241,4 +241,3 @@ const _abi = [
         type: "function"
     }
 ];
-//# sourceMappingURL=Ierc1820RegistryFactory.js.map

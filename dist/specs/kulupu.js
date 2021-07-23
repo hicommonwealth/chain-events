@@ -47,4 +47,3 @@ exports.KulupuSpec = {
         },
     },
 };
-//# sourceMappingURL=kulupu.js.map

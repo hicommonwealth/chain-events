@@ -66,4 +66,3 @@ function createListener(chain, options) {
     });
 }
 exports.createListener = createListener;
-//# sourceMappingURL=util.js.map

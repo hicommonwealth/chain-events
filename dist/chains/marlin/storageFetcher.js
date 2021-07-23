@@ -174,4 +174,3 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
     }
 }
 exports.StorageFetcher = StorageFetcher;
-//# sourceMappingURL=storageFetcher.js.map

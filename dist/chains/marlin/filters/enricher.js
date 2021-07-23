@@ -225,4 +225,3 @@ function Enrich(api, blockNumber, kind, rawData) {
     });
 }
 exports.Enrich = Enrich;
-//# sourceMappingURL=enricher.js.map

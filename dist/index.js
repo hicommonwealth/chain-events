@@ -37,6 +37,8 @@ exports.SubstrateEvents = __importStar(require("./chains/substrate/index"));
 exports.SubstrateTypes = __importStar(require("./chains/substrate/types"));
 exports.Erc20Events = __importStar(require("./chains/erc20/index"));
 exports.Erc20Types = __importStar(require("./chains/erc20/types"));
+__exportStar(require("./handlers"), exports);
+__exportStar(require("./util"), exports);
 // defaults
 exports.networkUrls = {
     clover: 'wss://api.clover.finance',
@@ -76,4 +78,3 @@ exports.Erc20TokenUrls = [
     'https://gateway.ipfs.io/ipns/tokens.uniswap.org',
     'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link',
 ];
-//# sourceMappingURL=index.js.map

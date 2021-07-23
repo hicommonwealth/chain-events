@@ -24,4 +24,3 @@ exports.SubstrateListener = __importStar(require("../chains/substrate/Listener")
 exports.MolochListener = __importStar(require("../chains/moloch/Listener"));
 exports.MarlinListener = __importStar(require("../chains/marlin/Listener"));
 exports.Erc20Listener = __importStar(require("../chains/erc20/Listener"));
-//# sourceMappingURL=index.js.map
