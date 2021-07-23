@@ -37,13 +37,11 @@
     "url": "https://github.com/hicommonwealth/chain-events/issues"
   },
   "homepage": "https://github.com/hicommonwealth/chain-events#readme",
-  "peerDependencies": {
+  "dependencies": {
     "@polkadot/api": "4.16.2",
     "@polkadot/api-derive": "4.16.2",
     "@polkadot/types": "4.16.2",
-    "@polkadot/util": "^6.10.1"
-  },
-  "dependencies": {
+    "@polkadot/util": "^6.10.1",
     "@edgeware/node-types": "^3.3.3",
     "amqplib": "^0.8.0",
     "bn.js": "^5.1.3",
