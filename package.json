@@ -10,7 +10,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "build-types": "tsc --project tsconfig.types.json --outDir dist && copyfiles -u 1 \"src/**/*.d.ts\" dist",
+    "build-types": "tsc --project tsconfig.types.json && copyfiles -u 1 \"src/**/*.d.ts\" dist",
     "prepare": "npx install-peers",
     "install-peers": "install-peers",
     "unit-test": "nyc ts-mocha --config ./.mocharc.json ./test/unit/**/*.spec.ts",
@@ -55,7 +55,6 @@
     "node-fetch": "^2.6.1",
     "pg": "^8.6.0",
     "pg-format": "^1.0.4",
-    "rascal": "^13.1.0",
     "sleep-promise": "^8.0.1",
     "typescript-logging": "^0.6.4",
     "underscore": "^1.10.2",

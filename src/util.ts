@@ -1,5 +1,3 @@
-import fs from 'fs';
-import config from '../../ce-rabbitmq-plugin/RabbitMQconfig.json';
 import { chainSupportedBy } from './interfaces';
 import { EventChains as SubstrateChains } from './chains/substrate/types';
 import {
