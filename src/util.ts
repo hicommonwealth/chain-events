@@ -99,6 +99,10 @@ export async function createListener(
   }
 
   try {
+    if (!listener) {
+      console.error('Could not start the listener!');
+      return;
+    }
     await listener.init();
   } catch (error) {
     console.error(`Failed to initialize the listener`);

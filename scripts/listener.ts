@@ -1,6 +1,6 @@
 import * as yargs from 'yargs';
-import { createListener, getRabbitMQConfig } from '../src/util';
-
+import { createListener } from '../src';
+import { getRabbitMQConfig, RabbitMqHandler } from 'ce-rabbitmq-plugin';
 import {
   EventSupportingChains,
   chainSupportedBy,
@@ -9,7 +9,8 @@ import {
 } from '../src';
 
 import * as fs from 'fs';
-import { LoggingHandler, RabbitMqHandler } from '../src/handlers';
+import { LoggingHandler } from '../src';
+import { isSupportedChain } from '../dist';
 
 const argv = yargs
   .options({
@@ -130,6 +131,10 @@ const argv = yargs
         if (typeof item != 'string')
           throw new Error('Erc20 token addresses must be strings');
       });
+    }
+
+    if (!isSupportedChain(data.network)) {
+      throw new Error('You must pass a valid chain to listen to!');
     }
     return true;
   }).argv;
