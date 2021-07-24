@@ -16,13 +16,20 @@ exports.createNode = void 0;
 const express_1 = __importDefault(require("express"));
 const index_1 = require("./index");
 const util_1 = require("./util");
-const listeners = {};
 // TODO: setup the chain supported check as middleware
-function createNode() {
+function createNode(listeners) {
     const port = process.env.EVENT_NODE_PORT || 8081;
     const app = express_1.default();
     // request body as JSON (Content-Type = application/json)
     app.use(express_1.default.json());
+    app.get('/getListeners', (req, res) => {
+        try {
+            res.status(200).json(listeners);
+        }
+        catch (error) {
+            res.stauts(400).json(error);
+        }
+    });
     /**
      * Used to update the spec for any listener (chain).
      * {

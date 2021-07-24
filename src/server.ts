@@ -2,16 +2,23 @@ import express from 'express';
 
 import { IChainEventKind, isSupportedChain } from './index';
 import { createListener } from './util';
-
-const listeners: { [key: string]: any } = {};
+import { Listener } from './Listener';
 
 // TODO: setup the chain supported check as middleware
-export function createNode() {
+export function createNode(listeners: { [key: string]: any }) {
   const port = process.env.EVENT_NODE_PORT || 8081;
   const app = express();
 
   // request body as JSON (Content-Type = application/json)
   app.use(express.json());
+
+  app.get('/getListeners', (req, res) => {
+    try {
+      res.status(200).json(listeners);
+    } catch (error) {
+      res.stauts(400).json(error);
+    }
+  });
 
   /**
    * Used to update the spec for any listener (chain).

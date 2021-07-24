@@ -1,1 +1,3 @@
-export declare function createNode(): any;
+export declare function createNode(listeners: {
+    [key: string]: any;
+}): any;

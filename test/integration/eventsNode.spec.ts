@@ -4,6 +4,7 @@ import { getRabbitMQConfig } from '../../src/util';
 import fetch from 'node-fetch';
 // @ts-ignore
 import chai from 'chai';
+import { Listener } from '../../src';
 
 const { assert } = chai;
 
@@ -14,7 +15,8 @@ describe.only('EventNode integration tests', () => {
     skipCatchup: true,
   };
 
-  const app = createNode();
+  const listeners: { [key: string]: any } = {};
+  const app = createNode(listeners);
 
   describe('Tests adding a listener', () => {
     it('starts a listener', async function () {

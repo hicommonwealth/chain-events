@@ -8,6 +8,8 @@ export * as SubstrateEvents from './chains/substrate/index';
 export * as SubstrateTypes from './chains/substrate/types';
 export * as Erc20Events from './chains/erc20/index';
 export * as Erc20Types from './chains/erc20/types';
+export { Listener } from './Listener';
+export { createNode } from './server';
 export * from './handlers';
 export * from './util';
 export declare const networkUrls: {
