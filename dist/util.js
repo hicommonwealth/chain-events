@@ -56,6 +56,10 @@ function createListener(chain, options) {
             return error;
         }
         try {
+            if (!listener) {
+                console.error('Could not start the listener!');
+                return;
+            }
             yield listener.init();
         }
         catch (error) {
