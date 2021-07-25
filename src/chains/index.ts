@@ -1,4 +1,4 @@
-export * as SubstrateListener from '../chains/substrate/Listener';
-export * as MolochListener from '../chains/moloch/Listener';
-export * as MarlinListener from '../chains/marlin/Listener';
-export * as Erc20Listener from '../chains/erc20/Listener';
+export { Listener as SubstrateListener } from './substrate/Listener';
+export { Listener as MolochListener } from './moloch/Listener';
+export { Listener as MarlinListener } from './marlin/Listener';
+export { Listener as Erc20Listener } from './erc20/Listener';

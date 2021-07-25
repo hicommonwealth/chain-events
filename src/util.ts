@@ -1,9 +1,7 @@
 import { chainSupportedBy } from './interfaces';
 import { EventChains as SubstrateChains } from './chains/substrate/types';
-import {
-  EnricherConfig,
-  Listener as SubstrateListener,
-} from './chains/substrate';
+import { Listener as SubstrateListener } from './chains/substrate/Listener';
+import { EnricherConfig } from './chains/substrate';
 import { EventChains as MolochChains } from './chains/moloch/types';
 import { Listener as MolochListener } from './chains/moloch/Listener';
 import { EventChains as MarlinChains } from './chains/marlin/types';

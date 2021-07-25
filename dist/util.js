@@ -12,13 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createListener = void 0;
 const interfaces_1 = require("./interfaces");
 const types_1 = require("./chains/substrate/types");
-const substrate_1 = require("./chains/substrate");
+const Listener_1 = require("./chains/substrate/Listener");
 const types_2 = require("./chains/moloch/types");
-const Listener_1 = require("./chains/moloch/Listener");
+const Listener_2 = require("./chains/moloch/Listener");
 const types_3 = require("./chains/marlin/types");
-const Listener_2 = require("./chains/marlin/Listener");
+const Listener_3 = require("./chains/marlin/Listener");
 const types_4 = require("./chains/erc20/types");
-const Listener_3 = require("./chains/erc20/Listener");
+const Listener_4 = require("./chains/erc20/Listener");
 const index_1 = require("./index");
 /**
  * Creates a listener instance and returns it if not error occurs.
@@ -31,10 +31,10 @@ function createListener(chain, options) {
         try {
             if (interfaces_1.chainSupportedBy(chain, types_1.EventChains)) {
                 // start a substrate listener
-                listener = new substrate_1.Listener(chain, options.url || index_1.networkUrls[chain], options.spec || index_1.networkSpecs[chain] || {}, !!options.archival, options.startBlock || 0, !!options.skipCatchup, options.enricherConfig || {}, !!options.verbose);
+                listener = new Listener_1.Listener(chain, options.url || index_1.networkUrls[chain], options.spec || index_1.networkSpecs[chain] || {}, !!options.archival, options.startBlock || 0, !!options.skipCatchup, options.enricherConfig || {}, !!options.verbose);
             }
             else if (interfaces_1.chainSupportedBy(chain, types_2.EventChains)) {
-                listener = new Listener_1.Listener(chain, options.MolochContractVersion == 1 || options.MolochContractVersion == 2
+                listener = new Listener_2.Listener(chain, options.MolochContractVersion == 1 || options.MolochContractVersion == 2
                     ? options.MolochContractVersion
                     : 2, options.MolochContractAddress || index_1.molochContracts[chain], options.url || index_1.networkUrls[chain], options.startBlock || 0, !!options.skipCatchup, !!options.verbose);
             }
@@ -44,10 +44,10 @@ function createListener(chain, options) {
                     governorAlpha: options.MarlinContractAddress[1] || index_1.marlinContracts.governorAlpha,
                     timelock: options.MarlinContractAddress[2] || index_1.marlinContracts.timelock,
                 };
-                listener = new Listener_2.Listener(chain, contractAddresses, options.url || index_1.networkUrls[chain], options.startBlock || 0, !!options.skipCatchup, !!options.verbose);
+                listener = new Listener_3.Listener(chain, contractAddresses, options.url || index_1.networkUrls[chain], options.startBlock || 0, !!options.skipCatchup, !!options.verbose);
             }
             else if (interfaces_1.chainSupportedBy(chain, types_4.EventChains)) {
-                listener = new Listener_3.Listener(chain, options.Erc20TokenAddresses || index_1.Erc20TokenUrls, // addresses of contracts to track
+                listener = new Listener_4.Listener(chain, options.Erc20TokenAddresses || index_1.Erc20TokenUrls, // addresses of contracts to track
                 options.url || index_1.networkUrls[chain], // ethNetowrkUrl aka the access point to ethereum
                 !!options.verbose);
             }

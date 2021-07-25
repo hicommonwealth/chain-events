@@ -37,6 +37,7 @@ exports.SubstrateEvents = __importStar(require("./chains/substrate/index"));
 exports.SubstrateTypes = __importStar(require("./chains/substrate/types"));
 exports.Erc20Events = __importStar(require("./chains/erc20/index"));
 exports.Erc20Types = __importStar(require("./chains/erc20/types"));
+__exportStar(require("./chains"), exports);
 var Listener_1 = require("./Listener");
 Object.defineProperty(exports, "Listener", { enumerable: true, get: function () { return Listener_1.Listener; } });
 var server_1 = require("./server");
