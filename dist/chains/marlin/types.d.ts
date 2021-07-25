@@ -12,7 +12,6 @@ interface IMarlinContracts {
 }
 export interface ListenerOptions {
     url: string;
-    startBlock: number;
     skipCatchup: boolean;
     contractAddresses: {
         comp: string;

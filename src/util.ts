@@ -65,7 +65,6 @@ export async function createListener(
           : 2,
         options.MolochContractAddress || molochContracts[chain],
         options.url || networkUrls[chain],
-        options.startBlock || 0,
         !!options.skipCatchup,
         !!options.verbose
       );
@@ -80,7 +79,6 @@ export async function createListener(
         chain,
         contractAddresses,
         options.url || networkUrls[chain],
-        options.startBlock || 0,
         !!options.skipCatchup,
         !!options.verbose
       );
@@ -98,7 +96,8 @@ export async function createListener(
 
   try {
     if (!listener) {
-      console.error('Could not start the listener!');
+      console.error(`The given chain/token/contract is not supported. The following chains/tokens/contracts are supported: \n
+      Substrate Chains: ${SubstrateChains}\nMoloch\nMarlin\nErc20 Tokens`);
       return;
     }
     await listener.init();

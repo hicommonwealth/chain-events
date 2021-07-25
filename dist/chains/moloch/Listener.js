@@ -21,12 +21,11 @@ const ethereum_block_by_date_1 = __importDefault(require("ethereum-block-by-date
 const web3_1 = __importDefault(require("web3"));
 const Listener_1 = require("../../Listener");
 class Listener extends Listener_1.Listener {
-    constructor(chain, contractVersion, contractAddress, url, startBlock, skipCatchup, verbose) {
+    constructor(chain, contractVersion, contractAddress, url, skipCatchup, verbose) {
         super(chain, verbose);
         if (!interfaces_1.chainSupportedBy(this._chain, types_1.EventChains))
             throw new Error(`${this._chain} is not a moloch network`);
         this._options = {
-            startBlock: startBlock !== null && startBlock !== void 0 ? startBlock : 0,
             url: url || index_1.networkUrls[chain],
             skipCatchup: !!skipCatchup,
             contractAddress: contractAddress,

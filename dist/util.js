@@ -36,7 +36,7 @@ function createListener(chain, options) {
             else if (interfaces_1.chainSupportedBy(chain, types_2.EventChains)) {
                 listener = new Listener_2.Listener(chain, options.MolochContractVersion == 1 || options.MolochContractVersion == 2
                     ? options.MolochContractVersion
-                    : 2, options.MolochContractAddress || index_1.molochContracts[chain], options.url || index_1.networkUrls[chain], options.startBlock || 0, !!options.skipCatchup, !!options.verbose);
+                    : 2, options.MolochContractAddress || index_1.molochContracts[chain], options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
             }
             else if (interfaces_1.chainSupportedBy(chain, types_3.EventChains)) {
                 const contractAddresses = {
@@ -44,7 +44,7 @@ function createListener(chain, options) {
                     governorAlpha: options.MarlinContractAddress[1] || index_1.marlinContracts.governorAlpha,
                     timelock: options.MarlinContractAddress[2] || index_1.marlinContracts.timelock,
                 };
-                listener = new Listener_3.Listener(chain, contractAddresses, options.url || index_1.networkUrls[chain], options.startBlock || 0, !!options.skipCatchup, !!options.verbose);
+                listener = new Listener_3.Listener(chain, contractAddresses, options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
             }
             else if (interfaces_1.chainSupportedBy(chain, types_4.EventChains)) {
                 listener = new Listener_4.Listener(chain, options.Erc20TokenAddresses || index_1.Erc20TokenUrls, // addresses of contracts to track
@@ -57,7 +57,8 @@ function createListener(chain, options) {
         }
         try {
             if (!listener) {
-                console.error('Could not start the listener!');
+                console.error(`The given chain/token/contract is not supported. The following chains/tokens/contracts are supported: \n
+      Substrate Chains: ${types_1.EventChains}\nMoloch\nMarlin\nErc20 Tokens`);
                 return;
             }
             yield listener.init();

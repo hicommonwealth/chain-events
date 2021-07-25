@@ -24,13 +24,12 @@ const subscriber_1 = require("./subscriber");
 const ethereum_block_by_date_1 = __importDefault(require("ethereum-block-by-date"));
 const Listener_1 = require("../../Listener");
 class Listener extends Listener_1.Listener {
-    constructor(chain, contractAddresses, url, startBlock, skipCatchup, verbose) {
+    constructor(chain, contractAddresses, url, skipCatchup, verbose) {
         super(chain, verbose);
         if (!interfaces_1.chainSupportedBy(this._chain, types_1.EventChains))
             throw new Error(`${this._chain} is not a Substrate chain`);
         this._options = {
             url: url || index_1.networkUrls[chain],
-            startBlock: startBlock !== null && startBlock !== void 0 ? startBlock : 0,
             skipCatchup: !!skipCatchup,
             contractAddresses,
         };

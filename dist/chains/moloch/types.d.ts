@@ -13,7 +13,6 @@ export interface SubscribeOptions extends ISubscribeOptions<Api> {
 }
 export interface ListenerOptions {
     url: string;
-    startBlock: number;
     skipCatchup: boolean;
     contractVersion: 1 | 2;
     contractAddress: string;

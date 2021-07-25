@@ -6,7 +6,7 @@ export declare class Listener extends BaseListener {
     globalExcludedEvents: MolochEventKinds[];
     _storageFetcher: IStorageFetcher<Api>;
     private _lastBlockNumber;
-    constructor(chain: EventSupportingChainT, contractVersion: 1 | 2, contractAddress: string, url: string, startBlock?: number, skipCatchup?: boolean, verbose?: boolean);
+    constructor(chain: EventSupportingChainT, contractVersion: 1 | 2, contractAddress: string, url: string, skipCatchup?: boolean, verbose?: boolean);
     init(): Promise<void>;
     subscribe(): Promise<void>;
     protected processBlock(event: RawEvent): Promise<void>;

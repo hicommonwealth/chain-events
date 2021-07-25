@@ -38,7 +38,6 @@ export class Listener extends BaseListener {
       timelock: string;
     },
     url?: string,
-    startBlock?: number,
     skipCatchup?: boolean,
     verbose?: boolean
   ) {
@@ -48,7 +47,6 @@ export class Listener extends BaseListener {
 
     this._options = {
       url: url || networkUrls[chain],
-      startBlock: startBlock ?? 0,
       skipCatchup: !!skipCatchup,
       contractAddresses,
     };

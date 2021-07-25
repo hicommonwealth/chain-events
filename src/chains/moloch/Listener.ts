@@ -32,7 +32,6 @@ export class Listener extends BaseListener {
     contractVersion: 1 | 2,
     contractAddress: string,
     url: string,
-    startBlock?: number,
     skipCatchup?: boolean,
     verbose?: boolean
   ) {
@@ -41,7 +40,6 @@ export class Listener extends BaseListener {
       throw new Error(`${this._chain} is not a moloch network`);
 
     this._options = {
-      startBlock: startBlock ?? 0,
       url: url || networkUrls[chain],
       skipCatchup: !!skipCatchup,
       contractAddress: contractAddress,

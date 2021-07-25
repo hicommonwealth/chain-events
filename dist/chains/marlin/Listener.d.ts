@@ -9,7 +9,7 @@ export declare class Listener extends BaseListener {
         comp: string;
         governorAlpha: string;
         timelock: string;
-    }, url?: string, startBlock?: number, skipCatchup?: boolean, verbose?: boolean);
+    }, url?: string, skipCatchup?: boolean, verbose?: boolean);
     init(): Promise<void>;
     subscribe(): Promise<void>;
     updateContractAddress(contractName: string, address: string): Promise<void>;
