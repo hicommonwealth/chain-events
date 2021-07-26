@@ -24,21 +24,43 @@ const index_1 = require("./index");
  * Creates a listener instance and returns it if not error occurs.
  * @param chain The chain the listener is for
  * @param options The listener options for the specified chain
+ * @param ignoreChainType If set to true the function will create the appropriate listener regardless of whether chain is listed in supported EventChains type.
+ * @param customChainBase Used with ignoreChainType to override the base system the chain is from (i.e. substrate/cosmos/etc)
  */
-function createListener(chain, options) {
+function createListener(chain, options, ignoreChainType, customChainBase) {
     return __awaiter(this, void 0, void 0, function* () {
         let listener;
-        try {
-            if (interfaces_1.chainSupportedBy(chain, types_1.EventChains)) {
-                // start a substrate listener
-                listener = new Listener_1.Listener(chain, options.url || index_1.networkUrls[chain], options.spec || index_1.networkSpecs[chain] || {}, !!options.archival, options.startBlock || 0, !!options.skipCatchup, options.enricherConfig || {}, !!options.verbose);
+        if (ignoreChainType && !customChainBase) {
+            console.log('customChainBase must be set when ignoreChainType is true!');
+            return;
+        }
+        function basePicker(chain, base) {
+            if (ignoreChainType && customChainBase && chain == base)
+                return true;
+            else {
+                switch (base) {
+                    case 'substrate':
+                        return interfaces_1.chainSupportedBy(chain, types_1.EventChains);
+                    case 'moloch':
+                        return interfaces_1.chainSupportedBy(chain, types_2.EventChains);
+                    case 'marlin':
+                        return interfaces_1.chainSupportedBy(chain, types_3.EventChains);
+                    case 'erc20':
+                        return interfaces_1.chainSupportedBy(chain, types_4.EventChains);
+                }
             }
-            else if (interfaces_1.chainSupportedBy(chain, types_2.EventChains)) {
+        }
+        try {
+            if (basePicker(chain, 'substrate')) {
+                // start a substrate listener
+                listener = new Listener_1.Listener(chain, options.url || index_1.networkUrls[chain], options.spec || index_1.networkSpecs[chain] || {}, !!options.archival, options.startBlock || 0, !!options.skipCatchup, options.enricherConfig || {}, !!options.verbose, !!ignoreChainType);
+            }
+            else if (basePicker(chain, 'moloch')) {
                 listener = new Listener_2.Listener(chain, options.MolochContractVersion == 1 || options.MolochContractVersion == 2
                     ? options.MolochContractVersion
                     : 2, options.MolochContractAddress || index_1.molochContracts[chain], options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
             }
-            else if (interfaces_1.chainSupportedBy(chain, types_3.EventChains)) {
+            else if (basePicker(chain, 'marlin')) {
                 const contractAddresses = {
                     comp: options.MarlinContractAddress[0] || index_1.marlinContracts.comp,
                     governorAlpha: options.MarlinContractAddress[1] || index_1.marlinContracts.governorAlpha,
@@ -46,10 +68,12 @@ function createListener(chain, options) {
                 };
                 listener = new Listener_3.Listener(chain, contractAddresses, options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
             }
-            else if (interfaces_1.chainSupportedBy(chain, types_4.EventChains)) {
+            else if (basePicker(chain, 'erc20')) {
                 listener = new Listener_4.Listener(chain, options.Erc20TokenAddresses || index_1.Erc20TokenUrls, // addresses of contracts to track
                 options.url || index_1.networkUrls[chain], // ethNetowrkUrl aka the access point to ethereum
                 !!options.verbose);
+            }
+            else {
             }
         }
         catch (error) {

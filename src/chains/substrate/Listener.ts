@@ -36,10 +36,12 @@ export class Listener extends BaseListener {
     startBlock?: number,
     skipCatchup?: boolean,
     enricherConfig?: EnricherConfig,
-    verbose?: boolean
+    verbose?: boolean,
+    ignoreChainType?: boolean
   ) {
     super(chain, verbose);
-    if (!chainSupportedBy(this._chain, SubstrateChains))
+    // if ignoreChainType = true ignore the hard-coded EventChains type
+    if (!ignoreChainType && !chainSupportedBy(this._chain, SubstrateChains))
       throw new Error(`${this._chain} is not a Substrate chain`);
 
     this._options = {

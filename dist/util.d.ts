@@ -4,6 +4,8 @@ import { Listener } from './Listener';
  * Creates a listener instance and returns it if not error occurs.
  * @param chain The chain the listener is for
  * @param options The listener options for the specified chain
+ * @param ignoreChainType If set to true the function will create the appropriate listener regardless of whether chain is listed in supported EventChains type.
+ * @param customChainBase Used with ignoreChainType to override the base system the chain is from (i.e. substrate/cosmos/etc)
  */
 export declare function createListener(chain: string, options: {
     Erc20TokenAddresses?: string[];
@@ -21,4 +23,4 @@ export declare function createListener(chain: string, options: {
     spec?: {};
     url?: string;
     enricherConfig?: EnricherConfig;
-}): Promise<Listener>;
+}, ignoreChainType?: boolean, customChainBase?: string): Promise<Listener>;

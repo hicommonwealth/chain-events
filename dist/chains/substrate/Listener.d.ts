@@ -9,7 +9,7 @@ export declare class Listener extends BaseListener {
     _storageFetcher: IStorageFetcher<ApiPromise>;
     private _poller;
     _lastBlockNumber: number;
-    constructor(chain: EventSupportingChainT, url?: string, spec?: RegisteredTypes | {}, archival?: boolean, startBlock?: number, skipCatchup?: boolean, enricherConfig?: EnricherConfig, verbose?: boolean);
+    constructor(chain: EventSupportingChainT, url?: string, spec?: RegisteredTypes | {}, archival?: boolean, startBlock?: number, skipCatchup?: boolean, enricherConfig?: EnricherConfig, verbose?: boolean, ignoreChainType?: boolean);
     init(): Promise<void>;
     subscribe(): Promise<void>;
     private processMissedBlocks;

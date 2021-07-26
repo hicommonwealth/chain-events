@@ -16,9 +16,10 @@ const index_2 = require("../../index");
 const Listener_1 = require("../../Listener");
 const types_1 = require("./types");
 class Listener extends Listener_1.Listener {
-    constructor(chain, url, spec, archival, startBlock, skipCatchup, enricherConfig, verbose) {
+    constructor(chain, url, spec, archival, startBlock, skipCatchup, enricherConfig, verbose, ignoreChainType) {
         super(chain, verbose);
-        if (!interfaces_1.chainSupportedBy(this._chain, types_1.EventChains))
+        // if ignoreChainType = true ignore the hard-coded EventChains type
+        if (!ignoreChainType && !interfaces_1.chainSupportedBy(this._chain, types_1.EventChains))
             throw new Error(`${this._chain} is not a Substrate chain`);
         this._options = {
             archival: !!archival,

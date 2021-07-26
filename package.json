@@ -19,7 +19,6 @@
     "lint": "eslint src/ test/",
     "listen": "ts-node -T ./scripts/listener.ts",
     "start-node": "ts-node -T scripts/startNode.ts",
-    "db-events-node": "WORKER_NUMBER=6 NUM_WORKERS=29 NODE_ENV=development HANDLE_IDENTITY=publish ts-node -T scripts/dbNode.ts",
     "listen-archival": "ts-node -T ./scripts/listener.ts -n edgeware-local -a true",
     "scrape": "ts-node -T ./scripts/scraper.ts",
     "ganache": "ganache-cli -m \"Alice\" -p 9545 -l 800000000 --allowUnlimitedContractSize",
