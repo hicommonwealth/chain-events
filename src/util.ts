@@ -16,7 +16,6 @@ import {
   Erc20TokenUrls,
   networkSpecs,
 } from './index';
-import base = Mocha.reporters.base;
 
 /**
  * Creates a listener instance and returns it if not error occurs.
@@ -55,7 +54,7 @@ export async function createListener(
   }
 
   function basePicker(chain: string, base: string): boolean {
-    if (ignoreChainType && customChainBase && chain == base) return true;
+    if (ignoreChainType && customChainBase == base) return true;
     else {
       switch (base) {
         case 'substrate':
@@ -117,21 +116,22 @@ export async function createListener(
         !!options.verbose
       );
     } else {
-    }
-  } catch (error) {
-    return error;
-  }
-
-  try {
-    if (!listener) {
-      console.error(`The given chain/token/contract is not supported. The following chains/tokens/contracts are supported: \n
+      console.error(`The given chain/token/contract is not supported. The following chains/tokens/contracts are supported:\n
       Substrate Chains: ${SubstrateChains}\nMoloch\nMarlin\nErc20 Tokens`);
       return;
     }
+  } catch (error) {
+    console.log('A listener could not be started');
+    throw error;
+  }
+
+  try {
+    if (!listener)
+      throw new Error('An unknown error occurred while starting the listener');
     await listener.init();
   } catch (error) {
     console.error(`Failed to initialize the listener`);
-    return error;
+    throw error;
   }
 
   return listener;
