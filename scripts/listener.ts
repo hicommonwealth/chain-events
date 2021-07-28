@@ -10,7 +10,7 @@ import {
 
 import * as fs from 'fs';
 import { LoggingHandler } from '../src';
-import { isSupportedChain } from '../dist';
+import { isSupportedChain } from '../src';
 
 const argv = yargs
   .options({
