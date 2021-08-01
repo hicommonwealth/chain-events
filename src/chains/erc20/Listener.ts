@@ -24,11 +24,12 @@ export class Listener extends BaseListener {
     chain: EventSupportingChainT,
     tokenAddresses: string[],
     url?: string,
-    verbose?: boolean
+    verbose?: boolean,
+    ignoreChainType?: boolean
   ) {
     super(chain, verbose);
-    if (!chainSupportedBy(this._chain, erc20Chains))
-      throw new Error(`${chain} is not a Substrate chain`);
+    if (!ignoreChainType && !chainSupportedBy(this._chain, erc20Chains))
+      throw new Error(`${chain} is not an ERC20 token`);
 
     this._options = {
       url: url || networkUrls[chain],

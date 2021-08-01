@@ -3,32 +3,47 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.HydraDXSpec = void 0;
 exports.HydraDXSpec = {
     types: {
-        Amount: 'i128',
-        AmountOf: 'Amount',
-        Address: 'AccountId',
-        BalanceInfo: {
-            amount: 'Balance',
-            assetId: 'AssetId',
+        Fee: {
+            numerator: 'u32',
+            denominator: 'u32',
         },
-        CurrencyId: 'AssetId',
-        CurrencyIdOf: 'AssetId',
-        Intention: {
-            who: 'AccountId',
-            asset_sell: 'AssetId',
-            asset_buy: 'AssetId',
-            amount: 'Balance',
-            discount: 'bool',
-            sell_or_buy: 'IntentionType',
-        },
-        IntentionId: 'u128',
-        IntentionType: {
-            _enum: ['SELL', 'BUY'],
-        },
-        LookupSource: 'AccountId',
-        Price: 'Balance',
         Chain: {
             genesisHash: 'Vec<u8>',
             lastBlockHash: 'Vec<u8>',
         },
+        Price: 'Balance',
+        Amount: 'i128',
+        Address: 'AccountId',
+        AmountOf: 'Amount',
+        AssetPair: {
+            asset_in: 'AssetId',
+            asset_out: 'AssetId',
+        },
+        Intention: {
+            who: 'AccountId',
+            amount: 'Balance',
+            discount: 'bool',
+            asset_buy: 'AssetId',
+            asset_sell: 'AssetId',
+            sell_or_buy: 'IntentionType',
+        },
+        CurrencyId: 'AssetId',
+        OrderedSet: 'Vec<AssetId>',
+        BalanceInfo: {
+            amount: 'Balance',
+            assetId: 'AssetId',
+        },
+        IntentionId: 'Hash',
+        CurrencyIdOf: 'AssetId',
+        LookupSource: 'AccountId',
+        IntentionType: {
+            _enum: ['SELL', 'BUY'],
+        },
+        OrmlAccountData: {
+            free: 'Balance',
+            frozen: 'Balance',
+            reserved: 'Balance',
+        },
     },
 };
+//# sourceMappingURL=hydraDX.js.map

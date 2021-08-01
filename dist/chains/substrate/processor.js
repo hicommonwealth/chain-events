@@ -75,3 +75,4 @@ class Processor extends interfaces_1.IEventProcessor {
     }
 }
 exports.Processor = Processor;
+//# sourceMappingURL=processor.js.map

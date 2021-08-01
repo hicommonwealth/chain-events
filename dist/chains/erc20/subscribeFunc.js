@@ -16,6 +16,7 @@ exports.subscribeEvents = exports.createApi = void 0;
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
 const sleep_promise_1 = __importDefault(require("sleep-promise"));
+const node_fetch_1 = __importDefault(require("node-fetch"));
 const logging_1 = require("../../logging");
 const Erc20Factory_1 = require("./contractTypes/Erc20Factory");
 const subscriber_1 = require("./subscriber");
@@ -30,6 +31,7 @@ const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
  */
 function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000) {
     return __awaiter(this, void 0, void 0, function* () {
+        // TODO: are if statements here necessary?
         if (ethNetworkUrl.includes('infura')) {
             if (process && process.env) {
                 const { INFURA_API_KEY } = process.env;
@@ -37,10 +39,32 @@ function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000) {
                     throw new Error('no infura key found!');
                 }
                 ethNetworkUrl = `wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}`;
+                let res, data;
+                try {
+                    res = yield node_fetch_1.default(`https://mainnet.infura.io/v3/${INFURA_API_KEY}`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            jsonrpc: '2.0',
+                            method: 'eth_getBalance',
+                            params: ['0xBf4eD7b27F1d666546E30D74d50d173d20bca754', 'latest'],
+                            id: 1,
+                        }),
+                        headers: { 'Content-Type': 'application/json' },
+                    });
+                    data = yield res.json();
+                    if (!data ||
+                        !Object.keys(data).includes('jsonrpc') ||
+                        !Object.keys(data).includes('id') ||
+                        !Object.keys(data).includes('result'))
+                        throw new Error('A connection to infura could not be established.');
+                }
+                catch (error) {
+                    log.error('Check your INFURA_API_KEY');
+                    throw error;
+                }
             }
-            else {
+            else
                 throw new Error('must use nodejs to connect to infura provider!');
-            }
         }
         try {
             const web3Provider = new web3_1.default.providers.WebsocketProvider(ethNetworkUrl, {
@@ -122,3 +146,4 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
     return subscriber;
 });
 exports.subscribeEvents = subscribeEvents;
+//# sourceMappingURL=subscribeFunc.js.map

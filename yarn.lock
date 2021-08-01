@@ -1539,7 +1539,7 @@ caseless@~0.12.0:
 
 "ce-rabbitmq-plugin@git+https://github.com/timolegros/ce-rabbitmq-plugin.git#main":
   version "1.0.0"
-  resolved "git+https://github.com/timolegros/ce-rabbitmq-plugin.git#4bd64b6d3bda376cd0c2353d9af9842caa98d6f6"
+  resolved "git+https://github.com/timolegros/ce-rabbitmq-plugin.git#2ecacfeb6d382db9f310ae1d1218186dfcbdcc18"
   dependencies:
     "@commonwealth/chain-events" "git+https://github.com/timolegros/chain-events.git#build"
     amqplib "^0.8.0"
@@ -1798,9 +1798,9 @@ copyfiles@^2.4.1:
     yargs "^16.1.0"
 
 core-js-pure@^3.15.0:
-  version "3.15.2"
-  resolved "https://registry.yarnpkg.com/core-js-pure/-/core-js-pure-3.15.2.tgz#c8e0874822705f3385d3197af9348f7c9ae2e3ce"
-  integrity sha512-D42L7RYh1J2grW8ttxoY1+17Y4wXZeKe7uyplAI3FkNQyI5OgBIAjUfFiTPfL1rs0qLpxaabITNbjKl1Sp82tA==
+  version "3.16.0"
+  resolved "https://registry.yarnpkg.com/core-js-pure/-/core-js-pure-3.16.0.tgz#218e07add3f1844e53fab195c47871fc5ba18de8"
+  integrity sha512-wzlhZNepF/QA9yvx3ePDgNGudU5KDB8lu/TRPKelYA/QtSnkS/cLl2W+TIdEX1FAFcBr0YpY7tPDlcmXJ7AyiQ==
 
 core-js@^2.6.5:
   version "2.6.12"

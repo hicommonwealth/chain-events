@@ -147,3 +147,4 @@ function Enrich(version, api, blockNumber, kind, rawData) {
     });
 }
 exports.Enrich = Enrich;
+//# sourceMappingURL=enricher.js.map

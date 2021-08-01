@@ -3,7 +3,7 @@ import { EventSupportingChainT } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
 export declare class Listener extends BaseListener {
     private readonly _options;
-    constructor(chain: EventSupportingChainT, tokenAddresses: string[], url?: string, verbose?: boolean);
+    constructor(chain: EventSupportingChainT, tokenAddresses: string[], url?: string, verbose?: boolean, ignoreChainType?: boolean);
     init(): Promise<void>;
     subscribe(): Promise<void>;
     unsubscribe(): Promise<void>;

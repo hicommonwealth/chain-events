@@ -347,3 +347,4 @@ function eventToEntity(event) {
     }
 }
 exports.eventToEntity = eventToEntity;
+//# sourceMappingURL=interfaces.js.map

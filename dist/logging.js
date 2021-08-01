@@ -11,7 +11,7 @@ const formatFilename = (name) => {
     return t[t.length - 1];
 };
 exports.formatFilename = formatFilename;
-exports.factory = typescript_logging_1.LFService.createNamedLoggerFactory('ChainEvents', options);
+exports.factory = typescript_logging_1.LFService.createNamedLoggerFactory('ChainEvent', options);
 const control = typescript_logging_1.getLogControl();
 // Factories are numbered, use listFactories() to find out
 exports.factoryControl = control.getLoggerFactoryControl(0);
@@ -19,3 +19,4 @@ exports.factoryControl = control.getLoggerFactoryControl(0);
 // (so all existing/new loggers from this factory will log to Debug)
 const logLevel = process.env.NODE_ENV !== 'production' ? 'Debug' : 'Info';
 exports.factoryControl.change({ group: 'all', logLevel });
+//# sourceMappingURL=logging.js.map

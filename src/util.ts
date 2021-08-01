@@ -18,7 +18,7 @@ import {
 } from './index';
 
 /**
- * Creates a listener instance and returns it if not error occurs.
+ * Creates a listener instance and returns it if not error occurs. This function throws on error.
  * @param chain The chain the listener is for
  * @param options The listener options for the specified chain
  * @param ignoreChainType If set to true the function will create the appropriate listener regardless of whether chain is listed in supported EventChains type.
@@ -48,10 +48,10 @@ export async function createListener(
 ): Promise<Listener> {
   let listener;
 
-  if (ignoreChainType && !customChainBase) {
-    console.log('customChainBase must be set when ignoreChainType is true!');
-    return;
-  }
+  if (ignoreChainType && !customChainBase)
+    throw new Error(
+      'customChainBase must be set when ignoreChainType is true!'
+    );
 
   function basePicker(chain: string, base: string): boolean {
     if (ignoreChainType && customChainBase == base) return true;
@@ -63,66 +63,64 @@ export async function createListener(
           return chainSupportedBy(chain, MolochChains);
         case 'marlin':
           return chainSupportedBy(chain, MarlinChains);
-        case 'erc20':
+        case 'ethereum':
           return chainSupportedBy(chain, Erc20Chain);
       }
     }
   }
 
-  try {
-    if (basePicker(chain, 'substrate')) {
-      // start a substrate listener
-      listener = new SubstrateListener(
-        <EventSupportingChainT>chain,
-        options.url || networkUrls[chain],
-        options.spec || networkSpecs[chain] || {},
-        !!options.archival,
-        options.startBlock || 0,
-        !!options.skipCatchup,
-        options.enricherConfig || {},
-        !!options.verbose,
-        !!ignoreChainType
-      );
-    } else if (basePicker(chain, 'moloch')) {
-      listener = new MolochListener(
-        <EventSupportingChainT>chain,
-        options.MolochContractVersion == 1 || options.MolochContractVersion == 2
-          ? options.MolochContractVersion
-          : 2,
-        options.MolochContractAddress || molochContracts[chain],
-        options.url || networkUrls[chain],
-        !!options.skipCatchup,
-        !!options.verbose
-      );
-    } else if (basePicker(chain, 'marlin')) {
-      const contractAddresses = {
-        comp: options.MarlinContractAddress[0] || marlinContracts.comp,
-        governorAlpha:
-          options.MarlinContractAddress[1] || marlinContracts.governorAlpha,
-        timelock: options.MarlinContractAddress[2] || marlinContracts.timelock,
-      };
-      listener = new MarlinListener(
-        <EventSupportingChainT>chain,
-        contractAddresses,
-        options.url || networkUrls[chain],
-        !!options.skipCatchup,
-        !!options.verbose
-      );
-    } else if (basePicker(chain, 'erc20')) {
-      listener = new Erc20Listener(
-        <EventSupportingChainT>chain,
-        (options.Erc20TokenAddresses as string[]) || Erc20TokenUrls, // addresses of contracts to track
-        options.url || networkUrls[chain], // ethNetowrkUrl aka the access point to ethereum
-        !!options.verbose
-      );
-    } else {
-      console.error(`The given chain/token/contract is not supported. The following chains/tokens/contracts are supported:\n
-      Substrate Chains: ${SubstrateChains}\nMoloch\nMarlin\nErc20 Tokens`);
-      return;
-    }
-  } catch (error) {
-    console.log('A listener could not be started');
-    throw error;
+  console.log('basePicker:', basePicker(chain, customChainBase));
+
+  if (basePicker(chain, 'substrate')) {
+    // start a substrate listener
+    listener = new SubstrateListener(
+      <EventSupportingChainT>chain,
+      options.url || networkUrls[chain],
+      options.spec || networkSpecs[chain] || {},
+      !!options.archival,
+      options.startBlock || 0,
+      !!options.skipCatchup,
+      options.enricherConfig || {},
+      !!options.verbose,
+      !!ignoreChainType
+    );
+  } else if (basePicker(chain, 'moloch')) {
+    listener = new MolochListener(
+      <EventSupportingChainT>chain,
+      options.MolochContractVersion == 1 || options.MolochContractVersion == 2
+        ? options.MolochContractVersion
+        : 2,
+      options.MolochContractAddress || molochContracts[chain],
+      options.url || networkUrls[chain],
+      !!options.skipCatchup,
+      !!options.verbose
+    );
+  } else if (basePicker(chain, 'marlin')) {
+    const contractAddresses = {
+      comp: options.MarlinContractAddress[0] || marlinContracts.comp,
+      governorAlpha:
+        options.MarlinContractAddress[1] || marlinContracts.governorAlpha,
+      timelock: options.MarlinContractAddress[2] || marlinContracts.timelock,
+    };
+    listener = new MarlinListener(
+      <EventSupportingChainT>chain,
+      contractAddresses,
+      options.url || networkUrls[chain],
+      !!options.skipCatchup,
+      !!options.verbose
+    );
+  } else if (basePicker(chain, 'ethereum')) {
+    listener = new Erc20Listener(
+      <EventSupportingChainT>chain,
+      options.Erc20TokenAddresses || Erc20TokenUrls, // addresses of contracts to track
+      options.url || 'wss://mainnet.infura.io/ws/v3/', // ethNetowrkUrl aka the access point to ethereum (usually Infura)
+      !!options.verbose,
+      !!ignoreChainType
+    );
+  } else {
+    throw new Error(
+      'The chain did not match any known supported chain or the given customBase'
+    );
   }
 
   try {

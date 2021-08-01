@@ -83,3 +83,4 @@ exports.Erc20TokenUrls = [
     'https://gateway.ipfs.io/ipns/tokens.uniswap.org',
     'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link',
 ];
+//# sourceMappingURL=index.js.map

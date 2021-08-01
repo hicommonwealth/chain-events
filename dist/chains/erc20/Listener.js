@@ -18,10 +18,10 @@ const processor_1 = require("./processor");
 const subscriber_1 = require("./subscriber");
 const Listener_1 = require("../../Listener");
 class Listener extends Listener_1.Listener {
-    constructor(chain, tokenAddresses, url, verbose) {
+    constructor(chain, tokenAddresses, url, verbose, ignoreChainType) {
         super(chain, verbose);
-        if (!interfaces_1.chainSupportedBy(this._chain, types_1.EventChains))
-            throw new Error(`${chain} is not a Substrate chain`);
+        if (!ignoreChainType && !interfaces_1.chainSupportedBy(this._chain, types_1.EventChains))
+            throw new Error(`${chain} is not an ERC20 token`);
         this._options = {
             url: url || index_1.networkUrls[chain],
             tokenAddresses: tokenAddresses,
@@ -106,3 +106,4 @@ class Listener extends Listener_1.Listener {
     }
 }
 exports.Listener = Listener;
+//# sourceMappingURL=Listener.js.map

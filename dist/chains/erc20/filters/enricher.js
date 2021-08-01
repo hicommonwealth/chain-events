@@ -58,3 +58,4 @@ function Enrich(api, blockNumber, kind, rawData, config = {}) {
     });
 }
 exports.Enrich = Enrich;
+//# sourceMappingURL=enricher.js.map

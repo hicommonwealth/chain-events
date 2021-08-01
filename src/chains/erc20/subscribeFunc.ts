@@ -1,6 +1,7 @@
 import { providers } from 'ethers';
 import Web3 from 'web3';
 import sleep from 'sleep-promise';
+import fetch from 'node-fetch';
 
 import { CWEvent, SubscribeFunc, ISubscribeOptions } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
@@ -29,6 +30,7 @@ export async function createApi(
   tokenAddresses: string[],
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
+  // TODO: are if statements here necessary?
   if (ethNetworkUrl.includes('infura')) {
     if (process && process.env) {
       const { INFURA_API_KEY } = process.env;
@@ -36,9 +38,34 @@ export async function createApi(
         throw new Error('no infura key found!');
       }
       ethNetworkUrl = `wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}`;
-    } else {
-      throw new Error('must use nodejs to connect to infura provider!');
-    }
+
+      let res, data;
+      try {
+        res = await fetch(`https://mainnet.infura.io/v3/${INFURA_API_KEY}`, {
+          method: 'POST',
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'eth_getBalance',
+            params: ['0xBf4eD7b27F1d666546E30D74d50d173d20bca754', 'latest'],
+            id: 1,
+          }),
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        data = await res.json();
+
+        if (
+          !data ||
+          !Object.keys(data).includes('jsonrpc') ||
+          !Object.keys(data).includes('id') ||
+          !Object.keys(data).includes('result')
+        )
+          throw new Error('A connection to infura could not be established.');
+      } catch (error) {
+        log.error('Check your INFURA_API_KEY');
+        throw error;
+      }
+    } else throw new Error('must use nodejs to connect to infura provider!');
   }
   try {
     const web3Provider = new Web3.providers.WebsocketProvider(ethNetworkUrl, {

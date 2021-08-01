@@ -207,3 +207,4 @@ const _abi = [
         type: "function"
     }
 ];
+//# sourceMappingURL=Ierc20Factory.js.map

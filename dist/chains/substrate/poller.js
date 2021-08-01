@@ -112,3 +112,4 @@ class Poller extends interfaces_1.IEventPoller {
     }
 }
 exports.Poller = Poller;
+//# sourceMappingURL=poller.js.map

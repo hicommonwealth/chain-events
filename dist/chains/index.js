@@ -9,3 +9,4 @@ var Listener_3 = require("./marlin/Listener");
 Object.defineProperty(exports, "MarlinListener", { enumerable: true, get: function () { return Listener_3.Listener; } });
 var Listener_4 = require("./erc20/Listener");
 Object.defineProperty(exports, "Erc20Listener", { enumerable: true, get: function () { return Listener_4.Listener; } });
+//# sourceMappingURL=index.js.map

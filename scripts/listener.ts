@@ -21,7 +21,7 @@ const argv = yargs
     },
     network: {
       alias: 'n',
-      choices: EventSupportingChains,
+      // choices: EventSupportingChains,
       description: 'chain to listen on',
     },
     url: {
@@ -115,46 +115,50 @@ const argv = yargs
   })
   .check((data) => {
     if (
-      !chainSupportedBy(data.network, SubstrateEvents.Types.EventChains) &&
+      !chainSupportedBy(
+        data.network as any,
+        SubstrateEvents.Types.EventChains
+      ) &&
       data.spec
     ) {
       throw new Error('cannot pass spec on non-substrate network');
     }
     if (
-      !chainSupportedBy(data.network, MolochEvents.Types.EventChains) &&
+      !chainSupportedBy(data.network as any, MolochEvents.Types.EventChains) &&
       data.MolcohContractAddress
     ) {
       throw new Error('cannot pass contract address on non-moloch network');
     }
-    if (data.Erc20TokenAddresses) {
-      data.Erc20TokenAddresses.forEach((item) => {
-        if (typeof item != 'string')
-          throw new Error('Erc20 token addresses must be strings');
-      });
-    }
+    // if (data.Erc20TokenAddresses) {
+    //   data.Erc20TokenAddresses.forEach((item) => {
+    //     if (typeof item != 'string')
+    //       throw new Error('Erc20 token addresses must be strings');
+    //   });
+    // }
 
-    if (!isSupportedChain(data.network)) {
-      throw new Error('You must pass a valid chain to listen to!');
-    }
+    // if (!isSupportedChain(data.network as any)) {
+    //   throw new Error('You must pass a valid chain to listen to!');
+    // }
     return true;
   }).argv;
 
 let listener;
-createListener(argv.network, argv as any)
+argv.Erc20TokenAddresses = ['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'];
+createListener(argv.network as any, argv as any, true, 'ethereum')
   .then(async (res) => {
     if (res instanceof Error) throw res;
     else listener = res;
 
     // add any handlers
 
-    if (argv.rabbitMQ) {
-      const producer = new RabbitMqHandler(argv.rabbitMQ);
-      await producer.init();
-      listener.eventHandlers['rabbitmq'] = {
-        handler: producer,
-        excludedEvents: [],
-      };
-    }
+    // if (argv.rabbitMQ) {
+    //   const producer = new RabbitMqHandler(argv.rabbitMQ);
+    //   await producer.init();
+    //   listener.eventHandlers['rabbitmq'] = {
+    //     handler: producer,
+    //     excludedEvents: [],
+    //   };
+    // }
 
     if (argv.verbose) {
       const logger = new LoggingHandler();
