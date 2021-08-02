@@ -196,11 +196,11 @@
     source-map-support "^0.5.16"
 
 "@babel/runtime-corejs3@^7.12.1":
-  version "7.14.8"
-  resolved "https://registry.yarnpkg.com/@babel/runtime-corejs3/-/runtime-corejs3-7.14.8.tgz#68539e0129f13eb1ed9a9aa273d3542b93c88384"
-  integrity sha512-4dMD5QRBkumn45oweR0SxoNtt15oz3BUBAQ8cIx7HJqZTtE8zjpM0My8aHJHVnyf4XfRg6DNzaE1080WLBiC1w==
+  version "7.14.9"
+  resolved "https://registry.yarnpkg.com/@babel/runtime-corejs3/-/runtime-corejs3-7.14.9.tgz#fb21b1cf11650dcb8fcf4de2e6b3b8cf411da3f3"
+  integrity sha512-64RiH2ON4/y8qYtoa8rUiyam/tUVyGqRyNYhe+vCRGmjnV4bUlZvY+mwd0RrmLoCpJpdq3RsrNqKb7SJdw/4kw==
   dependencies:
-    core-js-pure "^3.15.0"
+    core-js-pure "^3.16.0"
     regenerator-runtime "^0.13.4"
 
 "@babel/runtime@^7.14.6":
@@ -1539,7 +1539,7 @@ caseless@~0.12.0:
 
 "ce-rabbitmq-plugin@git+https://github.com/timolegros/ce-rabbitmq-plugin.git#main":
   version "1.0.0"
-  resolved "git+https://github.com/timolegros/ce-rabbitmq-plugin.git#2ecacfeb6d382db9f310ae1d1218186dfcbdcc18"
+  resolved "git+https://github.com/timolegros/ce-rabbitmq-plugin.git#a4b92395d43a97816d819f0b7d48b96b28dce6f6"
   dependencies:
     "@commonwealth/chain-events" "git+https://github.com/timolegros/chain-events.git#build"
     amqplib "^0.8.0"
@@ -1797,7 +1797,7 @@ copyfiles@^2.4.1:
     untildify "^4.0.0"
     yargs "^16.1.0"
 
-core-js-pure@^3.15.0:
+core-js-pure@^3.16.0:
   version "3.16.0"
   resolved "https://registry.yarnpkg.com/core-js-pure/-/core-js-pure-3.16.0.tgz#218e07add3f1844e53fab195c47871fc5ba18de8"
   integrity sha512-wzlhZNepF/QA9yvx3ePDgNGudU5KDB8lu/TRPKelYA/QtSnkS/cLl2W+TIdEX1FAFcBr0YpY7tPDlcmXJ7AyiQ==
