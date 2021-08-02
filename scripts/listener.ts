@@ -1,6 +1,6 @@
 import * as yargs from 'yargs';
 import { createListener } from '../src';
-import { getRabbitMQConfig, RabbitMqHandler } from 'ce-rabbitmq-plugin';
+// import { getRabbitMQConfig, RabbitMqHandler } from 'ce-rabbitmq-plugin';
 import {
   EventSupportingChains,
   chainSupportedBy,
@@ -94,7 +94,7 @@ const argv = yargs
       'skipCatchup',
     ],
   })
-  .coerce('rabbitMQ', getRabbitMQConfig)
+  // .coerce('rabbitMQ', getRabbitMQConfig)
   .coerce('config', (filepath) => {
     if (typeof filepath == 'string' && filepath.length == 0)
       throw new Error('Config filepath invalid');

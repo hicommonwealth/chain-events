@@ -11,7 +11,7 @@ const formatFilename = (name) => {
     return t[t.length - 1];
 };
 exports.formatFilename = formatFilename;
-exports.factory = typescript_logging_1.LFService.createNamedLoggerFactory('ChainEvent', options);
+exports.factory = typescript_logging_1.LFService.createNamedLoggerFactory('ChainEvents', options);
 const control = typescript_logging_1.getLogControl();
 // Factories are numbered, use listFactories() to find out
 exports.factoryControl = control.getLoggerFactoryControl(0);
