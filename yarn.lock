@@ -1539,7 +1539,7 @@ caseless@~0.12.0:
 
 "ce-rabbitmq-plugin@git+https://github.com/timolegros/ce-rabbitmq-plugin.git#main":
   version "1.0.0"
-  resolved "git+https://github.com/timolegros/ce-rabbitmq-plugin.git#a4b92395d43a97816d819f0b7d48b96b28dce6f6"
+  resolved "git+https://github.com/timolegros/ce-rabbitmq-plugin.git#271387315a5e7408920fd31ea4ef9b8ecc18bdeb"
   dependencies:
     "@commonwealth/chain-events" "git+https://github.com/timolegros/chain-events.git#build"
     amqplib "^0.8.0"
