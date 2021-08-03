@@ -20,6 +20,9 @@ import {
   Erc20TokenUrls,
   networkSpecs,
 } from './index';
+import { factory, formatFilename } from './logging';
+
+const log = factory.getLogger(formatFilename(__filename));
 
 /**
  * Creates a listener instance and returns it if not error occurs. This function throws on error.
@@ -73,8 +76,6 @@ export async function createListener(
       }
     }
   }
-
-  console.log('basePicker:', basePicker(chain, customChainBase));
 
   if (basePicker(chain, 'substrate')) {
     // start a substrate listener
@@ -134,7 +135,7 @@ export async function createListener(
       throw new Error('An unknown error occurred while starting the listener');
     await listener.init();
   } catch (error) {
-    console.error(`Failed to initialize the listener`);
+    log.error(`Failed to initialize the listener`);
     throw error;
   }
 

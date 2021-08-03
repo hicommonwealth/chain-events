@@ -7,6 +7,9 @@ import {
   IChainEventData,
   CWEvent,
 } from './interfaces';
+import { factory, formatFilename } from './logging';
+
+const log = factory.getLogger(formatFilename(__filename));
 
 export abstract class Listener {
   public eventHandlers: {
@@ -37,14 +40,14 @@ export abstract class Listener {
 
   public async unsubscribe(): Promise<void> {
     if (!this._subscriber) {
-      console.log(
+      log.warn(
         `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
       );
       return;
     }
 
     if (!this._subscribed) {
-      console.log(`The listener for ${this._chain} is not subscribed`);
+      log.warn(`The listener for ${this._chain} is not subscribed`);
       return;
     }
 
@@ -69,7 +72,7 @@ export abstract class Listener {
       try {
         prevResult = await eventHandler.handler.handle(event, prevResult);
       } catch (err) {
-        console.error(`Event handle failure: ${err.message}`);
+        log.error(`Event handle failure: ${err.message}`);
         break;
       }
     }

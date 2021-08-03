@@ -20,6 +20,8 @@ const Listener_3 = require("./chains/marlin/Listener");
 const types_4 = require("./chains/erc20/types");
 const Listener_4 = require("./chains/erc20/Listener");
 const index_1 = require("./index");
+const logging_1 = require("./logging");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 /**
  * Creates a listener instance and returns it if not error occurs. This function throws on error.
  * @param chain The chain the listener is for
@@ -48,7 +50,6 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
                 }
             }
         }
-        console.log('basePicker:', basePicker(chain, customChainBase));
         if (basePicker(chain, 'substrate')) {
             // start a substrate listener
             listener = new Listener_1.Listener(chain, options.url || index_1.networkUrls[chain], options.spec || index_1.networkSpecs[chain] || {}, !!options.archival, options.startBlock || 0, !!options.skipCatchup, options.enricherConfig || {}, !!options.verbose, !!ignoreChainType, options.discoverReconnectRange);
@@ -80,7 +81,7 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
             yield listener.init();
         }
         catch (error) {
-            console.error(`Failed to initialize the listener`);
+            log.error(`Failed to initialize the listener`);
             throw error;
         }
         return listener;

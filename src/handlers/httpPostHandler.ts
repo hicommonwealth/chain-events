@@ -1,5 +1,8 @@
 import { CWEvent, IEventHandler } from '../interfaces';
 import fetch from 'node-fetch';
+import { factory, formatFilename } from '../logging';
+
+const log = factory.getLogger(formatFilename(__filename));
 
 export class httpPostHandler implements IEventHandler {
   public readonly url;
@@ -17,15 +20,15 @@ export class httpPostHandler implements IEventHandler {
       });
 
       // throw if there is an error
-      console.log(`Post request status code: ${res.status}`);
+      log.info(`Post request status code: ${res.status}`);
       if (!res.ok) throw res;
 
       // log post request response
-      console.log(await res.json());
+      log.info(await res.json());
     } catch (error) {
-      console.error(`Error posting event ${event} to ${this.url}`);
+      log.error(`Error posting event ${event} to ${this.url}`);
       // log error info returned by the server if any
-      console.error(await error.text());
+      log.error(await error.text());
     }
   }
 }

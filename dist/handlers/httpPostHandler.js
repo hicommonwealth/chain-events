@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.httpPostHandler = void 0;
 const node_fetch_1 = __importDefault(require("node-fetch"));
+const logging_1 = require("../logging");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class httpPostHandler {
     constructor(url) {
         this.url = url;
@@ -27,16 +29,16 @@ class httpPostHandler {
                     headers: { 'Content-Type': 'application/json' },
                 });
                 // throw if there is an error
-                console.log(`Post request status code: ${res.status}`);
+                log.info(`Post request status code: ${res.status}`);
                 if (!res.ok)
                     throw res;
                 // log post request response
-                console.log(yield res.json());
+                log.info(yield res.json());
             }
             catch (error) {
-                console.error(`Error posting event ${event} to ${this.url}`);
+                log.error(`Error posting event ${event} to ${this.url}`);
                 // log error info returned by the server if any
-                console.error(yield error.text());
+                log.error(yield error.text());
             }
         });
     }

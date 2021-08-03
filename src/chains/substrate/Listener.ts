@@ -1,4 +1,4 @@
-import { Block, IEventData, ISubstrateListenerOptions } from './types';
+import { Block, ISubstrateListenerOptions } from './types';
 import {
   createApi,
   EnricherConfig,
@@ -21,6 +21,9 @@ import { Listener as BaseListener } from '../../Listener';
 
 import { EventChains as SubstrateChains } from './types';
 import { RegisteredTypes } from '@polkadot/types/types';
+import { factory, formatFilename } from '../../logging';
+
+const log = factory.getLogger(formatFilename(__filename));
 
 export class Listener extends BaseListener {
   private readonly _options: ISubstrateListenerOptions;
@@ -66,7 +69,7 @@ export class Listener extends BaseListener {
 
       this._api.on('connected', this.processMissedBlocks);
     } catch (error) {
-      console.error('Fatal error occurred while starting the API');
+      log.error('Fatal error occurred while starting the API');
       throw error;
     }
 
@@ -76,7 +79,7 @@ export class Listener extends BaseListener {
       this._storageFetcher = new StorageFetcher(this._api);
       this._subscriber = await new Subscriber(this._api, this._verbose);
     } catch (error) {
-      console.error(
+      log.error(
         'Fatal error occurred while starting the Poller, Processor, Subscriber, and Fetcher'
       );
       throw error;
@@ -85,7 +88,7 @@ export class Listener extends BaseListener {
 
   public async subscribe(): Promise<void> {
     if (!this._subscriber) {
-      console.log(
+      log.warn(
         `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
       );
       return;
@@ -93,19 +96,19 @@ export class Listener extends BaseListener {
 
     // processed blocks missed during downtime
     if (!this.options.skipCatchup) await this.processMissedBlocks();
-    else console.log('Skipping event catchup on startup!');
+    else log.info('Skipping event catchup on startup!');
 
     try {
-      console.info(`Subscribing to ${this._chain} on url ${this._options.url}`);
+      log.info(`Subscribing to ${this._chain} on url ${this._options.url}`);
       await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
-      console.error(`Subscription error: ${error.message}`);
+      log.error('Subscription error', error.message);
     }
   }
 
   private async processMissedBlocks(): Promise<void> {
-    console.info('Detected offline time, polling missed blocks...');
+    log.info('Detected offline time, polling missed blocks...');
 
     let offlineRange: IDisconnectedRange;
 
@@ -131,7 +134,7 @@ export class Listener extends BaseListener {
     // do nothing
     // (i.e. don't try and fetch all events from block 0 onward)
     if (!offlineRange || !offlineRange.startBlock) {
-      console.warn('Unable to determine offline time range.');
+      log.warn('Unable to determine offline time range.');
       return;
     }
 
@@ -142,7 +145,7 @@ export class Listener extends BaseListener {
       );
       await Promise.all(blocks.map(this.processBlock));
     } catch (e) {
-      console.error(
+      log.error(
         `Block polling failed after disconnect at block ${offlineRange.startBlock}`
       );
     }

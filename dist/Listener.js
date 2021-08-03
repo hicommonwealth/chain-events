@@ -10,6 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Listener = void 0;
+const logging_1 = require("./logging");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class Listener {
     constructor(chain, verbose) {
         this._chain = chain;
@@ -20,11 +22,11 @@ class Listener {
     unsubscribe() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._subscriber) {
-                console.log(`Subscriber for ${this._chain} isn't initialized. Please run init() first!`);
+                log.warn(`Subscriber for ${this._chain} isn't initialized. Please run init() first!`);
                 return;
             }
             if (!this._subscribed) {
-                console.log(`The listener for ${this._chain} is not subscribed`);
+                log.warn(`The listener for ${this._chain} is not subscribed`);
                 return;
             }
             this._subscriber.unsubscribe();
@@ -45,7 +47,7 @@ class Listener {
                     prevResult = yield eventHandler.handler.handle(event, prevResult);
                 }
                 catch (err) {
-                    console.error(`Event handle failure: ${err.message}`);
+                    log.error(`Event handle failure: ${err.message}`);
                     break;
                 }
             }
