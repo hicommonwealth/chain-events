@@ -27,6 +27,7 @@ export class Listener extends BaseListener {
   public _storageFetcher: IStorageFetcher<ApiPromise>;
   private _poller: IEventPoller<ApiPromise, Block>;
   public _lastBlockNumber: number;
+  public discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
 
   constructor(
     chain: EventSupportingChainT,
@@ -37,7 +38,8 @@ export class Listener extends BaseListener {
     skipCatchup?: boolean,
     enricherConfig?: EnricherConfig,
     verbose?: boolean,
-    ignoreChainType?: boolean
+    ignoreChainType?: boolean,
+    discoverReconnectRange?: (chain: string) => Promise<IDisconnectedRange>
   ) {
     super(chain, verbose);
     // if ignoreChainType = true ignore the hard-coded EventChains type
@@ -52,6 +54,8 @@ export class Listener extends BaseListener {
       skipCatchup: !!skipCatchup,
       enricherConfig: enricherConfig || {},
     };
+
+    this.discoverReconnectRange = discoverReconnectRange;
 
     this._subscribed = false;
   }
@@ -100,17 +104,15 @@ export class Listener extends BaseListener {
     }
   }
 
-  private async processMissedBlocks(
-    discoverReconnectRange?: () => Promise<IDisconnectedRange>
-  ): Promise<void> {
+  private async processMissedBlocks(): Promise<void> {
     console.info('Detected offline time, polling missed blocks...');
 
     let offlineRange: IDisconnectedRange;
 
     // first, attempt the provided range finding method if it exists
     // (this should fetch the block of the last server event from database)
-    if (discoverReconnectRange) {
-      offlineRange = await discoverReconnectRange();
+    if (this.discoverReconnectRange) {
+      offlineRange = await this.discoverReconnectRange(this._chain);
     }
 
     // compare with default range algorithm: take last cached block in processor

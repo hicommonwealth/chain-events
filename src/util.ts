@@ -1,4 +1,8 @@
-import { chainSupportedBy, EventSupportingChainT } from './interfaces';
+import {
+  chainSupportedBy,
+  EventSupportingChainT,
+  IDisconnectedRange,
+} from './interfaces';
 import { EventChains as SubstrateChains } from './chains/substrate/types';
 import { Listener as SubstrateListener } from './chains/substrate/Listener';
 import { EnricherConfig } from './chains/substrate';
@@ -42,6 +46,7 @@ export async function createListener(
     spec?: {};
     url?: string;
     enricherConfig?: EnricherConfig;
+    discoverReconnectRange?: (chain: string) => Promise<IDisconnectedRange>;
   },
   ignoreChainType?: boolean,
   customChainBase?: string
@@ -82,7 +87,8 @@ export async function createListener(
       !!options.skipCatchup,
       options.enricherConfig || {},
       !!options.verbose,
-      !!ignoreChainType
+      !!ignoreChainType,
+      options.discoverReconnectRange
     );
   } else if (basePicker(chain, 'moloch')) {
     listener = new MolochListener(
