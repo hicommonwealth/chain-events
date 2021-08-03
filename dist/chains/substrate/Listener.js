@@ -104,7 +104,7 @@ class Listener extends Listener_1.Listener {
             }
             try {
                 const blocks = yield this.getBlocks(offlineRange.startBlock, offlineRange.endBlock);
-                yield Promise.all(blocks.map(this.processBlock));
+                yield Promise.all(blocks.map(this.processBlock, this));
             }
             catch (error) {
                 log.error(`Block polling failed after disconnect at block ${offlineRange.startBlock}`, error);

@@ -143,7 +143,7 @@ export class Listener extends BaseListener {
         offlineRange.startBlock,
         offlineRange.endBlock
       );
-      await Promise.all(blocks.map(this.processBlock));
+      await Promise.all(blocks.map(this.processBlock, this));
     } catch (error) {
       log.error(
         `Block polling failed after disconnect at block ${offlineRange.startBlock}`,
