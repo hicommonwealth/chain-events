@@ -1,7 +1,7 @@
 import { Block, ISubstrateListenerOptions } from './types';
 import { EnricherConfig } from './index';
 import { ApiPromise } from '@polkadot/api';
-import { EventSupportingChainT, IStorageFetcher } from '../../interfaces';
+import { EventSupportingChainT, IDisconnectedRange, IStorageFetcher } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
 import { RegisteredTypes } from '@polkadot/types/types';
 export declare class Listener extends BaseListener {
@@ -9,7 +9,8 @@ export declare class Listener extends BaseListener {
     _storageFetcher: IStorageFetcher<ApiPromise>;
     private _poller;
     _lastBlockNumber: number;
-    constructor(chain: EventSupportingChainT, url?: string, spec?: RegisteredTypes | {}, archival?: boolean, startBlock?: number, skipCatchup?: boolean, enricherConfig?: EnricherConfig, verbose?: boolean, ignoreChainType?: boolean);
+    discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
+    constructor(chain: EventSupportingChainT, url?: string, spec?: RegisteredTypes | {}, archival?: boolean, startBlock?: number, skipCatchup?: boolean, enricherConfig?: EnricherConfig, verbose?: boolean, ignoreChainType?: boolean, discoverReconnectRange?: (chain: string) => Promise<IDisconnectedRange>);
     init(): Promise<void>;
     subscribe(): Promise<void>;
     private processMissedBlocks;

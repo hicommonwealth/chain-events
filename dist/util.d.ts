@@ -1,3 +1,4 @@
+import { IDisconnectedRange } from './interfaces';
 import { EnricherConfig } from './chains/substrate';
 import { Listener } from './Listener';
 /**
@@ -23,4 +24,5 @@ export declare function createListener(chain: string, options: {
     spec?: {};
     url?: string;
     enricherConfig?: EnricherConfig;
+    discoverReconnectRange?: (chain: string) => Promise<IDisconnectedRange>;
 }, ignoreChainType?: boolean, customChainBase?: string): Promise<Listener>;

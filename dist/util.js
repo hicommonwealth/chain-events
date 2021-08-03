@@ -51,7 +51,7 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
         console.log('basePicker:', basePicker(chain, customChainBase));
         if (basePicker(chain, 'substrate')) {
             // start a substrate listener
-            listener = new Listener_1.Listener(chain, options.url || index_1.networkUrls[chain], options.spec || index_1.networkSpecs[chain] || {}, !!options.archival, options.startBlock || 0, !!options.skipCatchup, options.enricherConfig || {}, !!options.verbose, !!ignoreChainType);
+            listener = new Listener_1.Listener(chain, options.url || index_1.networkUrls[chain], options.spec || index_1.networkSpecs[chain] || {}, !!options.archival, options.startBlock || 0, !!options.skipCatchup, options.enricherConfig || {}, !!options.verbose, !!ignoreChainType, options.discoverReconnectRange);
         }
         else if (basePicker(chain, 'moloch')) {
             listener = new Listener_2.Listener(chain, options.MolochContractVersion == 1 || options.MolochContractVersion == 2

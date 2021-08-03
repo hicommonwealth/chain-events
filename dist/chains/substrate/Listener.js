@@ -16,7 +16,7 @@ const index_2 = require("../../index");
 const Listener_1 = require("../../Listener");
 const types_1 = require("./types");
 class Listener extends Listener_1.Listener {
-    constructor(chain, url, spec, archival, startBlock, skipCatchup, enricherConfig, verbose, ignoreChainType) {
+    constructor(chain, url, spec, archival, startBlock, skipCatchup, enricherConfig, verbose, ignoreChainType, discoverReconnectRange) {
         super(chain, verbose);
         // if ignoreChainType = true ignore the hard-coded EventChains type
         if (!ignoreChainType && !interfaces_1.chainSupportedBy(this._chain, types_1.EventChains))
@@ -29,6 +29,7 @@ class Listener extends Listener_1.Listener {
             skipCatchup: !!skipCatchup,
             enricherConfig: enricherConfig || {},
         };
+        this.discoverReconnectRange = discoverReconnectRange;
         this._subscribed = false;
     }
     init() {
@@ -74,14 +75,14 @@ class Listener extends Listener_1.Listener {
             }
         });
     }
-    processMissedBlocks(discoverReconnectRange) {
+    processMissedBlocks() {
         return __awaiter(this, void 0, void 0, function* () {
             console.info('Detected offline time, polling missed blocks...');
             let offlineRange;
             // first, attempt the provided range finding method if it exists
             // (this should fetch the block of the last server event from database)
-            if (discoverReconnectRange) {
-                offlineRange = yield discoverReconnectRange();
+            if (this.discoverReconnectRange) {
+                offlineRange = yield this.discoverReconnectRange(this._chain);
             }
             // compare with default range algorithm: take last cached block in processor
             // if it exists, and is more recent than the provided algorithm
