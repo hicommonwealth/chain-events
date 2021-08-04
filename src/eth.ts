@@ -22,7 +22,7 @@ export function createProvider(ethNetworkUrl: string): providers.Web3Provider {
     },
   });
   const provider = new providers.Web3Provider(web3Provider);
-  // 1 minute polling interval (default is 4s)
-  provider.pollingInterval = 60000;
+  // 12s minute polling interval (default is 4s)
+  provider.pollingInterval = 12000;
   return provider;
 }
