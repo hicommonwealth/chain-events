@@ -26,24 +26,22 @@ const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 function createApi(url, typeOverrides = {}, timeoutMs = 30000) {
     return __awaiter(this, void 0, void 0, function* () {
         // construct provider
-        const provider = new api_1.WsProvider(url);
+        let provider = new api_1.WsProvider(url, 0);
         let unsubscribe;
-        let timeoutHandle;
-        const success = yield new Promise((resolve) => {
-            unsubscribe = provider.on('connected', () => resolve(true));
-            timeoutHandle = setTimeout(() => {
-                provider.disconnect();
-                resolve(false);
-            }, timeoutMs);
-        });
-        if (unsubscribe)
-            unsubscribe();
-        clearTimeout(timeoutHandle);
-        // construct API using provider
-        if (success) {
-            return api_1.ApiPromise.create(Object.assign({ provider }, typeOverrides));
+        for (let i = 0; i < 3; ++i) {
+            const success = yield new Promise((resolve) => {
+                unsubscribe = provider.on('connected', () => resolve(true));
+                provider.on('error', () => resolve(false));
+                provider.on('disconnected', () => resolve(false));
+                provider.connect();
+            });
+            // construct API using provider
+            if (success) {
+                unsubscribe();
+                return api_1.ApiPromise.create(Object.assign({ provider }, typeOverrides));
+            }
         }
-        throw new Error('Failed to connect to API endpoint.');
+        throw new Error(`Failed to connect to API endpoint at: ${url}`);
     });
 }
 exports.createApi = createApi;
@@ -51,12 +49,9 @@ exports.createApi = createApi;
  * This is the main function for substrate event handling. It constructs a connection
  * to the chain, connects all event-related modules, and initializes event handling.
  *
- * @param url The substrate chain endpoint to connect to.
- * @param handler An event handler object for processing received events.
- * @param skipCatchup If true, skip all fetching of "historical" chain data that may have been
  *                    emitted during downtime.
- * @param discoverReconnectRange A function to determine how long we were offline upon reconnection.
  * @returns An active block subscriber.
+ * @param options
  */
 const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function* () {
     const { chain, api, handlers, skipCatchup, archival, startBlock, discoverReconnectRange, verbose, enricherConfig, } = options;

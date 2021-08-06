@@ -135,7 +135,7 @@ export async function createListener(
       throw new Error('An unknown error occurred while starting the listener');
     await listener.init();
   } catch (error) {
-    log.error(`Failed to initialize the listener`);
+    log.error(`[${chain}]: Failed to initialize the listener`);
     throw error;
   }
 

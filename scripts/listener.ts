@@ -143,8 +143,9 @@ const argv = yargs
   }).argv;
 
 let listener;
-argv.Erc20TokenAddresses = ['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'];
-createListener(argv.network as any, argv as any, true, 'ethereum')
+// argv.Erc20TokenAddresses = ['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'];
+argv.url = 'wss://cc1.darwinia.network/';
+createListener(argv.network as any, argv as any, true, 'substrate')
   .then(async (res) => {
     if (res instanceof Error) throw res;
     else listener = res;

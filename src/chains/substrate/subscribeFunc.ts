@@ -35,39 +35,40 @@ export async function createApi(
   timeoutMs = 30000
 ): Promise<ApiPromise> {
   // construct provider
-  const provider = new WsProvider(url);
+  let provider = new WsProvider(url, 0);
   let unsubscribe: () => void;
-  let timeoutHandle: NodeJS.Timeout;
-  const success = await new Promise<boolean>((resolve) => {
-    unsubscribe = provider.on('connected', () => resolve(true));
-    timeoutHandle = setTimeout(() => {
-      provider.disconnect();
-      resolve(false);
-    }, timeoutMs);
-  });
-  if (unsubscribe) unsubscribe();
-  clearTimeout(timeoutHandle);
 
-  // construct API using provider
-  if (success) {
-    return ApiPromise.create({
-      provider,
-      ...typeOverrides,
+  for (let i = 0; i < 3; ++i) {
+    const success = await new Promise<boolean>((resolve) => {
+      unsubscribe = provider.on('connected', () => resolve(true));
+
+      provider.on('error', () => resolve(false));
+
+      provider.on('disconnected', () => resolve(false));
+
+      provider.connect();
     });
+
+    // construct API using provider
+    if (success) {
+      unsubscribe();
+      return ApiPromise.create({
+        provider,
+        ...typeOverrides,
+      });
+    }
   }
-  throw new Error('Failed to connect to API endpoint.');
+
+  throw new Error(`Failed to connect to API endpoint at: ${url}`);
 }
 
 /**
  * This is the main function for substrate event handling. It constructs a connection
  * to the chain, connects all event-related modules, and initializes event handling.
  *
- * @param url The substrate chain endpoint to connect to.
- * @param handler An event handler object for processing received events.
- * @param skipCatchup If true, skip all fetching of "historical" chain data that may have been
  *                    emitted during downtime.
- * @param discoverReconnectRange A function to determine how long we were offline upon reconnection.
  * @returns An active block subscriber.
+ * @param options
  */
 export const subscribeEvents: SubscribeFunc<
   ApiPromise,

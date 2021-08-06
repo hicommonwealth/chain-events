@@ -18,11 +18,8 @@ export declare function createApi(url: string, typeOverrides?: RegisteredTypes, 
  * This is the main function for substrate event handling. It constructs a connection
  * to the chain, connects all event-related modules, and initializes event handling.
  *
- * @param url The substrate chain endpoint to connect to.
- * @param handler An event handler object for processing received events.
- * @param skipCatchup If true, skip all fetching of "historical" chain data that may have been
  *                    emitted during downtime.
- * @param discoverReconnectRange A function to determine how long we were offline upon reconnection.
  * @returns An active block subscriber.
+ * @param options
  */
 export declare const subscribeEvents: SubscribeFunc<ApiPromise, Block, ISubstrateSubscribeOptions>;

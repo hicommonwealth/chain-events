@@ -81,7 +81,7 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
             yield listener.init();
         }
         catch (error) {
-            log.error(`Failed to initialize the listener`);
+            log.error(`[${chain}]: Failed to initialize the listener`);
             throw error;
         }
         return listener;
