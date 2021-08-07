@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Listener = void 0;
 const logging_1 = __importDefault(require("./logging"));
+// TODO: processBlock + processMissedBlocks can both be generalized and override in edge case listeners
+// TODO: subscribe method can be implemented here and override in edge case (or even use super.subscribe())
 class Listener {
     constructor(chain, verbose) {
         this._chain = chain;

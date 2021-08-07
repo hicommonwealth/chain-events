@@ -6,7 +6,6 @@ export declare class Listener extends BaseListener {
     constructor(chain: EventSupportingChainT, tokenAddresses: string[], url?: string, verbose?: boolean, ignoreChainType?: boolean);
     init(): Promise<void>;
     subscribe(): Promise<void>;
-    unsubscribe(): Promise<void>;
     updateTokenList(tokenAddresses: string[]): Promise<void>;
     protected processBlock(event: RawEvent): Promise<void>;
     get chain(): string;

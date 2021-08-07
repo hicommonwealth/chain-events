@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Listener = void 0;
 const types_1 = require("./types");
@@ -17,6 +20,7 @@ const index_1 = require("../../index");
 const processor_1 = require("./processor");
 const subscriber_1 = require("./subscriber");
 const Listener_1 = require("../../Listener");
+const logging_1 = __importDefault(require("../../logging"));
 class Listener extends Listener_1.Listener {
     constructor(chain, tokenAddresses, url, verbose, ignoreChainType) {
         super(chain, verbose);
@@ -34,7 +38,7 @@ class Listener extends Listener_1.Listener {
                 this._api = yield subscribeFunc_1.createApi(this._options.url, this._options.tokenAddresses);
             }
             catch (error) {
-                console.error('Fatal error occurred while starting the API');
+                logging_1.default.error('Fatal error occurred while starting the API');
                 throw error;
             }
             try {
@@ -42,7 +46,7 @@ class Listener extends Listener_1.Listener {
                 this._subscriber = new subscriber_1.Subscriber(this._api, this._chain, this._verbose);
             }
             catch (error) {
-                console.error('Fatal error occurred while starting the Processor, and Subscriber');
+                logging_1.default.error('Fatal error occurred while starting the Processor and Subscriber');
                 throw error;
             }
         });
@@ -50,32 +54,16 @@ class Listener extends Listener_1.Listener {
     subscribe() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._subscriber) {
-                console.log(`Subscriber for ${this._chain} isn't initialized. Please run init() first!`);
+                logging_1.default.info(`Subscriber for ${this._chain} isn't initialized. Please run init() first!`);
                 return;
             }
             try {
-                console.info(`Subscribing to ERC20 contracts: ${this._chain}, on url ${this._options.url}`);
+                logging_1.default.info(`Subscribing to ERC20 contracts: ${this._chain}, on url ${this._options.url}`);
                 yield this._subscriber.subscribe(this.processBlock.bind(this));
                 this._subscribed = true;
             }
             catch (error) {
-                console.error(`Subscription error: ${error.message}`);
-            }
-        });
-    }
-    unsubscribe() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!this._subscriber) {
-                console.log(`Subscriber for ${this._chain} isn't initialized. Please run init() first!`);
-                return;
-            }
-            try {
-                this._subscriber.unsubscribe();
-                this._subscribed = false;
-            }
-            catch (error) {
-                console.error('Fatal error occurred while unsubscribing');
-                throw error;
+                logging_1.default.error(`Subscription error: ${error.message}`);
             }
         });
     }

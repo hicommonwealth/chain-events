@@ -7,6 +7,11 @@ interface IAaveContracts {
     aaveToken?: IGovernancePowerDelegationToken;
     stkAaveToken?: IGovernancePowerDelegationToken;
 }
+export interface ListenerOptions {
+    url: string;
+    govContractAddress: string;
+    skipCatchup?: boolean;
+}
 export declare type Api = IAaveContracts;
 export declare const EventChains: readonly ["aave", "aave-local", "dydx-ropsten", "dydx"];
 export declare type RawEvent = TypedEvent<any>;

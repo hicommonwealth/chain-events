@@ -1,2 +1,2 @@
 import { providers } from 'ethers';
-export declare function createProvider(ethNetworkUrl: string): providers.Web3Provider;
+export declare function createProvider(ethNetworkUrl: string): Promise<providers.Web3Provider>;

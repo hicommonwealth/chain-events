@@ -31,7 +31,7 @@ const storageFetcher_1 = require("./storageFetcher");
 function createApi(ethNetworkUrl, governorAlphaAddress, retryTimeMs = 10 * 1000) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const provider = eth_1.createProvider(ethNetworkUrl);
+            const provider = yield eth_1.createProvider(ethNetworkUrl);
             // init governance contract
             const governorAlphaContract = contractTypes_1.GovernorAlpha__factory.connect(governorAlphaAddress, provider);
             yield governorAlphaContract.deployed();

@@ -9,9 +9,7 @@ import { Listener } from './Listener';
  * @param customChainBase Used with ignoreChainType to override the base system the chain is from (i.e. substrate/cosmos/etc)
  */
 export declare function createListener(chain: string, options: {
-    Erc20TokenAddresses?: string[];
-    MarlinContractAddress?: string;
-    MolochContractAddress?: string;
+    address?: string;
     MolochContractVersion?: 1 | 2;
     verbose?: boolean;
     skipCatchup?: boolean;

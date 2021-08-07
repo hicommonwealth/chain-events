@@ -32,7 +32,7 @@ const storageFetcher_1 = require("./storageFetcher");
 function createApi(ethNetworkUrl, contractVersion, contractAddress, retryTimeMs = 10 * 1000) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const provider = eth_1.createProvider(ethNetworkUrl);
+            const provider = yield eth_1.createProvider(ethNetworkUrl);
             const contract = contractVersion === 1
                 ? contractTypes_1.Moloch1__factory.connect(contractAddress, provider)
                 : contractTypes_1.Moloch2__factory.connect(contractAddress, provider);

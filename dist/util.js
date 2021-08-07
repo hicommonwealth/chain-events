@@ -22,6 +22,8 @@ const types_3 = require("./chains/marlin/types");
 const Listener_3 = require("./chains/marlin/Listener");
 const types_4 = require("./chains/erc20/types");
 const Listener_4 = require("./chains/erc20/Listener");
+const types_5 = require("./chains/aave/types");
+const Listener_5 = require("./chains/aave/Listener");
 const index_1 = require("./index");
 const logging_1 = __importDefault(require("./logging"));
 /**
@@ -49,6 +51,8 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
                         return interfaces_1.chainSupportedBy(chain, types_3.EventChains);
                     case 'ethereum':
                         return interfaces_1.chainSupportedBy(chain, types_4.EventChains);
+                    case 'aave':
+                        return interfaces_1.chainSupportedBy(chain, types_5.EventChains);
                 }
             }
         }
@@ -59,15 +63,17 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
         else if (basePicker(chain, 'moloch')) {
             listener = new Listener_2.Listener(chain, options.MolochContractVersion == 1 || options.MolochContractVersion == 2
                 ? options.MolochContractVersion
-                : 2, options.MolochContractAddress || index_1.molochContracts[chain], options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
+                : 2, options.address || index_1.molochContracts[chain], options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
         }
         else if (basePicker(chain, 'marlin')) {
-            listener = new Listener_3.Listener(chain, options.MarlinContractAddress, options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
+            listener = new Listener_3.Listener(chain, options.address, options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
         }
         else if (basePicker(chain, 'ethereum')) {
-            listener = new Listener_4.Listener(chain, options.Erc20TokenAddresses || index_1.Erc20TokenUrls, // addresses of contracts to track
-            options.url || 'wss://mainnet.infura.io/ws/v3/', // ethNetowrkUrl aka the access point to ethereum (usually Infura)
+            listener = new Listener_4.Listener(chain, [options.address], options.url || 'wss://mainnet.infura.io/ws/v3/', // ethNetowrkUrl aka the access point to ethereum (usually Infura)
             !!options.verbose, !!ignoreChainType);
+        }
+        else if (basePicker(chain, 'aave')) {
+            listener = new Listener_5.Listener(chain, options.address, options.url, !!options.skipCatchup, !!options.verbose, !!ignoreChainType, options.discoverReconnectRange);
         }
         else {
             throw new Error('The chain did not match any known supported chain or the given customBase');

@@ -24,38 +24,37 @@ const processor_1 = require("./processor");
  * @param ethNetworkUrl
  * @param tokenAddresses
  * @param retryTimeMs
- * @param retryCount
  * @returns a promise resolving to an ApiPromise once the connection has been established
 
  */
-function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000, retryCount = 0) {
+function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const provider = eth_1.createProvider(ethNetworkUrl);
-            const tokenContracts = tokenAddresses.map((o) => contractTypes_1.ERC20__factory.connect(o, provider));
-            const deployResults = yield Promise.all(tokenContracts.map((o) => o
-                .deployed()
-                .then(() => {
-                return { token: o, deployed: true };
-            })
-                .catch((err) => {
-                logging_1.default.error('Failed to deploy', err);
-                return { token: o, deployed: false };
-            })));
-            const result = deployResults.filter((o) => o.deployed).map((o) => o.token);
-            logging_1.default.info('Connection successful!');
-            return { tokens: result, provider };
-        }
-        catch (err) {
-            logging_1.default.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
-            if (retryCount < 3) {
+        for (let i = 0; i < 3; ++i) {
+            try {
+                const provider = yield eth_1.createProvider(ethNetworkUrl);
+                const tokenContracts = tokenAddresses.map((o) => contractTypes_1.ERC20__factory.connect(o, provider));
+                const deployResults = yield Promise.all(tokenContracts.map((o) => o
+                    .deployed()
+                    .then(() => {
+                    return { token: o, deployed: true };
+                })
+                    .catch((err) => {
+                    logging_1.default.error('Failed to deploy', err);
+                    return { token: o, deployed: false };
+                })));
+                const result = deployResults
+                    .filter((o) => o.deployed)
+                    .map((o) => o.token);
+                logging_1.default.info('Connection successful!');
+                return { tokens: result, provider };
+            }
+            catch (err) {
+                logging_1.default.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
                 yield sleep_promise_1.default(retryTimeMs);
                 logging_1.default.error('Retrying connection...');
-                return createApi(ethNetworkUrl, tokenAddresses, retryTimeMs, ++retryCount);
             }
-            else
-                throw new Error(`Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`);
         }
+        throw new Error(`Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`);
     });
 }
 exports.createApi = createApi;

@@ -29,7 +29,7 @@ export async function createApi(
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
   try {
-    const provider = createProvider(ethNetworkUrl);
+    const provider = await createProvider(ethNetworkUrl);
     const contract =
       contractVersion === 1
         ? Moloch1Factory.connect(contractAddress, provider)

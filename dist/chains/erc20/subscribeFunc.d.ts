@@ -9,11 +9,10 @@ export interface IErc20SubscribeOptions extends ISubscribeOptions<Api> {
  * @param ethNetworkUrl
  * @param tokenAddresses
  * @param retryTimeMs
- * @param retryCount
  * @returns a promise resolving to an ApiPromise once the connection has been established
 
  */
-export declare function createApi(ethNetworkUrl: string, tokenAddresses: string[], retryTimeMs?: number, retryCount?: number): Promise<Api>;
+export declare function createApi(ethNetworkUrl: string, tokenAddresses: string[], retryTimeMs?: number): Promise<Api>;
 /**
  * This is the main function for edgeware event handling. It constructs a connection
  * to the chain, connects all event-related modules, and initializes event handling.
