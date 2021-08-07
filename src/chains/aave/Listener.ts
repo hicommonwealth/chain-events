@@ -100,6 +100,11 @@ export class Listener extends BaseListener {
   public async updateAddress(): Promise<void> {}
 
   private async processMissedBlocks(): Promise<void> {
+    if (!this.discoverReconnectRange) {
+      log.info(
+        `[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
+      );
+    }
     log.info(
       `[${this._chain}]: Detected offline time, polling missed blocks...`
     );

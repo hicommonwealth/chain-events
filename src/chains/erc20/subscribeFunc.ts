@@ -19,7 +19,6 @@ export interface IErc20SubscribeOptions extends ISubscribeOptions<Api> {
  * @param ethNetworkUrl
  * @param tokenAddresses
  * @param retryTimeMs
- * @param retryCount
  * @returns a promise resolving to an ApiPromise once the connection has been established
 
  */
@@ -30,7 +29,7 @@ export async function createApi(
 ): Promise<Api> {
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = createProvider(ethNetworkUrl);
+      const provider = await createProvider(ethNetworkUrl);
 
       const tokenContracts = tokenAddresses.map((o) =>
         ERC20Factory.connect(o, provider)

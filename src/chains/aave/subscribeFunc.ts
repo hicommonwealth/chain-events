@@ -35,7 +35,7 @@ export async function createApi(
 ): Promise<Api> {
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = createProvider(ethNetworkUrl);
+      const provider = await createProvider(ethNetworkUrl);
 
       // fetch governance contract
       const governanceContract = IAaveGovernanceV2Factory.connect(

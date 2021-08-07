@@ -11,7 +11,7 @@ const { argv } = yargs.options({
   },
   base: {
     alias: 'b',
-    choices: ['substrate', 'ethereum'],
+    choices: ['substrate', 'ethereum', 'moloch', 'marlin', 'aave'],
     description:
       'If using a chain that is not natively supported by chain-events specify the base',
   },
@@ -20,10 +20,10 @@ const { argv } = yargs.options({
     type: 'string',
     description: 'node url',
   },
-  contractAddress: {
+  address: {
     alias: 'c',
     type: 'string',
-    description: 'eth contract address',
+    description: 'erc20 token or moloch/marlin/aave contract address',
   },
   archival: {
     alias: 'a',

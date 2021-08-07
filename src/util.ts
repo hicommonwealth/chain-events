@@ -35,10 +35,7 @@ import log from './logging';
 export async function createListener(
   chain: string,
   options: {
-    Erc20TokenAddresses?: string[];
-    AaveContractAddress?: string;
-    MarlinContractAddress?: string;
-    MolochContractAddress?: string;
+    address?: string;
     MolochContractVersion?: 1 | 2;
     verbose?: boolean;
     skipCatchup?: boolean;
@@ -97,7 +94,7 @@ export async function createListener(
       options.MolochContractVersion == 1 || options.MolochContractVersion == 2
         ? options.MolochContractVersion
         : 2,
-      options.MolochContractAddress || molochContracts[chain],
+      options.address || molochContracts[chain],
       options.url || networkUrls[chain],
       !!options.skipCatchup,
       !!options.verbose
@@ -105,7 +102,7 @@ export async function createListener(
   } else if (basePicker(chain, 'marlin')) {
     listener = new MarlinListener(
       <EventSupportingChainT>chain,
-      options.MarlinContractAddress,
+      options.address,
       options.url || networkUrls[chain],
       !!options.skipCatchup,
       !!options.verbose
@@ -113,7 +110,7 @@ export async function createListener(
   } else if (basePicker(chain, 'ethereum')) {
     listener = new Erc20Listener(
       <EventSupportingChainT>chain,
-      options.Erc20TokenAddresses || Erc20TokenUrls, // addresses of contracts to track
+      [options.address],
       options.url || 'wss://mainnet.infura.io/ws/v3/', // ethNetowrkUrl aka the access point to ethereum (usually Infura)
       !!options.verbose,
       !!ignoreChainType
@@ -121,7 +118,7 @@ export async function createListener(
   } else if (basePicker(chain, 'aave')) {
     listener = new AaveListener(
       <EventSupportingChainT>chain,
-      options.AaveContractAddress,
+      options.address,
       options.url,
       !!options.skipCatchup,
       !!options.verbose,
