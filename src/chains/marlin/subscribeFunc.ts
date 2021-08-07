@@ -1,27 +1,24 @@
-import { providers } from 'ethers';
-import Web3 from 'web3';
-import { WebsocketProvider } from 'web3-core/types';
-import { Web3Provider } from 'ethers/providers';
 import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
+import { createProvider } from '../eth';
 import {
   IDisconnectedRange,
   CWEvent,
   SubscribeFunc,
   ISubscribeOptions,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import log from '../../logging';
+import {
+  MPond__factory as MPondFactory,
+  GovernorAlpha__factory as GovernorAlphaFactory,
+  Timelock__factory as TimelockFactory,
+} from '../contractTypes';
 
-import { MPondFactory } from './contractTypes/MPondFactory';
-import { GovernorAlphaFactory } from './contractTypes/GovernorAlphaFactory';
-import { TimelockFactory } from './contractTypes/TimelockFactory';
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
 import { IEventData, RawEvent, Api } from './types';
-
-const log = factory.getLogger(formatFilename(__filename));
 
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
@@ -32,47 +29,25 @@ const log = factory.getLogger(formatFilename(__filename));
  */
 export async function createApi(
   ethNetworkUrl: string,
-  contractAddresses: {
-    comp: string;
-    governorAlpha: string;
-    timelock: string;
-  },
+  governorAlphaAddress: string,
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
-  if (ethNetworkUrl.includes('infura')) {
-    if (process && process.env) {
-      const { INFURA_API_KEY } = process.env;
-      if (!INFURA_API_KEY) {
-        throw new Error('no infura key found!');
-      }
-      ethNetworkUrl = `wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}`;
-    } else {
-      throw new Error('must use nodejs to connect to infura provider!');
-    }
-  }
   try {
-    const web3Provider = new Web3.providers.WebsocketProvider(ethNetworkUrl, {
-      reconnect: {
-        auto: true,
-        delay: retryTimeMs,
-        onTimeout: true,
-      },
-    });
-    const provider = new providers.Web3Provider(web3Provider);
-    const compContract = MPondFactory.connect(contractAddresses.comp, provider);
+    const provider = createProvider(ethNetworkUrl);
+
+    // init governance contract
     const governorAlphaContract = GovernorAlphaFactory.connect(
-      contractAddresses.governorAlpha,
+      governorAlphaAddress,
       provider
     );
-    const timelockContract = TimelockFactory.connect(
-      contractAddresses.timelock,
-      provider
-    );
-    await Promise.all([
-      compContract.deployed(),
-      governorAlphaContract.deployed(),
-      timelockContract.deployed(),
-    ]);
+    await governorAlphaContract.deployed();
+
+    // init secondary contracts
+    const compAddress = await governorAlphaContract.MPond();
+    const timelockAddress = await governorAlphaContract.timelock();
+    const compContract = MPondFactory.connect(compAddress, provider);
+    const timelockContract = TimelockFactory.connect(timelockAddress, provider);
+    await Promise.all([compContract.deployed(), timelockContract.deployed()]);
 
     log.info('Connection successful!');
     return {
@@ -82,13 +57,11 @@ export async function createApi(
     };
   } catch (err) {
     log.error(
-      `Marlin ${contractAddresses.toString()} at ${ethNetworkUrl} failure: ${
-        err.message
-      }`
+      `Marlin ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
     );
     await sleep(retryTimeMs);
     log.error('Retrying connection...');
-    return createApi(ethNetworkUrl, contractAddresses, retryTimeMs);
+    return createApi(ethNetworkUrl, governorAlphaAddress, retryTimeMs);
   }
 }
 
@@ -171,12 +144,8 @@ export const subscribeEvents: SubscribeFunc<
       return;
     }
 
-    // reuse provider interface for dater function
-    // defaulting to the comp contract provider, though could be any of the contracts
-    const web3 = new Web3(
-      (api.comp.provider as Web3Provider)._web3Provider as WebsocketProvider
-    );
-    const dater = new EthDater(web3);
+    // defaulting to the governorAlpha contract provider, though could be any of the contracts
+    const dater = new EthDater(api.governorAlpha.provider);
     const fetcher = new StorageFetcher(api, dater);
     try {
       const cwEvents = await fetcher.fetch(offlineRange);

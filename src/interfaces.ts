@@ -6,6 +6,7 @@ import * as SubstrateTypes from './chains/substrate/types';
 import * as MolochTypes from './chains/moloch/types';
 import * as MarlinTypes from './chains/marlin/types';
 import * as Erc20Types from './chains/erc20/types';
+import * as AaveTypes from './chains/aave/types';
 import { IEvent, RegisteredTypes } from '@polkadot/types/types';
 import { StorageFetcher } from './chains/substrate';
 
@@ -13,27 +14,32 @@ import { StorageFetcher } from './chains/substrate';
 export type IChainEntityKind =
   | SubstrateTypes.EntityKind
   | MolochTypes.EntityKind
-  | MarlinTypes.EntityKind;
+  | MarlinTypes.EntityKind
+  | AaveTypes.EntityKind;
 export type IChainEventData =
   | SubstrateTypes.IEventData
   | MolochTypes.IEventData
   | MarlinTypes.IEventData
+  | AaveTypes.IEventData
   | Erc20Types.IEventData;
 export type IChainEventKind =
   | SubstrateTypes.EventKind
   | MolochTypes.EventKind
   | MarlinTypes.EventKind
+  | AaveTypes.EventKind
   | Erc20Types.EventKind;
 export const ChainEventKinds = [
   ...SubstrateTypes.EventKinds,
   ...MolochTypes.EventKinds,
   ...MarlinTypes.EventKinds,
+  ...AaveTypes.EventKinds,
   ...Erc20Types.EventKinds,
 ];
 export const EventSupportingChains = [
   ...SubstrateTypes.EventChains,
   ...MolochTypes.EventChains,
   ...MarlinTypes.EventChains,
+  ...AaveTypes.EventChains,
   ...Erc20Types.EventChains,
 ] as const;
 export type EventSupportingChainT = typeof EventSupportingChains[number];
@@ -55,6 +61,7 @@ export function isSupportedChain(
 export enum EntityEventKind {
   Create = 0,
   Update,
+  Vote,
   Complete,
 }
 
@@ -101,11 +108,11 @@ export abstract class IEventSubscriber<Api, RawEvent> {
 }
 
 export interface IDisconnectedRange {
-  startBlock: number;
+  startBlock?: number;
   endBlock?: number;
+  maxResults?: number;
 }
 
-// for interacting directly with subscriberFunc
 export interface ISubscribeOptions<Api> {
   chain: EventSupportingChainT;
   api: Api;
@@ -127,7 +134,15 @@ export type SubscribeFunc<
 export abstract class IStorageFetcher<Api> {
   constructor(protected _api: Api) {}
 
-  public abstract fetch(range?: IDisconnectedRange): Promise<CWEvent[]>;
+  public abstract fetch(
+    range?: IDisconnectedRange,
+    fetchAllCompleted?: boolean
+  ): Promise<CWEvent[]>;
+
+  public abstract fetchOne(
+    id: string,
+    kind?: IChainEntityKind
+  ): Promise<CWEvent[]>;
 }
 
 // fetches historical blocks from chain for processing
@@ -163,7 +178,19 @@ export interface IEventTitle {
 
 export type TitlerFilter = (kind: IChainEventKind) => IEventTitle;
 
-export function entityToFieldName(entity: IChainEntityKind): string | null {
+export function entityToFieldName(
+  chain: EventSupportingChainT,
+  entity: IChainEntityKind
+): string | null {
+  if (MolochTypes.EventChains.find((c) => c === chain)) {
+    return 'proposalIndex';
+  }
+  if (MarlinTypes.EventChains.find((c) => c === chain)) {
+    return 'id';
+  }
+  if (AaveTypes.EventChains.find((c) => c === chain)) {
+    return 'id';
+  }
   switch (entity) {
     case SubstrateTypes.EntityKind.DemocracyProposal: {
       return 'proposalIndex';
@@ -196,17 +223,107 @@ export function entityToFieldName(entity: IChainEntityKind): string | null {
       return 'id';
     }
     default: {
-      // should be exhaustive
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const dummy: never = entity;
       return null;
     }
   }
 }
 
 export function eventToEntity(
+  chain: EventSupportingChainT,
   event: IChainEventKind
 ): [IChainEntityKind, EntityEventKind] {
+  if (MolochTypes.EventChains.find((c) => c === chain)) {
+    switch (event) {
+      case MolochTypes.EventKind.SubmitProposal: {
+        return [MolochTypes.EntityKind.Proposal, EntityEventKind.Create];
+      }
+      case MolochTypes.EventKind.SubmitVote: {
+        return [MolochTypes.EntityKind.Proposal, EntityEventKind.Vote];
+      }
+      case MolochTypes.EventKind.ProcessProposal: {
+        return [MolochTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      case MolochTypes.EventKind.Abort: {
+        return [MolochTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      default: {
+        return null;
+      }
+    }
+  }
+  if (MarlinTypes.EventChains.find((c) => c === chain)) {
+    switch (event) {
+      // TODO: not all of these are entity-related...
+      case MarlinTypes.EventKind.Approval: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      case MarlinTypes.EventKind.CancelTransaction: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      case MarlinTypes.EventKind.DelegateChanged: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
+      }
+      case MarlinTypes.EventKind.DelegateVotesChanged: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
+      }
+      case MarlinTypes.EventKind.ExecuteTransaction: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      case MarlinTypes.EventKind.NewAdmin: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
+      }
+      case MarlinTypes.EventKind.NewDelay: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
+      }
+      case MarlinTypes.EventKind.NewPendingAdmin: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
+      }
+      case MarlinTypes.EventKind.ProposalCanceled: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      case MarlinTypes.EventKind.ProposalCreated: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
+      }
+      case MarlinTypes.EventKind.ProposalExecuted: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      case MarlinTypes.EventKind.ProposalQueued: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
+      }
+      case MarlinTypes.EventKind.QueueTransaction: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
+      }
+      case MarlinTypes.EventKind.Transfer: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      case MarlinTypes.EventKind.VoteCast: {
+        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Vote];
+      }
+      default: {
+        return null;
+      }
+    }
+  }
+  if (AaveTypes.EventChains.find((c) => c === chain)) {
+    switch (event) {
+      case AaveTypes.EventKind.ProposalCreated: {
+        return [AaveTypes.EntityKind.Proposal, EntityEventKind.Create];
+      }
+      case AaveTypes.EventKind.VoteEmitted: {
+        return [AaveTypes.EntityKind.Proposal, EntityEventKind.Vote];
+      }
+      case AaveTypes.EventKind.ProposalQueued: {
+        return [AaveTypes.EntityKind.Proposal, EntityEventKind.Update];
+      }
+      case AaveTypes.EventKind.ProposalExecuted:
+      case AaveTypes.EventKind.ProposalCanceled: {
+        return [AaveTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      default: {
+        return null;
+      }
+    }
+  }
   switch (event) {
     // Democracy Events
     case SubstrateTypes.EventKind.DemocracyProposed: {
@@ -228,7 +345,12 @@ export function eventToEntity(
         EntityEventKind.Create,
       ];
     }
-    case SubstrateTypes.EventKind.DemocracyVoted:
+    case SubstrateTypes.EventKind.DemocracyVoted: {
+      return [
+        SubstrateTypes.EntityKind.DemocracyReferendum,
+        EntityEventKind.Vote,
+      ];
+    }
     case SubstrateTypes.EventKind.DemocracyPassed: {
       return [
         SubstrateTypes.EntityKind.DemocracyReferendum,
@@ -328,7 +450,12 @@ export function eventToEntity(
         EntityEventKind.Create,
       ];
     }
-    case SubstrateTypes.EventKind.CollectiveVoted:
+    case SubstrateTypes.EventKind.CollectiveVoted: {
+      return [
+        SubstrateTypes.EntityKind.CollectiveProposal,
+        EntityEventKind.Vote,
+      ];
+    }
     case SubstrateTypes.EventKind.CollectiveApproved: {
       return [
         SubstrateTypes.EntityKind.CollectiveProposal,
@@ -363,70 +490,18 @@ export function eventToEntity(
         EntityEventKind.Complete,
       ];
     }
-
-    // Moloch Events
-    case MolochTypes.EventKind.SubmitProposal: {
-      return [MolochTypes.EntityKind.Proposal, EntityEventKind.Create];
-    }
-    case MolochTypes.EventKind.SubmitVote: {
-      return [MolochTypes.EntityKind.Proposal, EntityEventKind.Update];
-    }
-    case MolochTypes.EventKind.ProcessProposal: {
-      return [MolochTypes.EntityKind.Proposal, EntityEventKind.Complete];
-    }
-    case MolochTypes.EventKind.Abort: {
-      return [MolochTypes.EntityKind.Proposal, EntityEventKind.Complete];
-    }
-
-    // Marlin Events
-    case MarlinTypes.EventKind.Approval: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
-    }
-    case MarlinTypes.EventKind.CancelTransaction: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
-    }
-    case MarlinTypes.EventKind.DelegateChanged: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
-    }
-    case MarlinTypes.EventKind.DelegateVotesChanged: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
-    }
-    case MarlinTypes.EventKind.ExecuteTransaction: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
-    }
-    case MarlinTypes.EventKind.NewAdmin: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
-    }
-    case MarlinTypes.EventKind.NewDelay: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
-    }
-    case MarlinTypes.EventKind.NewPendingAdmin: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
-    }
-    case MarlinTypes.EventKind.ProposalCanceled: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
-    }
-    case MarlinTypes.EventKind.ProposalCreated: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
-    }
-    case MarlinTypes.EventKind.ProposalExecuted: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
-    }
-    case MarlinTypes.EventKind.ProposalQueued: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
-    }
-    case MarlinTypes.EventKind.QueueTransaction: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
-    }
-    case MarlinTypes.EventKind.Transfer: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
-    }
-    case MarlinTypes.EventKind.VoteCast: {
-      return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
-    }
-
     default: {
       return null;
     }
   }
+}
+
+export function isEntityCompleted(
+  chain: EventSupportingChainT,
+  entityEvents: CWEvent<any>[]
+): boolean {
+  return entityEvents.some(({ data: { kind } }) => {
+    const entityData = eventToEntity(chain, kind);
+    return entityData && entityData[1] === EntityEventKind.Complete;
+  });
 }

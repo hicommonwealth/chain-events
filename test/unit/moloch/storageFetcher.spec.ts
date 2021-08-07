@@ -7,7 +7,7 @@ import {
   ISubmitProposal,
   IProcessProposal,
 } from '../../../src/chains/moloch/types';
-import { Moloch1 } from '../../../eth/types/Moloch1';
+import { Moloch1 } from '../../../src/contractTypes';
 
 const { assert } = chai;
 

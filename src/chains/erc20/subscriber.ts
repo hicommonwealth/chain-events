@@ -1,16 +1,14 @@
 /**
  * Fetches events from Marlin contract in real time.
  */
-import { Listener } from 'ethers/providers';
+import { Listener } from '@ethersproject/providers';
 import sleep from 'sleep-promise';
 
 import { IEventSubscriber } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { ERC20__factory as ERC20Factory } from '../contractTypes';
+import log from '../../logging';
 
-import { Erc20Factory } from './contractTypes/Erc20Factory';
 import { RawEvent, Api, Token } from './types';
-
-const log = factory.getLogger(formatFilename(__filename));
 
 export class Subscriber extends IEventSubscriber<Api, RawEvent> {
   private _name: string;
@@ -38,7 +36,7 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
       this._verbose ? log.info(logStr) : log.trace(logStr);
       cb(event);
     };
-    this._api.tokens.forEach((o) => o.addListener('*', this._listener));
+    this._api.tokens.forEach((o) => o.on('*', this._listener));
   }
 
   public unsubscribe(): void {
@@ -61,12 +59,12 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
       return;
     }
     try {
-      const contract = await Erc20Factory.connect(
+      const contract = await ERC20Factory.connect(
         tokenAddress,
         this.api.provider
       );
       await contract.deployed();
-      contract.addListener('*', this._listener);
+      contract.on('*', this._listener);
       this.api.tokens.push(contract);
     } catch (e) {
       await sleep(retryTimeMs);

@@ -1,10 +1,3 @@
-import { RegisteredTypes } from '@polkadot/types/types';
-import { CloverSpec } from './specs/clover';
-import { HydraDXSpec } from './specs/hydraDX';
-import { KulupuSpec } from './specs/kulupu';
-import { spec as EdgewareSpec } from '@edgeware/node-types';
-import { StafiSpec } from './specs/stafi';
-
 export * from './interfaces';
 export * as MolochEvents from './chains/moloch/index';
 export * as MolochTypes from './chains/moloch/types';
@@ -14,6 +7,8 @@ export * as SubstrateEvents from './chains/substrate/index';
 export * as SubstrateTypes from './chains/substrate/types';
 export * as Erc20Events from './chains/erc20/index';
 export * as Erc20Types from './chains/erc20/types';
+export * as AaveEvents from './chains/aave/index';
+export * as AaveTypes from './chains/aave/types';
 export * from './chains';
 
 export { Listener } from './Listener';

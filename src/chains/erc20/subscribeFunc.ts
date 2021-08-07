@@ -1,18 +1,14 @@
-import { providers } from 'ethers';
-import Web3 from 'web3';
 import sleep from 'sleep-promise';
-import fetch from 'node-fetch';
 
+import { createProvider } from '../eth';
 import { CWEvent, SubscribeFunc, ISubscribeOptions } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import log from '../../logging';
+import { ERC20__factory as ERC20Factory } from '../contractTypes';
 
-import { Erc20Factory } from './contractTypes/Erc20Factory';
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
 import { IEventData, RawEvent, Api } from './types';
 import { EnricherConfig } from './filters/enricher';
-
-const log = factory.getLogger(formatFilename(__filename));
 
 export interface IErc20SubscribeOptions extends ISubscribeOptions<Api> {
   enricherConfig?: EnricherConfig;
@@ -20,11 +16,12 @@ export interface IErc20SubscribeOptions extends ISubscribeOptions<Api> {
 
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
- * @returns a promise resolving to an ApiPromise once the connection has been established
  * @param ethNetworkUrl
  * @param tokenAddresses
  * @param retryTimeMs
  * @param retryCount
+ * @returns a promise resolving to an ApiPromise once the connection has been established
+
  */
 export async function createApi(
   ethNetworkUrl: string,
@@ -32,55 +29,11 @@ export async function createApi(
   retryTimeMs = 10 * 1000,
   retryCount: number = 0
 ): Promise<Api> {
-  // TODO: are if statements here necessary?
-  if (ethNetworkUrl.includes('infura')) {
-    if (process && process.env) {
-      const { INFURA_API_KEY } = process.env;
-      if (!INFURA_API_KEY) {
-        throw new Error('no infura key found!');
-      }
-      ethNetworkUrl = `wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}`;
-
-      let res, data;
-      try {
-        res = await fetch(`https://mainnet.infura.io/v3/${INFURA_API_KEY}`, {
-          method: 'POST',
-          body: JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'eth_getBalance',
-            params: ['0xBf4eD7b27F1d666546E30D74d50d173d20bca754', 'latest'],
-            id: 1,
-          }),
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        data = await res.json();
-
-        if (
-          !data ||
-          !Object.keys(data).includes('jsonrpc') ||
-          !Object.keys(data).includes('id') ||
-          !Object.keys(data).includes('result')
-        )
-          throw new Error('A connection to infura could not be established.');
-      } catch (error) {
-        log.error('Check your INFURA_API_KEY');
-        throw error;
-      }
-    } else throw new Error('must use nodejs to connect to infura provider!');
-  }
   try {
-    const web3Provider = new Web3.providers.WebsocketProvider(ethNetworkUrl, {
-      reconnect: {
-        auto: true,
-        delay: retryTimeMs,
-        onTimeout: true,
-      },
-    });
-    const provider = new providers.Web3Provider(web3Provider);
+    const provider = createProvider(ethNetworkUrl);
 
     const tokenContracts = tokenAddresses.map((o) =>
-      Erc20Factory.connect(o, provider)
+      ERC20Factory.connect(o, provider)
     );
     const deployResults = await Promise.all(
       tokenContracts.map((o) =>
