@@ -17,6 +17,8 @@ import { Processor } from './processor';
 import { Subscriber } from './subscriber';
 import { Listener as BaseListener } from '../../Listener';
 
+import log from '../../logging';
+
 export class Listener extends BaseListener {
   private readonly _options: Erc20ListenerOptions;
 
@@ -46,7 +48,7 @@ export class Listener extends BaseListener {
         this._options.tokenAddresses
       );
     } catch (error) {
-      console.error('Fatal error occurred while starting the API');
+      log.error('Fatal error occurred while starting the API');
       throw error;
     }
 
@@ -54,8 +56,8 @@ export class Listener extends BaseListener {
       this._processor = new Processor(this._api);
       this._subscriber = new Subscriber(this._api, this._chain, this._verbose);
     } catch (error) {
-      console.error(
-        'Fatal error occurred while starting the Processor, and Subscriber'
+      log.error(
+        'Fatal error occurred while starting the Processor and Subscriber'
       );
       throw error;
     }
@@ -63,36 +65,20 @@ export class Listener extends BaseListener {
 
   public async subscribe(): Promise<void> {
     if (!this._subscriber) {
-      console.log(
+      log.info(
         `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
       );
       return;
     }
 
     try {
-      console.info(
+      log.info(
         `Subscribing to ERC20 contracts: ${this._chain}, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
-      console.error(`Subscription error: ${error.message}`);
-    }
-  }
-
-  public async unsubscribe(): Promise<void> {
-    if (!this._subscriber) {
-      console.log(
-        `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
-      );
-      return;
-    }
-    try {
-      this._subscriber.unsubscribe();
-      this._subscribed = false;
-    } catch (error) {
-      console.error('Fatal error occurred while unsubscribing');
-      throw error;
+      log.error(`Subscription error: ${error.message}`);
     }
   }
 

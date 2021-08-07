@@ -21,88 +21,92 @@ import { IEventData, RawEvent, Api } from './types';
 
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
- * @param url websocket endpoing to connect to, including ws[s]:// and port
+ * @param ethNetworkUrl
+ * @param governanceAddress
+ * @param retryTimeMs
+ * @param retryCount
  * @returns a promise resolving to an ApiPromise once the connection has been established
  */
 export async function createApi(
   ethNetworkUrl: string,
   governanceAddress: string,
-  retryTimeMs = 10 * 1000
+  retryTimeMs = 10 * 1000,
+  retryCount: number = 0
 ): Promise<Api> {
-  try {
-    const provider = createProvider(ethNetworkUrl);
-
-    // fetch governance contract
-    const governanceContract = IAaveGovernanceV2Factory.connect(
-      governanceAddress,
-      provider
-    );
-    await governanceContract.deployed();
-
+  for (let i = 0; i < 3; ++i) {
     try {
-      // fetch strategy to get tokens
-      // TODO: ensure that all governance contracts have a valid strategy
-      //   i.e. with these specific tokens -- we may want to take the token addresses
-      //   directly rather than fetch from the contract.
-      const strategyAddress = await governanceContract.getGovernanceStrategy();
-      const strategy = GovernanceStrategyFactory.connect(
-        strategyAddress,
+      const provider = createProvider(ethNetworkUrl);
+
+      // fetch governance contract
+      const governanceContract = IAaveGovernanceV2Factory.connect(
+        governanceAddress,
         provider
       );
-      await strategy.deployed();
+      await governanceContract.deployed();
 
-      // fetch tokens
-      const aaveTokenAddress = await strategy.AAVE();
-      const stkAaveTokenAddress = await strategy.STK_AAVE();
-      const aaveToken = GovernancePowerDelegationERC20Factory.connect(
-        aaveTokenAddress,
-        provider
-      );
-      const stkAaveToken = GovernancePowerDelegationERC20Factory.connect(
-        stkAaveTokenAddress,
-        provider
-      );
-      await aaveToken.deployed();
-      await stkAaveToken.deployed();
+      try {
+        // fetch strategy to get tokens
+        // TODO: ensure that all governance contracts have a valid strategy
+        //   i.e. with these specific tokens -- we may want to take the token addresses
+        //   directly rather than fetch from the contract.
+        const strategyAddress = await governanceContract.getGovernanceStrategy();
+        const strategy = GovernanceStrategyFactory.connect(
+          strategyAddress,
+          provider
+        );
+        await strategy.deployed();
 
-      // confirm we the token types are correct
-      await aaveToken.DELEGATE_TYPEHASH();
-      await stkAaveToken.DELEGATE_TYPEHASH();
+        // fetch tokens
+        const aaveTokenAddress = await strategy.AAVE();
+        const stkAaveTokenAddress = await strategy.STK_AAVE();
+        const aaveToken = GovernancePowerDelegationERC20Factory.connect(
+          aaveTokenAddress,
+          provider
+        );
+        const stkAaveToken = GovernancePowerDelegationERC20Factory.connect(
+          stkAaveTokenAddress,
+          provider
+        );
+        await aaveToken.deployed();
+        await stkAaveToken.deployed();
 
-      log.info('Connection successful!');
-      return {
-        governance: governanceContract,
-        aaveToken,
-        stkAaveToken,
-      };
+        // confirm we the token types are correct
+        await aaveToken.DELEGATE_TYPEHASH();
+        await stkAaveToken.DELEGATE_TYPEHASH();
+
+        log.info('Connection successful!');
+        return {
+          governance: governanceContract,
+          aaveToken,
+          stkAaveToken,
+        };
+      } catch (err) {
+        log.warn(
+          'Governance connection successful but token connections failed.'
+        );
+        log.warn('Delegation events will not be emitted.');
+        return {
+          governance: governanceContract,
+        };
+      }
     } catch (err) {
-      log.warn(
-        'Governance connection successful but token connections failed.'
+      log.error(
+        `Aave ${governanceAddress} at ${ethNetworkUrl} failure: ${err.message}`
       );
-      log.warn('Delegation events will not be emitted.');
-      return {
-        governance: governanceContract,
-      };
+      await sleep(retryTimeMs);
+      log.error('Retrying connection...');
     }
-  } catch (err) {
-    log.error(
-      `Aave ${governanceAddress} at ${ethNetworkUrl} failure: ${err.message}`
-    );
-    await sleep(retryTimeMs);
-    log.error('Retrying connection...');
-    return createApi(ethNetworkUrl, governanceAddress, retryTimeMs);
   }
+
+  throw new Error(
+    `Failed to start Aave listener for ${governanceAddress} at ${ethNetworkUrl}`
+  );
 }
 
 /**
  * This is the main function for edgeware event handling. It constructs a connection
  * to the chain, connects all event-related modules, and initializes event handling.
- *
- * @param url The edgeware chain endpoint to connect to.
- * @param handler An event handler object for processing received events.
- * @param skipCatchup If true, skip all fetching of "historical" chain data that may have been
- *                    emitted during downtime.
- * @param discoverReconnectRange A function to determine how long we were offline upon reconnection.
+ * @param options
  * @returns An active block subscriber.
  */
 export const subscribeEvents: SubscribeFunc<

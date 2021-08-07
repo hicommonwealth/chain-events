@@ -26,50 +26,45 @@ export interface IErc20SubscribeOptions extends ISubscribeOptions<Api> {
 export async function createApi(
   ethNetworkUrl: string,
   tokenAddresses: string[],
-  retryTimeMs = 10 * 1000,
-  retryCount: number = 0
+  retryTimeMs = 10 * 1000
 ): Promise<Api> {
-  try {
-    const provider = createProvider(ethNetworkUrl);
+  for (let i = 0; i < 3; ++i) {
+    try {
+      const provider = createProvider(ethNetworkUrl);
 
-    const tokenContracts = tokenAddresses.map((o) =>
-      ERC20Factory.connect(o, provider)
-    );
-    const deployResults = await Promise.all(
-      tokenContracts.map((o) =>
-        o
-          .deployed()
-          .then(() => {
-            return { token: o, deployed: true };
-          })
-          .catch((err) => {
-            log.error('Failed to deploy', err);
-            return { token: o, deployed: false };
-          })
-      )
-    );
+      const tokenContracts = tokenAddresses.map((o) =>
+        ERC20Factory.connect(o, provider)
+      );
+      const deployResults = await Promise.all(
+        tokenContracts.map((o) =>
+          o
+            .deployed()
+            .then(() => {
+              return { token: o, deployed: true };
+            })
+            .catch((err) => {
+              log.error('Failed to deploy', err);
+              return { token: o, deployed: false };
+            })
+        )
+      );
 
-    const result = deployResults.filter((o) => o.deployed).map((o) => o.token);
+      const result = deployResults
+        .filter((o) => o.deployed)
+        .map((o) => o.token);
 
-    log.info('Connection successful!');
-    return { tokens: result, provider };
-  } catch (err) {
-    log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
-
-    if (retryCount < 3) {
+      log.info('Connection successful!');
+      return { tokens: result, provider };
+    } catch (err) {
+      log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
       await sleep(retryTimeMs);
       log.error('Retrying connection...');
-      return createApi(
-        ethNetworkUrl,
-        tokenAddresses,
-        retryTimeMs,
-        ++retryCount
-      );
-    } else
-      throw new Error(
-        `Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`
-      );
+    }
   }
+
+  throw new Error(
+    `Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`
+  );
 }
 
 /**

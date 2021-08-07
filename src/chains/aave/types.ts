@@ -19,6 +19,12 @@ interface IAaveContracts {
   stkAaveToken?: IGovernancePowerDelegationToken;
 }
 
+export interface ListenerOptions {
+  url: string;
+  govContractAddress: string;
+  skipCatchup?: boolean;
+}
+
 export type Api = IAaveContracts;
 
 export const EventChains = [

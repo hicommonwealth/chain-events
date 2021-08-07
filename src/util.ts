@@ -12,6 +12,9 @@ import { EventChains as MarlinChains } from './chains/marlin/types';
 import { Listener as MarlinListener } from './chains/marlin/Listener';
 import { EventChains as Erc20Chain } from './chains/erc20/types';
 import { Listener as Erc20Listener } from './chains/erc20/Listener';
+import { EventChains as AaveChains } from './chains/aave/types';
+import { Listener as AaveListener } from './chains/aave/Listener';
+
 import { Listener } from './Listener';
 import {
   molochContracts,
@@ -33,6 +36,7 @@ export async function createListener(
   chain: string,
   options: {
     Erc20TokenAddresses?: string[];
+    AaveContractAddress?: string;
     MarlinContractAddress?: string;
     MolochContractAddress?: string;
     MolochContractVersion?: 1 | 2;
@@ -67,6 +71,8 @@ export async function createListener(
           return chainSupportedBy(chain, MarlinChains);
         case 'ethereum':
           return chainSupportedBy(chain, Erc20Chain);
+        case 'aave':
+          return chainSupportedBy(chain, AaveChains);
       }
     }
   }
@@ -111,6 +117,16 @@ export async function createListener(
       options.url || 'wss://mainnet.infura.io/ws/v3/', // ethNetowrkUrl aka the access point to ethereum (usually Infura)
       !!options.verbose,
       !!ignoreChainType
+    );
+  } else if (basePicker(chain, 'aave')) {
+    listener = new AaveListener(
+      <EventSupportingChainT>chain,
+      options.AaveContractAddress,
+      options.url,
+      !!options.skipCatchup,
+      !!options.verbose,
+      !!ignoreChainType,
+      options.discoverReconnectRange
     );
   } else {
     throw new Error(

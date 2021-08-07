@@ -10,6 +10,8 @@ import {
 
 import log from './logging';
 
+// TODO: processBlock + processMissedBlocks can both be generalized and override in edge case listeners
+// TODO: subscribe method can be implemented here and override in edge case (or even use super.subscribe())
 export abstract class Listener {
   public eventHandlers: {
     [key: string]: {
