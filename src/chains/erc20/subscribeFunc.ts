@@ -24,11 +24,13 @@ export interface IErc20SubscribeOptions extends ISubscribeOptions<Api> {
  * @param ethNetworkUrl
  * @param tokenAddresses
  * @param retryTimeMs
+ * @param retryCount
  */
 export async function createApi(
   ethNetworkUrl: string,
   tokenAddresses: string[],
-  retryTimeMs = 10 * 1000
+  retryTimeMs = 10 * 1000,
+  retryCount: number = 0
 ): Promise<Api> {
   // TODO: are if statements here necessary?
   if (ethNetworkUrl.includes('infura')) {
@@ -100,9 +102,20 @@ export async function createApi(
     return { tokens: result, provider };
   } catch (err) {
     log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
-    await sleep(retryTimeMs);
-    log.error('Retrying connection...');
-    return createApi(ethNetworkUrl, tokenAddresses, retryTimeMs);
+
+    if (retryCount < 3) {
+      await sleep(retryTimeMs);
+      log.error('Retrying connection...');
+      return createApi(
+        ethNetworkUrl,
+        tokenAddresses,
+        retryTimeMs,
+        ++retryCount
+      );
+    } else
+      throw new Error(
+        `Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`
+      );
   }
 }
 

@@ -28,8 +28,9 @@ const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
  * @param ethNetworkUrl
  * @param tokenAddresses
  * @param retryTimeMs
+ * @param retryCount
  */
-function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000) {
+function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000, retryCount = 0) {
     return __awaiter(this, void 0, void 0, function* () {
         // TODO: are if statements here necessary?
         if (ethNetworkUrl.includes('infura')) {
@@ -91,9 +92,13 @@ function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000) {
         }
         catch (err) {
             log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
-            yield sleep_promise_1.default(retryTimeMs);
-            log.error('Retrying connection...');
-            return createApi(ethNetworkUrl, tokenAddresses, retryTimeMs);
+            if (retryCount < 3) {
+                yield sleep_promise_1.default(retryTimeMs);
+                log.error('Retrying connection...');
+                return createApi(ethNetworkUrl, tokenAddresses, retryTimeMs, ++retryCount);
+            }
+            else
+                throw new Error(`Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`);
         }
     });
 }

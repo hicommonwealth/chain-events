@@ -34,15 +34,18 @@ export async function createApi(
   typeOverrides: RegisteredTypes = {},
   timeoutMs = 30000
 ): Promise<ApiPromise> {
-  // construct provider
-  let provider = new WsProvider(url, 0);
   let unsubscribe: () => void;
 
   for (let i = 0; i < 3; ++i) {
+    let provider = new WsProvider(url, 0);
     const success = await new Promise<boolean>((resolve) => {
       unsubscribe = provider.on('connected', () => resolve(true));
 
-      provider.on('error', () => resolve(false));
+      provider.on('error', () => {
+        if (i < 2)
+          log.warn(`An error occurred connecting to ${url} - retrying...`);
+        resolve(false);
+      });
 
       provider.on('disconnected', () => resolve(false));
 
@@ -57,6 +60,7 @@ export async function createApi(
         ...typeOverrides,
       });
     }
+    // TODO: add delay
   }
 
   throw new Error(`Failed to connect to API endpoint at: ${url}`);

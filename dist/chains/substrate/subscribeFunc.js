@@ -25,13 +25,16 @@ const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
  */
 function createApi(url, typeOverrides = {}, timeoutMs = 30000) {
     return __awaiter(this, void 0, void 0, function* () {
-        // construct provider
-        let provider = new api_1.WsProvider(url, 0);
         let unsubscribe;
         for (let i = 0; i < 3; ++i) {
+            let provider = new api_1.WsProvider(url, 0);
             const success = yield new Promise((resolve) => {
                 unsubscribe = provider.on('connected', () => resolve(true));
-                provider.on('error', () => resolve(false));
+                provider.on('error', () => {
+                    if (i < 2)
+                        log.warn(`An error occurred connecting to ${url} - retrying...`);
+                    resolve(false);
+                });
                 provider.on('disconnected', () => resolve(false));
                 provider.connect();
             });
@@ -40,6 +43,7 @@ function createApi(url, typeOverrides = {}, timeoutMs = 30000) {
                 unsubscribe();
                 return api_1.ApiPromise.create(Object.assign({ provider }, typeOverrides));
             }
+            // TODO: add delay
         }
         throw new Error(`Failed to connect to API endpoint at: ${url}`);
     });
