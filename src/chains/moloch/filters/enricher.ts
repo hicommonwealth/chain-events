@@ -2,8 +2,8 @@
 import { Contract } from 'ethers';
 import { hexToNumberString, hexToNumber as web3HexToNumber } from 'web3-utils';
 
-import { TypedEventFilter } from '../../contractTypes/commons';
-import { Moloch1 } from '../../contractTypes';
+import { TypedEventFilter } from '../../../contractTypes/commons';
+import { Moloch1 } from '../../../contractTypes';
 import { CWEvent } from '../../../interfaces';
 import { EventKind, RawEvent, IEventData, Api } from '../types';
 

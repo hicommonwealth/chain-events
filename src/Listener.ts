@@ -7,9 +7,8 @@ import {
   IChainEventData,
   CWEvent,
 } from './interfaces';
-import { factory, formatFilename } from './logging';
 
-const log = factory.getLogger(formatFilename(__filename));
+import log from './logging';
 
 export abstract class Listener {
   public eventHandlers: {

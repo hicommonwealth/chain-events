@@ -8,14 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Processor = void 0;
 const interfaces_1 = require("../../interfaces");
-const logging_1 = require("../../logging");
+const logging_1 = __importDefault(require("../../logging"));
 const types_1 = require("./types");
 const type_parser_1 = require("./filters/type_parser");
 const enricher_1 = require("./filters/enricher");
-const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class Processor extends interfaces_1.IEventProcessor {
     constructor(_api, _enricherConfig = {}) {
         super(_api);
@@ -49,8 +51,8 @@ class Processor extends interfaces_1.IEventProcessor {
                         return result;
                     }
                     catch (e) {
-                        log.error(`Event enriching failed for ${kind}`);
-                        log.error(`Error: ${e}`);
+                        logging_1.default.error(`Event enriching failed for ${kind}`);
+                        logging_1.default.error(`Error: ${e}`);
                         return null;
                     }
                 }

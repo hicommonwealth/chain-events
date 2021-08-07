@@ -5,7 +5,7 @@ import { Listener } from '@ethersproject/providers';
 import sleep from 'sleep-promise';
 
 import { IEventSubscriber } from '../../interfaces';
-import { ERC20__factory as ERC20Factory } from '../contractTypes';
+import { ERC20__factory as ERC20Factory } from '../../contractTypes';
 import log from '../../logging';
 
 import { RawEvent, Api, Token } from './types';

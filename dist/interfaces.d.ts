@@ -5,18 +5,20 @@ import * as SubstrateTypes from './chains/substrate/types';
 import * as MolochTypes from './chains/moloch/types';
 import * as MarlinTypes from './chains/marlin/types';
 import * as Erc20Types from './chains/erc20/types';
-export declare type IChainEntityKind = SubstrateTypes.EntityKind | MolochTypes.EntityKind | MarlinTypes.EntityKind;
-export declare type IChainEventData = SubstrateTypes.IEventData | MolochTypes.IEventData | MarlinTypes.IEventData | Erc20Types.IEventData;
-export declare type IChainEventKind = SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind | Erc20Types.EventKind;
-export declare const ChainEventKinds: (SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind | Erc20Types.EventKind)[];
-export declare const EventSupportingChains: readonly ["clover", "edgeware", "edgeware-local", "edgeware-testnet", "hydradx", "kusama", "kusama-local", "polkadot", "polkadot-local", "kulupu", "stafi", "moloch", "moloch-local", "marlin", "marlin-local", "erc20"];
+import * as AaveTypes from './chains/aave/types';
+export declare type IChainEntityKind = SubstrateTypes.EntityKind | MolochTypes.EntityKind | MarlinTypes.EntityKind | AaveTypes.EntityKind;
+export declare type IChainEventData = SubstrateTypes.IEventData | MolochTypes.IEventData | MarlinTypes.IEventData | AaveTypes.IEventData | Erc20Types.IEventData;
+export declare type IChainEventKind = SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind | AaveTypes.EventKind | Erc20Types.EventKind;
+export declare const ChainEventKinds: (SubstrateTypes.EventKind | MolochTypes.EventKind | MarlinTypes.EventKind | AaveTypes.EventKind | Erc20Types.EventKind)[];
+export declare const EventSupportingChains: readonly ["clover", "edgeware", "edgeware-local", "edgeware-testnet", "hydradx", "kusama", "kusama-local", "polkadot", "polkadot-local", "kulupu", "stafi", "moloch", "moloch-local", "marlin", "marlin-local", "aave", "aave-local", "dydx-ropsten", "dydx", "erc20"];
 export declare type EventSupportingChainT = typeof EventSupportingChains[number];
 export declare function chainSupportedBy<T extends readonly string[]>(c: string, eventChains: T): c is T[number];
 export declare function isSupportedChain(chain: string): chain is EventSupportingChainT;
 export declare enum EntityEventKind {
     Create = 0,
     Update = 1,
-    Complete = 2
+    Vote = 2,
+    Complete = 3
 }
 export interface CWEvent<IEventData = IChainEventData> {
     blockNumber: number;
@@ -43,8 +45,9 @@ export declare abstract class IEventSubscriber<Api, RawEvent> {
     abstract unsubscribe(): void;
 }
 export interface IDisconnectedRange {
-    startBlock: number;
+    startBlock?: number;
     endBlock?: number;
+    maxResults?: number;
 }
 export interface ISubscribeOptions<Api> {
     chain: EventSupportingChainT;
@@ -60,7 +63,8 @@ export declare type SubscribeFunc<Api, RawEvent, Options extends ISubscribeOptio
 export declare abstract class IStorageFetcher<Api> {
     protected _api: Api;
     constructor(_api: Api);
-    abstract fetch(range?: IDisconnectedRange): Promise<CWEvent[]>;
+    abstract fetch(range?: IDisconnectedRange, fetchAllCompleted?: boolean): Promise<CWEvent[]>;
+    abstract fetchOne(id: string, kind?: IChainEntityKind): Promise<CWEvent[]>;
 }
 export declare abstract class IEventPoller<Api, RawEvent> {
     protected _api: Api;
@@ -78,5 +82,6 @@ export interface IEventTitle {
     description: string;
 }
 export declare type TitlerFilter = (kind: IChainEventKind) => IEventTitle;
-export declare function entityToFieldName(entity: IChainEntityKind): string | null;
-export declare function eventToEntity(event: IChainEventKind): [IChainEntityKind, EntityEventKind];
+export declare function entityToFieldName(chain: EventSupportingChainT, entity: IChainEntityKind): string | null;
+export declare function eventToEntity(chain: EventSupportingChainT, event: IChainEventKind): [IChainEntityKind, EntityEventKind];
+export declare function isEntityCompleted(chain: EventSupportingChainT, entityEvents: CWEvent<any>[]): boolean;

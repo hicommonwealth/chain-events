@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BigNumber, Contract } from 'ethers';
 
-import { Timelock, MPond, GovernorAlpha } from '../../contractTypes';
-import { TypedEventFilter } from '../../contractTypes/commons';
+import { Timelock, MPond, GovernorAlpha } from '../../../contractTypes';
+import { TypedEventFilter } from '../../../contractTypes/commons';
 import { CWEvent } from '../../../interfaces';
 import { EventKind, RawEvent, IEventData, Api } from '../types';
 

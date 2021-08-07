@@ -16,9 +16,7 @@ export function createProvider(ethNetworkUrl: string): providers.Web3Provider {
   }
   const web3Provider = new Web3.providers.WebsocketProvider(ethNetworkUrl, {
     reconnect: {
-      auto: true,
-      delay: 5000,
-      onTimeout: true,
+      auto: false,
     },
   });
   const provider = new providers.Web3Provider(web3Provider);

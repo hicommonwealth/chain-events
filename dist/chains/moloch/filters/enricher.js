@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Enrich = void 0;
-/* eslint-disable @typescript-eslint/no-explicit-any */
 const web3_utils_1 = require("web3-utils");
 const types_1 = require("../types");
 // these functions unwrap the uint type received from chain,

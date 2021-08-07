@@ -18,9 +18,6 @@ import {
 import { networkUrls } from '../../index';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
-import Web3 from 'web3';
-import { Web3Provider } from 'ethers/providers';
-import { WebsocketProvider } from 'web3-core';
 import { Subscriber } from './subscriber';
 import EthDater from 'ethereum-block-by-date';
 import { Listener as BaseListener } from '../../Listener';
@@ -32,11 +29,7 @@ export class Listener extends BaseListener {
 
   constructor(
     chain: EventSupportingChainT,
-    contractAddresses: {
-      comp: string;
-      governorAlpha: string;
-      timelock: string;
-    },
+    contractAddress: string,
     url?: string,
     skipCatchup?: boolean,
     verbose?: boolean
@@ -48,7 +41,7 @@ export class Listener extends BaseListener {
     this._options = {
       url: url || networkUrls[chain],
       skipCatchup: !!skipCatchup,
-      contractAddresses,
+      contractAddress,
     };
 
     this._subscribed = false;
@@ -58,7 +51,7 @@ export class Listener extends BaseListener {
     try {
       this._api = await createApi(
         this._options.url,
-        this._options.contractAddresses
+        this._options.contractAddress
       );
     } catch (error) {
       console.error('Fatal error occurred while starting the API');
@@ -80,11 +73,7 @@ export class Listener extends BaseListener {
     }
 
     try {
-      const web3 = new Web3(
-        (this._api.comp.provider as Web3Provider)
-          ._web3Provider as WebsocketProvider
-      );
-      const dater = new EthDater(web3);
+      const dater = new EthDater(this._api.governorAlpha.provider);
       this._storageFetcher = new StorageFetcher(this._api, dater);
     } catch (error) {
       console.error(
@@ -125,17 +114,7 @@ export class Listener extends BaseListener {
       console.log('Contract is not supported');
       return;
     }
-    switch (contractName) {
-      case 'comp':
-        this._options.contractAddresses.comp = address;
-        break;
-      case 'governorAlpha':
-        this._options.contractAddresses.governorAlpha = address;
-        break;
-      case 'timelock':
-        this._options.contractAddresses.timelock = address;
-        break;
-    }
+    this._options.contractAddress = address;
 
     await this.init();
     if (this._subscribed === true) await this.subscribe();

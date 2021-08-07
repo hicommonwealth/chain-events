@@ -6,11 +6,12 @@ export interface IErc20SubscribeOptions extends ISubscribeOptions<Api> {
 }
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
- * @returns a promise resolving to an ApiPromise once the connection has been established
  * @param ethNetworkUrl
  * @param tokenAddresses
  * @param retryTimeMs
  * @param retryCount
+ * @returns a promise resolving to an ApiPromise once the connection has been established
+
  */
 export declare function createApi(ethNetworkUrl: string, tokenAddresses: string[], retryTimeMs?: number, retryCount?: number): Promise<Api>;
 /**

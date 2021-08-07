@@ -1,11 +1,11 @@
 import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
-import { createProvider } from '../eth';
+import { createProvider } from '../../eth';
 import {
   Moloch1__factory as Moloch1Factory,
   Moloch2__factory as Moloch2Factory,
-} from '../contractTypes';
+} from '../../contractTypes';
 import { IDisconnectedRange, CWEvent, SubscribeFunc } from '../../interfaces';
 import log from '../../logging';
 

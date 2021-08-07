@@ -12,9 +12,7 @@ export declare function createApi(ethNetworkUrl: string, contractVersion: 1 | 2,
 /**
  * This is the main function for edgeware event handling. It constructs a connection
  * to the chain, connects all event-related modules, and initializes event handling.
- *
- *                    emitted during downtime.
- * @returns An active block subscriber.
  * @param options
+ * @returns An active block subscriber.
  */
 export declare const subscribeEvents: SubscribeFunc<Api, RawEvent, SubscribeOptions>;

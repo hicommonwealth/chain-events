@@ -1,3 +1,10 @@
+import { RegisteredTypes } from '@polkadot/types/types';
+import { CloverSpec } from './specs/clover';
+import { KulupuSpec } from './specs/kulupu';
+import { HydraDXSpec } from './specs/hydraDX';
+import { StafiSpec } from './specs/stafi';
+import { spec as EdgewareSpec } from '@edgeware/node-types';
+
 export * from './interfaces';
 export * as MolochEvents from './chains/moloch/index';
 export * as MolochTypes from './chains/moloch/types';

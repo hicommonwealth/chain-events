@@ -1,7 +1,5 @@
-import { Event } from 'ethers';
-import { MPond } from './contractTypes/MPond';
-import { GovernorAlpha } from './contractTypes/GovernorAlpha';
-import { Timelock } from './contractTypes/Timelock';
+import { TypedEvent } from '../../contractTypes/commons';
+import { MPond, GovernorAlpha, Timelock } from '../../contractTypes';
 declare type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 export declare type Proposal = UnPromisify<ReturnType<GovernorAlpha['functions']['proposals']>>;
 export declare type Receipt = UnPromisify<ReturnType<GovernorAlpha['functions']['getReceipt']>>;
@@ -13,15 +11,11 @@ interface IMarlinContracts {
 export interface ListenerOptions {
     url: string;
     skipCatchup: boolean;
-    contractAddresses: {
-        comp: string;
-        governorAlpha: string;
-        timelock: string;
-    };
+    contractAddress: string;
 }
 export declare type Api = IMarlinContracts;
 export declare const EventChains: readonly ["marlin", "marlin-local"];
-export declare type RawEvent = Event;
+export declare type RawEvent = TypedEvent<any>;
 export declare enum EntityKind {
     Proposal = "proposal"
 }

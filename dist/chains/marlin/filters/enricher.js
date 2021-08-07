@@ -24,12 +24,12 @@ function Enrich(api, blockNumber, kind, rawData) {
                         kind,
                         owner,
                         spender,
-                        amount,
+                        amount: amount.toString(),
                     },
                 };
             }
             case types_1.EventKind.DelegateChanged: {
-                const { delegator, fromDelegate, toDelegate } = rawData.args;
+                const { delegator, fromDelegate, toDelegate, } = rawData.args;
                 return {
                     blockNumber,
                     excludeAddresses: [delegator],
@@ -42,15 +42,15 @@ function Enrich(api, blockNumber, kind, rawData) {
                 };
             }
             case types_1.EventKind.DelegateVotesChanged: {
-                const { delegate, previousBalance, newBalance } = rawData.args;
+                const { delegate, previousBalance, newBalance, } = rawData.args;
                 return {
                     blockNumber,
                     excludeAddresses: [delegate],
                     data: {
                         kind,
                         delegate,
-                        previousBalance,
-                        newBalance,
+                        previousBalance: previousBalance.toString(),
+                        newBalance: newBalance.toString(),
                     },
                 };
             }
@@ -63,7 +63,7 @@ function Enrich(api, blockNumber, kind, rawData) {
                         kind,
                         from,
                         to,
-                        amount,
+                        amount: amount.toString(),
                     },
                 };
             }
@@ -75,25 +75,28 @@ function Enrich(api, blockNumber, kind, rawData) {
                     excludeAddresses: [],
                     data: {
                         kind,
-                        id,
+                        id: +id,
                     },
                 };
             }
             case types_1.EventKind.ProposalCreated: {
-                const { id, proposer, targets, values, signatures, calldatas, startBlock, endBlock, description, } = rawData.args;
+                const { id, proposer, targets, signatures, calldatas, startBlock, endBlock, description, } = rawData.args;
+                // values doesn't appear on the object version, hack around it by accessing the
+                // argument array instead
+                const values = rawData.args[3];
                 return {
                     blockNumber,
                     excludeAddresses: [proposer],
                     data: {
                         kind,
-                        id,
+                        id: +id,
                         proposer,
                         targets,
-                        values,
+                        values: values.map((v) => v.toString()),
                         signatures,
                         calldatas,
-                        startBlock,
-                        endBlock,
+                        startBlock: +startBlock,
+                        endBlock: +endBlock,
                         description,
                     },
                 };
@@ -105,7 +108,7 @@ function Enrich(api, blockNumber, kind, rawData) {
                     excludeAddresses: [],
                     data: {
                         kind,
-                        id,
+                        id: +id,
                     },
                 };
             }
@@ -116,8 +119,8 @@ function Enrich(api, blockNumber, kind, rawData) {
                     excludeAddresses: [],
                     data: {
                         kind,
-                        id,
-                        eta,
+                        id: +id,
+                        eta: +eta,
                     },
                 };
             }
@@ -129,9 +132,9 @@ function Enrich(api, blockNumber, kind, rawData) {
                     data: {
                         kind,
                         voter,
-                        id: proposalId,
+                        id: +proposalId,
                         support,
-                        votes,
+                        votes: votes.toString(),
                     },
                 };
             }
@@ -145,10 +148,10 @@ function Enrich(api, blockNumber, kind, rawData) {
                         kind,
                         txHash,
                         target,
-                        value,
+                        value: value.toString(),
                         signature,
                         data,
-                        eta,
+                        eta: +eta,
                     },
                 };
             }
@@ -161,10 +164,10 @@ function Enrich(api, blockNumber, kind, rawData) {
                         kind,
                         txHash,
                         target,
-                        value,
+                        value: value.toString(),
                         signature,
                         data,
-                        eta,
+                        eta: +eta,
                     },
                 };
             }
@@ -186,7 +189,7 @@ function Enrich(api, blockNumber, kind, rawData) {
                     excludeAddresses: [],
                     data: {
                         kind,
-                        newDelay,
+                        newDelay: +newDelay,
                     },
                 };
             }
@@ -210,10 +213,10 @@ function Enrich(api, blockNumber, kind, rawData) {
                         kind,
                         txHash,
                         target,
-                        value,
+                        value: value.toString(),
                         signature,
                         data,
-                        eta,
+                        eta: +eta,
                     },
                 };
             }

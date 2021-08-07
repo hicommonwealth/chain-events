@@ -13,88 +13,44 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.subscribeEvents = exports.createApi = void 0;
-const ethers_1 = require("ethers");
-const web3_1 = __importDefault(require("web3"));
 const sleep_promise_1 = __importDefault(require("sleep-promise"));
-const node_fetch_1 = __importDefault(require("node-fetch"));
-const logging_1 = require("../../logging");
-const Erc20Factory_1 = require("./contractTypes/Erc20Factory");
+const eth_1 = require("../../eth");
+const logging_1 = __importDefault(require("../../logging"));
+const contractTypes_1 = require("../../contractTypes");
 const subscriber_1 = require("./subscriber");
 const processor_1 = require("./processor");
-const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
- * @returns a promise resolving to an ApiPromise once the connection has been established
  * @param ethNetworkUrl
  * @param tokenAddresses
  * @param retryTimeMs
  * @param retryCount
+ * @returns a promise resolving to an ApiPromise once the connection has been established
+
  */
 function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000, retryCount = 0) {
     return __awaiter(this, void 0, void 0, function* () {
-        // TODO: are if statements here necessary?
-        if (ethNetworkUrl.includes('infura')) {
-            if (process && process.env) {
-                const { INFURA_API_KEY } = process.env;
-                if (!INFURA_API_KEY) {
-                    throw new Error('no infura key found!');
-                }
-                ethNetworkUrl = `wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}`;
-                let res, data;
-                try {
-                    res = yield node_fetch_1.default(`https://mainnet.infura.io/v3/${INFURA_API_KEY}`, {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            jsonrpc: '2.0',
-                            method: 'eth_getBalance',
-                            params: ['0xBf4eD7b27F1d666546E30D74d50d173d20bca754', 'latest'],
-                            id: 1,
-                        }),
-                        headers: { 'Content-Type': 'application/json' },
-                    });
-                    data = yield res.json();
-                    if (!data ||
-                        !Object.keys(data).includes('jsonrpc') ||
-                        !Object.keys(data).includes('id') ||
-                        !Object.keys(data).includes('result'))
-                        throw new Error('A connection to infura could not be established.');
-                }
-                catch (error) {
-                    log.error('Check your INFURA_API_KEY');
-                    throw error;
-                }
-            }
-            else
-                throw new Error('must use nodejs to connect to infura provider!');
-        }
         try {
-            const web3Provider = new web3_1.default.providers.WebsocketProvider(ethNetworkUrl, {
-                reconnect: {
-                    auto: true,
-                    delay: retryTimeMs,
-                    onTimeout: true,
-                },
-            });
-            const provider = new ethers_1.providers.Web3Provider(web3Provider);
-            const tokenContracts = tokenAddresses.map((o) => Erc20Factory_1.Erc20Factory.connect(o, provider));
+            const provider = eth_1.createProvider(ethNetworkUrl);
+            const tokenContracts = tokenAddresses.map((o) => contractTypes_1.ERC20__factory.connect(o, provider));
             const deployResults = yield Promise.all(tokenContracts.map((o) => o
                 .deployed()
                 .then(() => {
                 return { token: o, deployed: true };
             })
                 .catch((err) => {
-                log.error('Failed to deploy', err);
+                logging_1.default.error('Failed to deploy', err);
                 return { token: o, deployed: false };
             })));
             const result = deployResults.filter((o) => o.deployed).map((o) => o.token);
-            log.info('Connection successful!');
+            logging_1.default.info('Connection successful!');
             return { tokens: result, provider };
         }
         catch (err) {
-            log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
+            logging_1.default.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
             if (retryCount < 3) {
                 yield sleep_promise_1.default(retryTimeMs);
-                log.error('Retrying connection...');
+                logging_1.default.error('Retrying connection...');
                 return createApi(ethNetworkUrl, tokenAddresses, retryTimeMs, ++retryCount);
             }
             else
@@ -122,7 +78,7 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
                 prevResult = yield handler.handle(event, prevResult);
             }
             catch (err) {
-                log.error(`Event handle failure: ${err.message}`);
+                logging_1.default.error(`Event handle failure: ${err.message}`);
                 break;
             }
         }
@@ -142,11 +98,11 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
     // helper function that runs after we've been offline/the server's been down,
     // and attempts to fetch skipped events
     try {
-        log.info(`Subscribing to ERC20 contracts ${chain}...`);
+        logging_1.default.info(`Subscribing to ERC20 contracts ${chain}...`);
         yield subscriber.subscribe(processEventFn);
     }
     catch (e) {
-        log.error(`Subscription error: ${e.message}`);
+        logging_1.default.error(`Subscription error: ${e.message}`);
     }
     return subscriber;
 });

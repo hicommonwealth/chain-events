@@ -20,9 +20,7 @@ import {
   Erc20TokenUrls,
   networkSpecs,
 } from './index';
-import { factory, formatFilename } from './logging';
-
-const log = factory.getLogger(formatFilename(__filename));
+import log from './logging';
 
 /**
  * Creates a listener instance and returns it if not error occurs. This function throws on error.
@@ -35,11 +33,7 @@ export async function createListener(
   chain: string,
   options: {
     Erc20TokenAddresses?: string[];
-    MarlinContractAddress?: {
-      comp: string;
-      governorAlpha: string;
-      timelock: string;
-    };
+    MarlinContractAddress?: string;
     MolochContractAddress?: string;
     MolochContractVersion?: 1 | 2;
     verbose?: boolean;
@@ -103,15 +97,9 @@ export async function createListener(
       !!options.verbose
     );
   } else if (basePicker(chain, 'marlin')) {
-    const contractAddresses = {
-      comp: options.MarlinContractAddress[0] || marlinContracts.comp,
-      governorAlpha:
-        options.MarlinContractAddress[1] || marlinContracts.governorAlpha,
-      timelock: options.MarlinContractAddress[2] || marlinContracts.timelock,
-    };
     listener = new MarlinListener(
       <EventSupportingChainT>chain,
-      contractAddresses,
+      options.MarlinContractAddress,
       options.url || networkUrls[chain],
       !!options.skipCatchup,
       !!options.verbose

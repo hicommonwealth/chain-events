@@ -22,14 +22,13 @@ exports.StorageFetcher = void 0;
 const underscore_1 = __importDefault(require("underscore"));
 const util_1 = require("@polkadot/util");
 const interfaces_1 = require("../../interfaces");
-const logging_1 = require("../../logging");
+const logging_1 = __importDefault(require("../../logging"));
 const types_1 = require("./types");
-const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class StorageFetcher extends interfaces_1.IStorageFetcher {
     fetchIdentities(addresses) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.identity) {
-                log.info('Identities module not detected.');
+                logging_1.default.info('Identities module not detected.');
                 return [];
             }
             const blockNumber = +(yield this._api.rpc.chain.getHeader()).number;
@@ -74,6 +73,35 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             return cwEvents;
         });
     }
+    fetchOne(id, kind, moduleName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!Object.values(types_1.EntityKind).find((k) => k === kind)) {
+                logging_1.default.error(`Invalid entity kind: ${kind}`);
+                return [];
+            }
+            const blockNumber = +(yield this._api.rpc.chain.getHeader()).number;
+            switch (kind) {
+                case types_1.EntityKind.CollectiveProposal:
+                    return this.fetchCollectiveProposals(moduleName, blockNumber, id);
+                case types_1.EntityKind.DemocracyPreimage:
+                    return this.fetchDemocracyPreimages([id]);
+                case types_1.EntityKind.DemocracyProposal:
+                    return this.fetchDemocracyProposals(blockNumber, id);
+                case types_1.EntityKind.DemocracyReferendum:
+                    return this.fetchDemocracyReferenda(blockNumber, id);
+                case types_1.EntityKind.SignalingProposal:
+                    return this.fetchSignalingProposals(blockNumber, id);
+                case types_1.EntityKind.TreasuryBounty:
+                    return this.fetchBounties(blockNumber, id);
+                case types_1.EntityKind.TreasuryProposal:
+                    return this.fetchTreasuryProposals(blockNumber, id);
+                case types_1.EntityKind.TipProposal:
+                    return this.fetchTips(blockNumber, id);
+                default:
+                    return null;
+            }
+        });
+    }
     fetch() {
         return __awaiter(this, void 0, void 0, function* () {
             // get current blockNumber for synthesizing events
@@ -104,7 +132,7 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             const tipsEvents = yield this.fetchTips(blockNumber);
             /** signaling proposals */
             const signalingProposalEvents = yield this.fetchSignalingProposals(blockNumber);
-            log.info('Fetch complete.');
+            logging_1.default.info('Fetch complete.');
             return [
                 ...democracyProposalEvents,
                 ...democracyReferendaEvents,
@@ -118,47 +146,66 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             ];
         });
     }
-    fetchDemocracyProposals(blockNumber) {
+    fetchDemocracyProposals(blockNumber, id) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.democracy) {
                 return [];
             }
-            log.info('Fetching democracy proposals...');
+            logging_1.default.info('Migrating democracy proposals...');
             const publicProps = yield this._api.query.democracy.publicProps();
-            const deposits = yield this._api.queryMulti(publicProps.map(([idx]) => [this._api.query.democracy.depositOf, idx]));
-            const proposedEvents = underscore_1.default.zip(publicProps, deposits)
-                .map(([[idx, hash, proposer], depositOpt]) => {
+            const constructEvent = (prop, depositOpt) => {
                 if (!depositOpt.isSome)
                     return null;
                 // handle kusama vs edgeware depositOpt order
                 const depositors = depositOpt.unwrap();
                 let deposit;
-                if (util_1.isFunction(depositors[1].mul)) {
-                    [, deposit] = depositors;
+                if (util_1.isFunction(depositors[0].mul)) {
+                    [deposit] = depositors;
                 }
                 else {
-                    [deposit] = depositors;
+                    [, deposit] = depositors;
                 }
                 return {
                     kind: types_1.EventKind.DemocracyProposed,
-                    proposalIndex: +idx,
-                    proposalHash: hash.toString(),
-                    proposer: proposer.toString(),
+                    proposalIndex: +prop[0],
+                    proposalHash: prop[1].toString(),
+                    proposer: prop[2].toString(),
                     deposit: deposit.toString(),
                 };
-            })
-                .filter((e) => !!e);
-            log.info(`Found ${proposedEvents.length} democracy proposals!`);
-            return proposedEvents.map((data) => ({ blockNumber, data }));
+            };
+            if (id === undefined) {
+                const deposits = yield this._api.queryMulti(publicProps.map(([idx]) => [this._api.query.democracy.depositOf, idx]));
+                const proposedEvents = underscore_1.default.zip(publicProps, deposits)
+                    .map(([prop, depositOpt]) => constructEvent(prop, depositOpt))
+                    .filter((e) => !!e);
+                logging_1.default.info(`Found ${proposedEvents.length} democracy proposals!`);
+                return proposedEvents.map((data) => ({ blockNumber, data }));
+                // eslint-disable-next-line no-else-return
+            }
+            else {
+                const publicProp = publicProps.find(([idx]) => +idx === +id);
+                if (!publicProp) {
+                    logging_1.default.error(`Democracy proposal ${id} not found!`);
+                    return null;
+                }
+                const depositOpt = yield this._api.query.democracy.depositOf(publicProp[0]);
+                const evt = constructEvent(publicProp, depositOpt);
+                return [
+                    {
+                        blockNumber,
+                        data: evt,
+                    },
+                ];
+            }
         });
     }
-    fetchDemocracyReferenda(blockNumber) {
+    fetchDemocracyReferenda(blockNumber, id) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.democracy) {
-                log.info('Democracy module not detected.');
+                logging_1.default.info('Democracy module not detected.');
                 return [];
             }
-            log.info('Migrating democracy referenda...');
+            logging_1.default.info('Migrating democracy referenda...');
             const activeReferenda = yield this._api.derive.democracy.referendumsActive();
             const startEvents = activeReferenda.map((r) => {
                 return {
@@ -187,11 +234,21 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                     },
                 ];
             }));
-            log.info(`Found ${startEvents.length} democracy referenda!`);
-            return [...startEvents, ...passedEvents].map((data) => ({
+            const results = [...startEvents, ...passedEvents].map((data) => ({
                 blockNumber,
                 data,
             }));
+            // no easier way to only fetch one than to fetch em all
+            if (id !== undefined) {
+                const data = results.filter(({ data: { referendumIndex } }) => referendumIndex === +id);
+                if (data.length === 0) {
+                    logging_1.default.error(`No referendum found with id ${id}!`);
+                    return null;
+                }
+                return data;
+            }
+            logging_1.default.info(`Found ${startEvents.length} democracy referenda!`);
+            return results;
         });
     }
     // must pass proposal hashes found in prior events
@@ -200,7 +257,7 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             if (!this._api.query.democracy) {
                 return [];
             }
-            log.info('Migrating preimages...');
+            logging_1.default.info('Migrating preimages...');
             const hashCodecs = hashes.map((hash) => this._api.createType('Hash', hash));
             const preimages = yield this._api.derive.democracy.preimages(hashCodecs);
             const notedEvents = underscore_1.default.zip(hashes, preimages).map(([hash, preimage]) => {
@@ -223,34 +280,55 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             const cwEvents = notedEvents
                 .filter(([, data]) => !!data)
                 .map(([blockNumber, data]) => ({ blockNumber, data }));
-            log.info(`Found ${cwEvents.length} preimages!`);
+            logging_1.default.info(`Found ${cwEvents.length} preimages!`);
             return cwEvents;
         });
     }
-    fetchTreasuryProposals(blockNumber) {
+    fetchTreasuryProposals(blockNumber, id) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.treasury) {
-                log.info('Treasury module not detected.');
+                logging_1.default.info('Treasury module not detected.');
                 return [];
             }
-            log.info('Migrating treasury proposals...');
+            logging_1.default.info('Migrating treasury proposals...');
             const approvals = yield this._api.query.treasury.approvals();
             const nProposals = yield this._api.query.treasury.proposalCount();
+            if (id !== undefined) {
+                const proposal = yield this._api.query.treasury.proposals(+id);
+                if (!proposal.isSome) {
+                    logging_1.default.error(`No treasury proposal found with id ${id}!`);
+                    return null;
+                }
+                const { proposer, value, beneficiary, bond } = proposal.unwrap();
+                return [
+                    {
+                        blockNumber,
+                        data: {
+                            kind: types_1.EventKind.TreasuryProposed,
+                            proposalIndex: +id,
+                            proposer: proposer.toString(),
+                            value: value.toString(),
+                            beneficiary: beneficiary.toString(),
+                            bond: bond.toString(),
+                        },
+                    },
+                ];
+            }
             const proposalIds = [];
             for (let i = 0; i < +nProposals; i++) {
-                if (!approvals.some((id) => +id === i)) {
+                if (!approvals.some((idx) => +idx === i)) {
                     proposalIds.push(i);
                 }
             }
             const proposals = yield this._api.query.treasury.proposals.multi(proposalIds);
             const proposedEvents = proposalIds
-                .map((id, index) => {
+                .map((idx, index) => {
                 if (!proposals[index] || !proposals[index].isSome)
                     return null;
                 const { proposer, value, beneficiary, bond } = proposals[index].unwrap();
                 return {
                     kind: types_1.EventKind.TreasuryProposed,
-                    proposalIndex: +id,
+                    proposalIndex: +idx,
                     proposer: proposer.toString(),
                     value: value.toString(),
                     beneficiary: beneficiary.toString(),
@@ -258,20 +336,20 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                 };
             })
                 .filter((e) => !!e);
-            log.info(`Found ${proposedEvents.length} treasury proposals!`);
+            logging_1.default.info(`Found ${proposedEvents.length} treasury proposals!`);
             return proposedEvents.map((data) => ({ blockNumber, data }));
         });
     }
-    fetchBounties(blockNumber) {
+    fetchBounties(blockNumber, id) {
         var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             // TODO: List all relevant events explicitly?
             if (!((_a = this._api.query.treasury) === null || _a === void 0 ? void 0 : _a.bountyCount) &&
                 !((_b = this._api.query.bounties) === null || _b === void 0 ? void 0 : _b.bountyCount)) {
-                log.info('Bounties module not detected.');
+                logging_1.default.info('Bounties module not detected.');
                 return [];
             }
-            log.info('Migrating treasury bounties...');
+            logging_1.default.info('Migrating treasury bounties...');
             const bounties = yield this._api.derive.bounties.bounties();
             const events = [];
             for (const b of bounties) {
@@ -310,33 +388,27 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                     });
                 }
             }
-            log.info(`Found ${bounties.length} bounties!`);
-            return events.map((data) => ({ blockNumber, data }));
+            // no easier way to only fetch one than to fetch em all
+            const results = events.map((data) => ({ blockNumber, data }));
+            if (id !== undefined) {
+                const data = results.filter(({ data: { bountyIndex } }) => bountyIndex === +id);
+                if (data.length === 0) {
+                    logging_1.default.error(`No bounty found with id ${id}!`);
+                    return null;
+                }
+                return data;
+            }
+            logging_1.default.info(`Found ${bounties.length} bounties!`);
+            return results;
         });
     }
-    fetchCollectiveProposals(moduleName, blockNumber) {
+    fetchCollectiveProposals(moduleName, blockNumber, id) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query[moduleName]) {
-                log.info(`${moduleName} module not detected.`);
+                logging_1.default.info(`${moduleName} module not detected.`);
                 return [];
             }
-            log.info(`Migrating ${moduleName} proposals...`);
-            const proposalHashes = yield this._api.query[moduleName].proposals();
-            const proposals = yield Promise.all(proposalHashes.map((h) => __awaiter(this, void 0, void 0, function* () {
-                try {
-                    // awaiting inside the map here to force the individual call to throw, rather than the Promise.all
-                    return yield this._api.query[moduleName].proposalOf(h);
-                }
-                catch (e) {
-                    log.error(`Failed to fetch council motion hash ${h.toString()}`);
-                    return Promise.resolve(null);
-                }
-            })));
-            const proposalVotes = yield this._api.query[moduleName].voting.multi(proposalHashes);
-            const proposedEvents = underscore_1.default.flatten(proposalHashes
-                .map((hash, index) => {
-                const proposalOpt = proposals[index];
-                const votesOpt = proposalVotes[index];
+            const constructEvent = (hash, proposalOpt, votesOpt) => {
                 if (!hash ||
                     !proposalOpt ||
                     !votesOpt ||
@@ -375,88 +447,127 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                         vote: false,
                     })),
                 ];
+            };
+            logging_1.default.info(`Migrating ${moduleName} proposals...`);
+            const proposalHashes = yield this._api.query[moduleName].proposals();
+            // fetch one
+            if (id !== undefined) {
+                const hash = proposalHashes.find((h) => h.toString() === id);
+                if (!hash) {
+                    logging_1.default.error(`No collective proposal found with hash ${id}!`);
+                    return null;
+                }
+                const proposalOpt = yield this._api.query[moduleName].proposalOf(hash);
+                const votesOpt = yield this._api.query[moduleName].voting(hash);
+                const events = constructEvent(hash, proposalOpt, votesOpt);
+                if (!events) {
+                    logging_1.default.error(`No collective proposal found with hash ${id}!`);
+                    return null;
+                }
+                return events.map((data) => ({ blockNumber, data }));
+            }
+            // fetch all
+            const proposals = yield Promise.all(proposalHashes.map((h) => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    // awaiting inside the map here to force the individual call to throw, rather than the Promise.all
+                    return yield this._api.query[moduleName].proposalOf(h);
+                }
+                catch (e) {
+                    logging_1.default.error(`Failed to fetch council motion hash ${h.toString()}`);
+                    return Promise.resolve(null);
+                }
+            })));
+            const proposalVotes = yield this._api.query[moduleName].voting.multi(proposalHashes);
+            const proposedEvents = underscore_1.default.flatten(proposalHashes
+                .map((hash, index) => {
+                const proposalOpt = proposals[index];
+                const votesOpt = proposalVotes[index];
+                return constructEvent(hash, proposalOpt, votesOpt);
             })
                 .filter((es) => !!es));
             const nProposalEvents = proposedEvents.filter((e) => e.kind === types_1.EventKind.CollectiveProposed).length;
-            log.info(`Found ${nProposalEvents} ${moduleName} proposals and ${proposedEvents.length - nProposalEvents} votes!`);
+            logging_1.default.info(`Found ${nProposalEvents} ${moduleName} proposals and ${proposedEvents.length - nProposalEvents} votes!`);
             return proposedEvents.map((data) => ({ blockNumber, data }));
         });
     }
-    fetchTips(blockNumber) {
+    fetchTips(blockNumber, hash) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.tips) {
-                log.info('Tips module not detected.');
+                logging_1.default.info('Tips module not detected.');
                 return [];
             }
-            log.info('Migrating tips...');
+            logging_1.default.info('Migrating tips...');
             const openTipKeys = yield this._api.query.tips.tips.keys();
             const results = [];
             for (const key of openTipKeys) {
-                const hash = key.args[0].toString();
-                try {
-                    const tip = yield this._api.rpc.state.getStorage(key);
-                    if (tip.isSome) {
-                        const { reason: reasonHash, who, finder, deposit, closes, tips: tipVotes, findersFee, } = tip.unwrap();
-                        const reason = yield this._api.query.tips.reasons(reasonHash);
-                        if (reason.isSome) {
-                            // newtip events
-                            results.push({
-                                blockNumber,
-                                data: {
-                                    kind: types_1.EventKind.NewTip,
-                                    proposalHash: hash,
-                                    who: who.toString(),
-                                    reason: util_1.hexToString(reason.unwrap().toString()),
-                                    finder: finder.toString(),
-                                    deposit: deposit.toString(),
-                                    findersFee: findersFee.valueOf(),
-                                },
-                            });
-                            // n tipvoted events
-                            for (const [voter, amount] of tipVotes) {
+                const h = key.args[0].toString();
+                // support fetchOne
+                if (!hash || hash === h) {
+                    try {
+                        const tip = yield this._api.rpc.state.getStorage(key);
+                        if (tip.isSome) {
+                            const { reason: reasonHash, who, finder, deposit, closes, tips: tipVotes, findersFee, } = tip.unwrap();
+                            const reason = yield this._api.query.tips.reasons(reasonHash);
+                            if (reason.isSome) {
+                                // newtip events
                                 results.push({
                                     blockNumber,
                                     data: {
-                                        kind: types_1.EventKind.TipVoted,
-                                        proposalHash: hash,
-                                        who: voter.toString(),
-                                        value: amount.toString(),
+                                        kind: types_1.EventKind.NewTip,
+                                        proposalHash: h,
+                                        who: who.toString(),
+                                        reason: util_1.hexToString(reason.unwrap().toString()),
+                                        finder: finder.toString(),
+                                        deposit: deposit.toString(),
+                                        findersFee: findersFee.valueOf(),
                                     },
                                 });
-                            }
-                            // tipclosing event
-                            if (closes.isSome) {
-                                const closesAt = +closes.unwrap();
-                                results.push({
-                                    blockNumber,
-                                    data: {
-                                        kind: types_1.EventKind.TipClosing,
-                                        proposalHash: hash,
-                                        closing: closesAt,
-                                    },
-                                });
+                                // n tipvoted events
+                                for (const [voter, amount] of tipVotes) {
+                                    results.push({
+                                        blockNumber,
+                                        data: {
+                                            kind: types_1.EventKind.TipVoted,
+                                            proposalHash: h,
+                                            who: voter.toString(),
+                                            value: amount.toString(),
+                                        },
+                                    });
+                                }
+                                // tipclosing event
+                                if (closes.isSome) {
+                                    const closesAt = +closes.unwrap();
+                                    results.push({
+                                        blockNumber,
+                                        data: {
+                                            kind: types_1.EventKind.TipClosing,
+                                            proposalHash: hash,
+                                            closing: closesAt,
+                                        },
+                                    });
+                                }
                             }
                         }
                     }
-                }
-                catch (e) {
-                    log.error(`Unable to fetch tip "${key.args[0]}"!`);
+                    catch (e) {
+                        logging_1.default.error(`Unable to fetch tip "${key.args[0]}"!`);
+                    }
                 }
             }
             const newTips = results.filter((v) => v.data.kind === types_1.EventKind.NewTip);
-            log.info(`Found ${newTips.length} open tips!`);
+            logging_1.default.info(`Found ${newTips.length} open tips!`);
             return results;
         });
     }
-    fetchSignalingProposals(blockNumber) {
+    fetchSignalingProposals(blockNumber, id) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.signaling || !this._api.query.voting) {
-                log.info('Signaling module not detected.');
+                logging_1.default.info('Signaling module not detected.');
                 return [];
             }
-            log.info('Migrating signaling proposals...');
+            logging_1.default.info('Migrating signaling proposals...');
             if (!this._api.query.voting || !this._api.query.signaling) {
-                log.info('Found no signaling proposals (wrong chain)!');
+                logging_1.default.info('Found no signaling proposals (wrong chain)!');
                 return [];
             }
             // in "prevoting" phase
@@ -534,8 +645,18 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                 ...completedEvents,
             ];
             // we could plausibly populate the completed events with block numbers, but not necessary
-            log.info(`Found ${newProposalEvents.length} signaling proposals!`);
-            return events.map((data) => ({ blockNumber, data }));
+            const results = events.map((data) => ({ blockNumber, data }));
+            // no easier way to only fetch one than to fetch em all
+            if (id !== undefined) {
+                const data = results.filter(({ data: { proposalHash } }) => proposalHash === id);
+                if (data.length === 0) {
+                    logging_1.default.error(`No referendum found with id ${id}!`);
+                    return null;
+                }
+                return data;
+            }
+            logging_1.default.info(`Found ${newProposalEvents.length} signaling proposals!`);
+            return results;
         });
     }
 }

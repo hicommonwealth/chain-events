@@ -1,9 +1,9 @@
 import sleep from 'sleep-promise';
 
-import { createProvider } from '../eth';
+import { createProvider } from '../../eth';
 import { CWEvent, SubscribeFunc, ISubscribeOptions } from '../../interfaces';
 import log from '../../logging';
-import { ERC20__factory as ERC20Factory } from '../contractTypes';
+import { ERC20__factory as ERC20Factory } from '../../contractTypes';
 
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';

@@ -8,15 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LoggingHandler = void 0;
 const interfaces_1 = require("../interfaces");
-const logging_1 = require("../logging");
-const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
+const logging_1 = __importDefault(require("../logging"));
 class LoggingHandler extends interfaces_1.IEventHandler {
     handle(event) {
         return __awaiter(this, void 0, void 0, function* () {
-            log.info(`Received event: ${JSON.stringify(event, null, 2)}`);
+            logging_1.default.info(`Received event: ${JSON.stringify(event, null, 2)}`);
         });
     }
 }

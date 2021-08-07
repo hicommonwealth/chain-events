@@ -8,11 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Subscriber = void 0;
 const interfaces_1 = require("../../interfaces");
-const logging_1 = require("../../logging");
-const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
+const logging_1 = __importDefault(require("../../logging"));
 class Subscriber extends interfaces_1.IEventSubscriber {
     /**
      * Initializes subscription to chain and starts emitting events.
@@ -24,7 +26,7 @@ class Subscriber extends interfaces_1.IEventSubscriber {
                 this._api.rpc.state.subscribeRuntimeVersion((version) => {
                     this._versionNumber = +version.specVersion;
                     this._versionName = version.specName.toString();
-                    log.info(`Fetched runtime version for ${this._versionName}: ${this._versionNumber}`);
+                    logging_1.default.info(`Fetched runtime version for ${this._versionName}: ${this._versionNumber}`);
                     resolve();
                 });
             });
@@ -42,19 +44,19 @@ class Subscriber extends interfaces_1.IEventSubscriber {
                 };
                 const logStr = `Fetched Block for ${this._versionName}:${this._versionNumber}: ${+block.header.number}`;
                 // eslint-disable-next-line no-unused-expressions
-                this._verbose ? log.info(logStr) : log.trace(logStr);
+                this._verbose ? logging_1.default.info(logStr) : logging_1.default.trace(logStr);
                 cb(block);
             }));
         });
     }
     unsubscribe() {
         if (this._subscription) {
-            log.info(`Unsubscribing from ${this._versionName}`);
+            logging_1.default.info(`Unsubscribing from ${this._versionName}`);
             this._subscription();
             this._subscription = null;
         }
         else {
-            log.info(`No subscriber to unsubscribe from`);
+            logging_1.default.info(`No subscriber to unsubscribe from`);
         }
     }
 }

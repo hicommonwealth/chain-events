@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createListener = void 0;
 const interfaces_1 = require("./interfaces");
@@ -20,8 +23,7 @@ const Listener_3 = require("./chains/marlin/Listener");
 const types_4 = require("./chains/erc20/types");
 const Listener_4 = require("./chains/erc20/Listener");
 const index_1 = require("./index");
-const logging_1 = require("./logging");
-const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
+const logging_1 = __importDefault(require("./logging"));
 /**
  * Creates a listener instance and returns it if not error occurs. This function throws on error.
  * @param chain The chain the listener is for
@@ -60,12 +62,7 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
                 : 2, options.MolochContractAddress || index_1.molochContracts[chain], options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
         }
         else if (basePicker(chain, 'marlin')) {
-            const contractAddresses = {
-                comp: options.MarlinContractAddress[0] || index_1.marlinContracts.comp,
-                governorAlpha: options.MarlinContractAddress[1] || index_1.marlinContracts.governorAlpha,
-                timelock: options.MarlinContractAddress[2] || index_1.marlinContracts.timelock,
-            };
-            listener = new Listener_3.Listener(chain, contractAddresses, options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
+            listener = new Listener_3.Listener(chain, options.MarlinContractAddress, options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
         }
         else if (basePicker(chain, 'ethereum')) {
             listener = new Listener_4.Listener(chain, options.Erc20TokenAddresses || index_1.Erc20TokenUrls, // addresses of contracts to track
@@ -81,7 +78,7 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
             yield listener.init();
         }
         catch (error) {
-            log.error(`[${chain}]: Failed to initialize the listener`);
+            logging_1.default.error(`[${chain}]: Failed to initialize the listener`);
             throw error;
         }
         return listener;

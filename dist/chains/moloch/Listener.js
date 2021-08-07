@@ -18,7 +18,6 @@ const index_1 = require("../../index");
 const types_1 = require("../moloch/types");
 const moloch_1 = require("../moloch");
 const ethereum_block_by_date_1 = __importDefault(require("ethereum-block-by-date"));
-const web3_1 = __importDefault(require("web3"));
 const Listener_1 = require("../../Listener");
 class Listener extends Listener_1.Listener {
     constructor(chain, contractVersion, contractAddress, url, skipCatchup, verbose) {
@@ -51,8 +50,7 @@ class Listener extends Listener_1.Listener {
                 throw error;
             }
             try {
-                const web3 = new web3_1.default(this._api.provider._web3Provider);
-                const dater = new ethereum_block_by_date_1.default(web3);
+                const dater = new ethereum_block_by_date_1.default(this._api.provider);
                 this._storageFetcher = new moloch_1.StorageFetcher(this._api, this._options.contractVersion, dater);
             }
             catch (error) {

@@ -8,10 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Listener = void 0;
-const logging_1 = require("./logging");
-const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
+const logging_1 = __importDefault(require("./logging"));
 class Listener {
     constructor(chain, verbose) {
         this._chain = chain;
@@ -22,11 +24,11 @@ class Listener {
     unsubscribe() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._subscriber) {
-                log.warn(`Subscriber for ${this._chain} isn't initialized. Please run init() first!`);
+                logging_1.default.warn(`Subscriber for ${this._chain} isn't initialized. Please run init() first!`);
                 return;
             }
             if (!this._subscribed) {
-                log.warn(`The listener for ${this._chain} is not subscribed`);
+                logging_1.default.warn(`The listener for ${this._chain} is not subscribed`);
                 return;
             }
             this._subscriber.unsubscribe();
@@ -47,7 +49,7 @@ class Listener {
                     prevResult = yield eventHandler.handler.handle(event, prevResult);
                 }
                 catch (err) {
-                    log.error(`Event handle failure: ${err.message}`);
+                    logging_1.default.error(`Event handle failure: ${err.message}`);
                     break;
                 }
             }

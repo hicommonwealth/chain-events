@@ -1,13 +1,12 @@
-import { Event } from 'ethers';
 import { ISubscribeOptions } from '../../interfaces';
-import { Moloch1 } from './contractTypes/Moloch1';
-import { Moloch2 } from './contractTypes/Moloch2';
+import { TypedEvent } from '../../contractTypes/commons';
+import { Moloch1, Moloch2 } from '../../contractTypes';
 declare type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 export declare type ProposalV1 = UnPromisify<ReturnType<Moloch1['functions']['proposalQueue']>>;
 export declare type ProposalV2 = UnPromisify<ReturnType<Moloch2['functions']['proposals']>>;
 export declare type Api = Moloch1 | Moloch2;
 export declare const EventChains: readonly ["moloch", "moloch-local"];
-export declare type RawEvent = Event;
+export declare type RawEvent = TypedEvent<any>;
 export interface SubscribeOptions extends ISubscribeOptions<Api> {
     contractVersion: 1 | 2;
 }

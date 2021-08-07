@@ -21,9 +21,7 @@ import { Listener as BaseListener } from '../../Listener';
 
 import { EventChains as SubstrateChains } from './types';
 import { RegisteredTypes } from '@polkadot/types/types';
-import { factory, formatFilename } from '../../logging';
-
-const log = factory.getLogger(formatFilename(__filename));
+import log from '../../logging';
 
 export class Listener extends BaseListener {
   private readonly _options: ISubstrateListenerOptions;

@@ -19,26 +19,25 @@ const interfaces_1 = require("../../interfaces");
 const index_1 = require("../../index");
 const processor_1 = require("./processor");
 const storageFetcher_1 = require("./storageFetcher");
-const web3_1 = __importDefault(require("web3"));
 const subscriber_1 = require("./subscriber");
 const ethereum_block_by_date_1 = __importDefault(require("ethereum-block-by-date"));
 const Listener_1 = require("../../Listener");
 class Listener extends Listener_1.Listener {
-    constructor(chain, contractAddresses, url, skipCatchup, verbose) {
+    constructor(chain, contractAddress, url, skipCatchup, verbose) {
         super(chain, verbose);
         if (!interfaces_1.chainSupportedBy(this._chain, types_1.EventChains))
             throw new Error(`${this._chain} is not a Substrate chain`);
         this._options = {
             url: url || index_1.networkUrls[chain],
             skipCatchup: !!skipCatchup,
-            contractAddresses,
+            contractAddress,
         };
         this._subscribed = false;
     }
     init() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                this._api = yield subscribeFunc_1.createApi(this._options.url, this._options.contractAddresses);
+                this._api = yield subscribeFunc_1.createApi(this._options.url, this._options.contractAddress);
             }
             catch (error) {
                 console.error('Fatal error occurred while starting the API');
@@ -53,9 +52,7 @@ class Listener extends Listener_1.Listener {
                 throw error;
             }
             try {
-                const web3 = new web3_1.default(this._api.comp.provider
-                    ._web3Provider);
-                const dater = new ethereum_block_by_date_1.default(web3);
+                const dater = new ethereum_block_by_date_1.default(this._api.governorAlpha.provider);
                 this._storageFetcher = new storageFetcher_1.StorageFetcher(this._api, dater);
             }
             catch (error) {
@@ -91,17 +88,7 @@ class Listener extends Listener_1.Listener {
                 console.log('Contract is not supported');
                 return;
             }
-            switch (contractName) {
-                case 'comp':
-                    this._options.contractAddresses.comp = address;
-                    break;
-                case 'governorAlpha':
-                    this._options.contractAddresses.governorAlpha = address;
-                    break;
-                case 'timelock':
-                    this._options.contractAddresses.timelock = address;
-                    break;
-            }
+            this._options.contractAddress = address;
             yield this.init();
             if (this._subscribed === true)
                 yield this.subscribe();

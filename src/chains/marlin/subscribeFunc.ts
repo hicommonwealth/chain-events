@@ -1,7 +1,7 @@
 import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
-import { createProvider } from '../eth';
+import { createProvider } from '../../eth';
 import {
   IDisconnectedRange,
   CWEvent,
@@ -13,7 +13,7 @@ import {
   MPond__factory as MPondFactory,
   GovernorAlpha__factory as GovernorAlphaFactory,
   Timelock__factory as TimelockFactory,
-} from '../contractTypes';
+} from '../../contractTypes';
 
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
@@ -24,7 +24,7 @@ import { IEventData, RawEvent, Api } from './types';
  * Attempts to open an API connection, retrying if it cannot be opened.
  * @returns a promise resolving to an ApiPromise once the connection has been established
  * @param ethNetworkUrl
- * @param contractAddresses
+ * @param governorAlphaAddress
  * @param retryTimeMs
  */
 export async function createApi(
@@ -68,12 +68,7 @@ export async function createApi(
 /**
  * This is the main function for edgeware event handling. It constructs a connection
  * to the chain, connects all event-related modules, and initializes event handling.
- *
- * @param url The edgeware chain endpoint to connect to.
- * @param handler An event handler object for processing received events.
- * @param skipCatchup If true, skip all fetching of "historical" chain data that may have been
- *                    emitted during downtime.
- * @param discoverReconnectRange A function to determine how long we were offline upon reconnection.
+ * @param options
  * @returns An active block subscriber.
  */
 export const subscribeEvents: SubscribeFunc<

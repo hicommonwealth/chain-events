@@ -1,8 +1,6 @@
 import { CWEvent, IEventHandler } from '../interfaces';
 import fetch from 'node-fetch';
-import { factory, formatFilename } from '../logging';
-
-const log = factory.getLogger(formatFilename(__filename));
+import log from '../logging';
 
 export class httpPostHandler implements IEventHandler {
   public readonly url;

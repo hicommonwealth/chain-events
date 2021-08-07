@@ -16,9 +16,6 @@ import {
 } from '../moloch/types';
 import { createApi, Processor, StorageFetcher, Subscriber } from '../moloch';
 import EthDater from 'ethereum-block-by-date';
-import Web3 from 'web3';
-import { Web3Provider } from 'ethers/providers';
-import { WebsocketProvider } from 'web3-core';
 import { Listener as BaseListener } from '../../Listener';
 
 export class Listener extends BaseListener {
@@ -75,10 +72,7 @@ export class Listener extends BaseListener {
       throw error;
     }
     try {
-      const web3 = new Web3(
-        (this._api.provider as Web3Provider)._web3Provider as WebsocketProvider
-      );
-      const dater = new EthDater(web3);
+      const dater = new EthDater(this._api.provider);
       this._storageFetcher = new StorageFetcher(
         this._api,
         this._options.contractVersion,

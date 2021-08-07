@@ -5,11 +5,7 @@ export declare class Listener extends BaseListener {
     private readonly _options;
     _storageFetcher: IStorageFetcher<Api>;
     private _lastBlockNumber;
-    constructor(chain: EventSupportingChainT, contractAddresses: {
-        comp: string;
-        governorAlpha: string;
-        timelock: string;
-    }, url?: string, skipCatchup?: boolean, verbose?: boolean);
+    constructor(chain: EventSupportingChainT, contractAddress: string, url?: string, skipCatchup?: boolean, verbose?: boolean);
     init(): Promise<void>;
     subscribe(): Promise<void>;
     updateContractAddress(contractName: string, address: string): Promise<void>;

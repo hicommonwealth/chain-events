@@ -8,14 +8,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.subscribeEvents = exports.createApi = void 0;
 const api_1 = require("@polkadot/api");
-const logging_1 = require("../../logging");
+const logging_1 = __importDefault(require("../../logging"));
 const subscriber_1 = require("./subscriber");
 const poller_1 = require("./poller");
 const processor_1 = require("./processor");
-const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
  * @param url websocket endpoing to connect to, including ws[s]:// and port
@@ -32,7 +34,7 @@ function createApi(url, typeOverrides = {}, timeoutMs = 30000) {
                 unsubscribe = provider.on('connected', () => resolve(true));
                 provider.on('error', () => {
                     if (i < 2)
-                        log.warn(`An error occurred connecting to ${url} - retrying...`);
+                        logging_1.default.warn(`An error occurred connecting to ${url} - retrying...`);
                     resolve(false);
                 });
                 provider.on('disconnected', () => resolve(false));
@@ -52,10 +54,8 @@ exports.createApi = createApi;
 /**
  * This is the main function for substrate event handling. It constructs a connection
  * to the chain, connects all event-related modules, and initializes event handling.
- *
- *                    emitted during downtime.
- * @returns An active block subscriber.
  * @param options
+ * @returns An active block subscriber.
  */
 const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function* () {
     const { chain, api, handlers, skipCatchup, archival, startBlock, discoverReconnectRange, verbose, enricherConfig, } = options;
@@ -70,7 +70,7 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
                 prevResult = yield handler.handle(event, prevResult);
             }
             catch (err) {
-                log.error(`Event handle failure: ${err.message}`);
+                logging_1.default.error(`Event handle failure: ${err.message}`);
                 break;
             }
         }
@@ -93,14 +93,14 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
     if (archival) {
         // default to startBlock 0
         const offlineRange = { startBlock: startBlock !== null && startBlock !== void 0 ? startBlock : 0 };
-        log.info(`Executing in archival mode, polling blocks starting from: ${offlineRange.startBlock}`);
+        logging_1.default.info(`Executing in archival mode, polling blocks starting from: ${offlineRange.startBlock}`);
         yield poller.archive(offlineRange, 50, processBlockFn);
         return subscriber;
     }
     // helper function that runs after we've been offline/the server's been down,
     // and attempts to fetch events from skipped blocks
     const pollMissedBlocksFn = () => __awaiter(void 0, void 0, void 0, function* () {
-        log.info('Detected offline time, polling missed blocks...');
+        logging_1.default.info('Detected offline time, polling missed blocks...');
         // grab the cached block immediately to avoid a new block appearing before the
         // server can do its thing...
         const { lastBlockNumber } = processor;
@@ -124,7 +124,7 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
         // do nothing
         // (i.e. don't try and fetch all events from block 0 onward)
         if (!offlineRange || !offlineRange.startBlock) {
-            log.warn('Unable to determine offline time range.');
+            logging_1.default.warn('Unable to determine offline time range.');
             return;
         }
         try {
@@ -132,23 +132,23 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
             yield Promise.all(blocks.map(processBlockFn));
         }
         catch (e) {
-            log.error(`Block polling failed after disconnect at block ${offlineRange.startBlock}`);
+            logging_1.default.error(`Block polling failed after disconnect at block ${offlineRange.startBlock}`);
         }
     });
     if (!skipCatchup) {
         yield pollMissedBlocksFn();
     }
     else {
-        log.info('Skipping event catchup on startup!');
+        logging_1.default.info('Skipping event catchup on startup!');
     }
     try {
-        log.info(`Subscribing to ${chain} endpoint...`);
+        logging_1.default.info(`Subscribing to ${chain} endpoint...`);
         yield subscriber.subscribe(processBlockFn);
         // handle reconnects with poller
         api.on('connected', pollMissedBlocksFn);
     }
     catch (e) {
-        log.error(`Subscription error: ${e.message}`);
+        logging_1.default.error(`Subscription error: ${e.message}`);
     }
     return subscriber;
 });

@@ -15,6 +15,8 @@ export declare class StorageFetcher extends IStorageFetcher<Api> {
     private _currentTimestamp;
     private _isProposalV1;
     private _eventsFromProposal;
+    private _initConstants;
+    fetchOne(id: string): Promise<CWEvent<IEventData>[]>;
     /**
      * Fetches all CW events relating to ChainEntities from chain (or in this case contract),
      *   by quering available chain/contract storage and reconstructing events.

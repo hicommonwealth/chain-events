@@ -1,5 +1,5 @@
-import { TypedEvent } from '../contractTypes/commons';
-import { MPond, GovernorAlpha, Timelock } from '../contractTypes';
+import { TypedEvent } from '../../contractTypes/commons';
+import { MPond, GovernorAlpha, Timelock } from '../../contractTypes';
 
 // Used to unwrap promises returned by contract functions
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;
@@ -21,11 +21,7 @@ interface IMarlinContracts {
 export interface ListenerOptions {
   url: string;
   skipCatchup: boolean;
-  contractAddresses: {
-    comp: string;
-    governorAlpha: string;
-    timelock: string;
-  };
+  contractAddress: string;
 }
 
 export type Api = IMarlinContracts;

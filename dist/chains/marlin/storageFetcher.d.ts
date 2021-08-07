@@ -5,11 +5,9 @@ export declare class StorageFetcher extends IStorageFetcher<Api> {
     protected readonly _api: Api;
     private readonly _dater;
     constructor(_api: Api, _dater: EthDater);
-    private _votingPeriod;
-    private _votingDelay;
     private _currentBlock;
-    private _currentTimestamp;
     private _eventsFromProposal;
+    fetchOne(id: string): Promise<CWEvent<IEventData>[]>;
     /**
      * Fetches all CW events relating to ChainEntities from chain (or in this case contract),
      *   by quering available chain/contract storage and reconstructing events.

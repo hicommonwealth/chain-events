@@ -15,9 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Subscriber = void 0;
 const sleep_promise_1 = __importDefault(require("sleep-promise"));
 const interfaces_1 = require("../../interfaces");
-const logging_1 = require("../../logging");
-const Erc20Factory_1 = require("./contractTypes/Erc20Factory");
-const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
+const contractTypes_1 = require("../../contractTypes");
+const logging_1 = __importDefault(require("../../logging"));
 class Subscriber extends interfaces_1.IEventSubscriber {
     constructor(api, name, verbose = false) {
         super(api, verbose);
@@ -31,10 +30,10 @@ class Subscriber extends interfaces_1.IEventSubscriber {
             this._listener = (event) => {
                 const logStr = `Received ${this._name} event: ${JSON.stringify(event, null, 2)}.`;
                 // eslint-disable-next-line no-unused-expressions
-                this._verbose ? log.info(logStr) : log.trace(logStr);
+                this._verbose ? logging_1.default.info(logStr) : logging_1.default.trace(logStr);
                 cb(event);
             };
-            this._api.tokens.forEach((o) => o.addListener('*', this._listener));
+            this._api.tokens.forEach((o) => o.on('*', this._listener));
         });
     }
     unsubscribe() {
@@ -49,19 +48,19 @@ class Subscriber extends interfaces_1.IEventSubscriber {
                 return o.address === tokenAddress;
             });
             if (existingToken) {
-                log.info('Token is already being monitored');
+                logging_1.default.info('Token is already being monitored');
                 return;
             }
             try {
-                const contract = yield Erc20Factory_1.Erc20Factory.connect(tokenAddress, this.api.provider);
+                const contract = yield contractTypes_1.ERC20__factory.connect(tokenAddress, this.api.provider);
                 yield contract.deployed();
-                contract.addListener('*', this._listener);
+                contract.on('*', this._listener);
                 this.api.tokens.push(contract);
             }
             catch (e) {
                 yield sleep_promise_1.default(retryTimeMs);
                 if (retries > 0) {
-                    log.error('Retrying connection...');
+                    logging_1.default.error('Retrying connection...');
                     this.addNewToken(tokenAddress, retryTimeMs, retries - 1);
                 }
             }

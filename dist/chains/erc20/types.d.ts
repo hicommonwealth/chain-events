@@ -1,8 +1,8 @@
-import { Event } from 'ethers';
-import { Web3Provider } from 'ethers/providers';
-import { Erc20 } from './contractTypes/Erc20';
+import { Web3Provider } from '@ethersproject/providers';
+import { TypedEvent } from '../../contractTypes/commons';
+import { ERC20 } from '../../contractTypes';
 interface IErc20Contracts {
-    tokens: Erc20[];
+    tokens: ERC20[];
     provider: Web3Provider;
 }
 export interface ListenerOptions {
@@ -11,7 +11,7 @@ export interface ListenerOptions {
 }
 export declare type Api = IErc20Contracts;
 export declare const EventChains: readonly ["erc20"];
-export declare type RawEvent = Event;
+export declare type RawEvent = TypedEvent<any>;
 export declare enum EventKind {
     Approval = "approval",
     Transfer = "transfer"

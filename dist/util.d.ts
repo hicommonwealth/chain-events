@@ -10,11 +10,7 @@ import { Listener } from './Listener';
  */
 export declare function createListener(chain: string, options: {
     Erc20TokenAddresses?: string[];
-    MarlinContractAddress?: {
-        comp: string;
-        governorAlpha: string;
-        timelock: string;
-    };
+    MarlinContractAddress?: string;
     MolochContractAddress?: string;
     MolochContractVersion?: 1 | 2;
     verbose?: boolean;
