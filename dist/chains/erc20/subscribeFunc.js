@@ -23,30 +23,41 @@ const processor_1 = require("./processor");
  * Attempts to open an API connection, retrying if it cannot be opened.
  * @param ethNetworkUrl
  * @param tokenAddresses
+ * @param tokenNames
  * @param retryTimeMs
  * @returns a promise resolving to an ApiPromise once the connection has been established
 
  */
-function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000) {
+function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000, tokenNames) {
     return __awaiter(this, void 0, void 0, function* () {
         for (let i = 0; i < 3; ++i) {
             try {
                 const provider = yield eth_1.createProvider(ethNetworkUrl);
                 const tokenContracts = tokenAddresses.map((o) => contractTypes_1.ERC20__factory.connect(o, provider));
-                const deployResults = yield Promise.all(tokenContracts.map((o) => o
+                const deployResults = yield Promise.all(tokenContracts.map((o, index) => o
                     .deployed()
                     .then(() => {
-                    return { token: o, deployed: true };
+                    return {
+                        token: o,
+                        deployed: true,
+                        tokenName: tokenNames ? tokenNames[index] : undefined,
+                    };
                 })
                     .catch((err) => {
                     logging_1.default.error('Failed to deploy', err);
-                    return { token: o, deployed: false };
+                    return {
+                        token: o,
+                        deployed: false,
+                        tokenName: tokenNames ? tokenNames[index] : undefined,
+                    };
                 })));
-                const result = deployResults
-                    .filter((o) => o.deployed)
-                    .map((o) => o.token);
-                logging_1.default.info('Connection successful!');
-                return { tokens: result, provider };
+                const result = deployResults.filter((o) => o.deployed);
+                logging_1.default.info(`[erc20]: Connection to ${ethNetworkUrl} successful!`);
+                return {
+                    tokens: result.map((o) => o.token),
+                    provider,
+                    tokenNames: result.map((o) => o.tokenName),
+                };
             }
             catch (err) {
                 logging_1.default.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
@@ -85,7 +96,7 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
     // helper function that sends a block through the event processor and
     // into the event handlers
     const processor = new processor_1.Processor(api);
-    const processEventFn = (event) => __awaiter(void 0, void 0, void 0, function* () {
+    const processEventFn = (event, tokenName) => __awaiter(void 0, void 0, void 0, function* () {
         // retrieve events from block
         const cwEvents = yield processor.process(event);
         // process events in sequence

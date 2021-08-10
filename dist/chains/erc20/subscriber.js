@@ -27,13 +27,13 @@ class Subscriber extends interfaces_1.IEventSubscriber {
      */
     subscribe(cb) {
         return __awaiter(this, void 0, void 0, function* () {
-            this._listener = (event) => {
+            this._listener = (tokenName, event) => {
                 const logStr = `Received ${this._name} event: ${JSON.stringify(event, null, 2)}.`;
                 // eslint-disable-next-line no-unused-expressions
                 this._verbose ? logging_1.default.info(logStr) : logging_1.default.trace(logStr);
-                cb(event);
+                cb(event, tokenName);
             };
-            this._api.tokens.forEach((o) => o.on('*', this._listener));
+            this._api.tokens.forEach((o, index) => o.on('*', this._listener.bind(this, this._api.tokenNames[index])));
         });
     }
     unsubscribe() {

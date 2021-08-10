@@ -21,11 +21,13 @@ import log from '../../logging';
 
 export class Listener extends BaseListener {
   private readonly _options: Erc20ListenerOptions;
+  private readonly _tokenNames: string[];
 
   constructor(
     chain: EventSupportingChainT,
     tokenAddresses: string[],
-    url?: string,
+    url: string,
+    tokenNames?: string[],
     verbose?: boolean,
     ignoreChainType?: boolean
   ) {
@@ -38,6 +40,7 @@ export class Listener extends BaseListener {
       tokenAddresses: tokenAddresses,
     };
 
+    this._tokenNames = tokenNames;
     this._subscribed = false;
   }
 
@@ -45,10 +48,14 @@ export class Listener extends BaseListener {
     try {
       this._api = await createApi(
         this._options.url,
-        this._options.tokenAddresses
+        this._options.tokenAddresses,
+        10000,
+        this._tokenNames
       );
     } catch (error) {
-      log.error('Fatal error occurred while starting the API');
+      log.error(
+        `[${this._chain}]: Fatal error occurred while starting the API`
+      );
       throw error;
     }
 
@@ -57,7 +64,7 @@ export class Listener extends BaseListener {
       this._subscriber = new Subscriber(this._api, this._chain, this._verbose);
     } catch (error) {
       log.error(
-        'Fatal error occurred while starting the Processor and Subscriber'
+        `[${this._chain}]: Fatal error occurred while starting the Processor and Subscriber`
       );
       throw error;
     }
@@ -66,19 +73,21 @@ export class Listener extends BaseListener {
   public async subscribe(): Promise<void> {
     if (!this._subscriber) {
       log.info(
-        `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
+        `[${this._chain}]: Subscriber isn't initialized. Please run init() first!`
       );
       return;
     }
 
     try {
       log.info(
-        `Subscribing to ERC20 contracts: ${this._chain}, on url ${this._options.url}`
+        `[${this._chain}]: Subscribing to the following token(s): ${
+          this._tokenNames || '[token names not given!]'
+        }, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
-      log.error(`Subscription error: ${error.message}`);
+      log.error(`[${this._chain}]: Subscription error: ${error.message}`);
     }
   }
 
@@ -88,12 +97,40 @@ export class Listener extends BaseListener {
     if (this._subscribed === true) await this.subscribe();
   }
 
-  protected async processBlock(event: RawEvent): Promise<void> {
+  // override handleEvent to stop the chain from being added to event data
+  // since the chain/token name is added to event data in the subscriber.ts
+  // (since there are multiple tokens)
+  protected async handleEvent(event: CWEvent) {
+    let prevResult;
+
+    for (const key in this.eventHandlers) {
+      const eventHandler = this.eventHandlers[key];
+      if (
+        this.globalExcludedEvents.includes(event.data.kind) ||
+        eventHandler.excludedEvents?.includes(event.data.kind)
+      )
+        continue;
+
+      try {
+        prevResult = await eventHandler.handler.handle(event, prevResult);
+      } catch (err) {
+        log.error(`Event handle failure: ${err.message}`);
+        break;
+      }
+    }
+  }
+
+  protected async processBlock(
+    event: RawEvent,
+    tokenName?: string
+  ): Promise<void> {
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
-    for (const event of cwEvents)
-      await this.handleEvent(event as CWEvent<IEventData>);
+    for (const event of cwEvents) {
+      event.chain = tokenName as any;
+      await this.handleEvent(event as CWEvent);
+    }
   }
 
   public get chain(): string {

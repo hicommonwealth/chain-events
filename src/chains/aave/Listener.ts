@@ -22,7 +22,6 @@ import { StorageFetcher } from './storageFetcher';
 
 export class Listener extends BaseListener {
   private readonly _options: AaveListenerOptions;
-  public lastBlockNumber: number;
   public discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
   public storageFetcher: IStorageFetcher<Api>;
 
@@ -100,18 +99,16 @@ export class Listener extends BaseListener {
   public async updateAddress(): Promise<void> {}
 
   private async processMissedBlocks(): Promise<void> {
+    log.info(
+      `[${this._chain}]: Detected offline time, polling missed blocks...`
+    );
+
     if (!this.discoverReconnectRange) {
       log.info(
         `[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
       );
     }
-    log.info(
-      `[${this._chain}]: Detected offline time, polling missed blocks...`
-    );
 
-    log.info(
-      `[${this._chain}]: Fetching missed events since last startup of ${this._chain}...`
-    );
     let offlineRange: IDisconnectedRange;
     try {
       offlineRange = await this.discoverReconnectRange(this._chain);
@@ -125,6 +122,11 @@ export class Listener extends BaseListener {
       log.error(
         `[${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
       );
+      return;
+    }
+
+    if (!offlineRange || !offlineRange.startBlock) {
+      log.warn(`[${this._chain}]: Unable to determine offline time range.`);
       return;
     }
 

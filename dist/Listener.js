@@ -38,6 +38,7 @@ class Listener {
         });
     }
     handleEvent(event) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             let prevResult;
             event.chain = this._chain;
@@ -45,7 +46,7 @@ class Listener {
             for (const key in this.eventHandlers) {
                 const eventHandler = this.eventHandlers[key];
                 if (this.globalExcludedEvents.includes(event.data.kind) ||
-                    eventHandler.excludedEvents.includes(event.data.kind))
+                    ((_a = eventHandler.excludedEvents) === null || _a === void 0 ? void 0 : _a.includes(event.data.kind)))
                     continue;
                 try {
                     prevResult = yield eventHandler.handler.handle(event, prevResult);

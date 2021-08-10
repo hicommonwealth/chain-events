@@ -114,12 +114,27 @@ export class Listener extends BaseListener {
       `[${this._chain}]: Detected offline time, polling missed blocks...`
     );
 
-    let offlineRange: IDisconnectedRange;
+    if (!this.discoverReconnectRange) {
+      log.info(
+        `[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
+      );
+    }
 
-    // first, attempt the provided range finding method if it exists
-    // (this should fetch the block of the last server event from database)
-    if (this.discoverReconnectRange) {
+    let offlineRange: IDisconnectedRange;
+    try {
+      // fetch the block of the last server event from database
       offlineRange = await this.discoverReconnectRange(this._chain);
+      if (!offlineRange) {
+        log.warn(
+          `[${this._chain}]: No offline range found, skipping event catchup.`
+        );
+        return;
+      }
+    } catch (error) {
+      log.error(
+        `[${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
+      );
+      return;
     }
 
     // compare with default range algorithm: take last cached block in processor

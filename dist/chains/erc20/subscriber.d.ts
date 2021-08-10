@@ -8,7 +8,7 @@ export declare class Subscriber extends IEventSubscriber<Api, RawEvent> {
     /**
      * Initializes subscription to chain and starts emitting events.
      */
-    subscribe(cb: (event: RawEvent) => void): Promise<void>;
+    subscribe(cb: (event: RawEvent, tokenName?: string) => void): Promise<void>;
     unsubscribe(): void;
     addNewToken(tokenAddress: string, retryTimeMs?: number, retries?: number): Promise<void>;
 }

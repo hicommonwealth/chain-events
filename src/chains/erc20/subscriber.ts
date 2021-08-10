@@ -25,8 +25,10 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
   /**
    * Initializes subscription to chain and starts emitting events.
    */
-  public async subscribe(cb: (event: RawEvent) => void): Promise<void> {
-    this._listener = (event: RawEvent): void => {
+  public async subscribe(
+    cb: (event: RawEvent, tokenName?: string) => void
+  ): Promise<void> {
+    this._listener = (tokenName: string, event: RawEvent): void => {
       const logStr = `Received ${this._name} event: ${JSON.stringify(
         event,
         null,
@@ -34,9 +36,11 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
       )}.`;
       // eslint-disable-next-line no-unused-expressions
       this._verbose ? log.info(logStr) : log.trace(logStr);
-      cb(event);
+      cb(event, tokenName);
     };
-    this._api.tokens.forEach((o) => o.on('*', this._listener));
+    this._api.tokens.forEach((o, index) =>
+      o.on('*', this._listener.bind(this, this._api.tokenNames[index]))
+    );
   }
 
   public unsubscribe(): void {

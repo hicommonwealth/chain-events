@@ -10,6 +10,8 @@ import { Listener } from './Listener';
  */
 export declare function createListener(chain: string, options: {
     address?: string;
+    tokenAddresses?: string[];
+    tokenNames?: string[];
     MolochContractVersion?: 1 | 2;
     verbose?: boolean;
     skipCatchup?: boolean;

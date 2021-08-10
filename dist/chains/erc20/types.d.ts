@@ -4,6 +4,7 @@ import { ERC20 } from '../../contractTypes';
 interface IErc20Contracts {
     tokens: ERC20[];
     provider: Web3Provider;
+    tokenNames?: string[];
 }
 export interface ListenerOptions {
     url: string;

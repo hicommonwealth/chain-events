@@ -18,6 +18,7 @@ export interface IErc20SubscribeOptions extends ISubscribeOptions<Api> {
  * Attempts to open an API connection, retrying if it cannot be opened.
  * @param ethNetworkUrl
  * @param tokenAddresses
+ * @param tokenNames
  * @param retryTimeMs
  * @returns a promise resolving to an ApiPromise once the connection has been established
 
@@ -25,7 +26,8 @@ export interface IErc20SubscribeOptions extends ISubscribeOptions<Api> {
 export async function createApi(
   ethNetworkUrl: string,
   tokenAddresses: string[],
-  retryTimeMs = 10 * 1000
+  retryTimeMs = 10 * 1000,
+  tokenNames?: string[]
 ): Promise<Api> {
   for (let i = 0; i < 3; ++i) {
     try {
@@ -35,25 +37,35 @@ export async function createApi(
         ERC20Factory.connect(o, provider)
       );
       const deployResults = await Promise.all(
-        tokenContracts.map((o) =>
+        tokenContracts.map((o, index) =>
           o
             .deployed()
             .then(() => {
-              return { token: o, deployed: true };
+              return {
+                token: o,
+                deployed: true,
+                tokenName: tokenNames ? tokenNames[index] : undefined,
+              };
             })
             .catch((err) => {
               log.error('Failed to deploy', err);
-              return { token: o, deployed: false };
+              return {
+                token: o,
+                deployed: false,
+                tokenName: tokenNames ? tokenNames[index] : undefined,
+              };
             })
         )
       );
 
-      const result = deployResults
-        .filter((o) => o.deployed)
-        .map((o) => o.token);
+      const result = deployResults.filter((o) => o.deployed);
 
-      log.info('Connection successful!');
-      return { tokens: result, provider };
+      log.info(`[erc20]: Connection to ${ethNetworkUrl} successful!`);
+      return {
+        tokens: result.map((o) => o.token),
+        provider,
+        tokenNames: result.map((o) => o.tokenName),
+      };
     } catch (err) {
       log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
       await sleep(retryTimeMs);
@@ -97,7 +109,10 @@ export const subscribeEvents: SubscribeFunc<
   // helper function that sends a block through the event processor and
   // into the event handlers
   const processor = new Processor(api);
-  const processEventFn = async (event: RawEvent): Promise<void> => {
+  const processEventFn = async (
+    event: RawEvent,
+    tokenName?: string
+  ): Promise<void> => {
     // retrieve events from block
     const cwEvents: CWEvent<IEventData>[] = await processor.process(event);
 

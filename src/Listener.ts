@@ -66,7 +66,7 @@ export abstract class Listener {
       const eventHandler = this.eventHandlers[key];
       if (
         this.globalExcludedEvents.includes(event.data.kind) ||
-        eventHandler.excludedEvents.includes(event.data.kind)
+        eventHandler.excludedEvents?.includes(event.data.kind)
       )
         continue;
 

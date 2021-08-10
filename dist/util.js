@@ -49,7 +49,7 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
                         return interfaces_1.chainSupportedBy(chain, types_2.EventChains);
                     case 'marlin':
                         return interfaces_1.chainSupportedBy(chain, types_3.EventChains);
-                    case 'ethereum':
+                    case 'erc20':
                         return interfaces_1.chainSupportedBy(chain, types_4.EventChains);
                     case 'aave':
                         return interfaces_1.chainSupportedBy(chain, types_5.EventChains);
@@ -68,9 +68,9 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
         else if (basePicker(chain, 'marlin')) {
             listener = new Listener_3.Listener(chain, options.address, options.url || index_1.networkUrls[chain], !!options.skipCatchup, !!options.verbose);
         }
-        else if (basePicker(chain, 'ethereum')) {
-            listener = new Listener_4.Listener(chain, [options.address], options.url || 'wss://mainnet.infura.io/ws/v3/', // ethNetowrkUrl aka the access point to ethereum (usually Infura)
-            !!options.verbose, !!ignoreChainType);
+        else if (basePicker(chain, 'erc20')) {
+            listener = new Listener_4.Listener(chain, options.tokenAddresses || [options.address], options.url || 'wss://mainnet.infura.io/ws/v3/', // ethNetowrkUrl aka the access point to ethereum (usually Infura)
+            Array.isArray(options.tokenNames) ? options.tokenNames : undefined, !!options.verbose, !!ignoreChainType);
         }
         else if (basePicker(chain, 'aave')) {
             listener = new Listener_5.Listener(chain, options.address, options.url, !!options.skipCatchup, !!options.verbose, !!ignoreChainType, options.discoverReconnectRange);

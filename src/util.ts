@@ -16,13 +16,7 @@ import { EventChains as AaveChains } from './chains/aave/types';
 import { Listener as AaveListener } from './chains/aave/Listener';
 
 import { Listener } from './Listener';
-import {
-  molochContracts,
-  networkUrls,
-  marlinContracts,
-  Erc20TokenUrls,
-  networkSpecs,
-} from './index';
+import { molochContracts, networkUrls, networkSpecs } from './index';
 import log from './logging';
 
 /**
@@ -36,6 +30,8 @@ export async function createListener(
   chain: string,
   options: {
     address?: string;
+    tokenAddresses?: string[];
+    tokenNames?: string[];
     MolochContractVersion?: 1 | 2;
     verbose?: boolean;
     skipCatchup?: boolean;
@@ -66,7 +62,7 @@ export async function createListener(
           return chainSupportedBy(chain, MolochChains);
         case 'marlin':
           return chainSupportedBy(chain, MarlinChains);
-        case 'ethereum':
+        case 'erc20':
           return chainSupportedBy(chain, Erc20Chain);
         case 'aave':
           return chainSupportedBy(chain, AaveChains);
@@ -107,11 +103,12 @@ export async function createListener(
       !!options.skipCatchup,
       !!options.verbose
     );
-  } else if (basePicker(chain, 'ethereum')) {
+  } else if (basePicker(chain, 'erc20')) {
     listener = new Erc20Listener(
       <EventSupportingChainT>chain,
-      [options.address],
+      options.tokenAddresses || [options.address],
       options.url || 'wss://mainnet.infura.io/ws/v3/', // ethNetowrkUrl aka the access point to ethereum (usually Infura)
+      Array.isArray(options.tokenNames) ? options.tokenNames : undefined,
       !!options.verbose,
       !!ignoreChainType
     );

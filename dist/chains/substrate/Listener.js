@@ -82,11 +82,21 @@ class Listener extends Listener_1.Listener {
     processMissedBlocks() {
         return __awaiter(this, void 0, void 0, function* () {
             logging_1.default.info(`[${this._chain}]: Detected offline time, polling missed blocks...`);
+            if (!this.discoverReconnectRange) {
+                logging_1.default.info(`[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`);
+            }
             let offlineRange;
-            // first, attempt the provided range finding method if it exists
-            // (this should fetch the block of the last server event from database)
-            if (this.discoverReconnectRange) {
+            try {
+                // fetch the block of the last server event from database
                 offlineRange = yield this.discoverReconnectRange(this._chain);
+                if (!offlineRange) {
+                    logging_1.default.warn(`[${this._chain}]: No offline range found, skipping event catchup.`);
+                    return;
+                }
+            }
+            catch (error) {
+                logging_1.default.error(`[${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`);
+                return;
             }
             // compare with default range algorithm: take last cached block in processor
             // if it exists, and is more recent than the provided algorithm

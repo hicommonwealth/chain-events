@@ -11,7 +11,7 @@ const { argv } = yargs.options({
   },
   base: {
     alias: 'b',
-    choices: ['substrate', 'ethereum', 'moloch', 'marlin', 'aave'],
+    choices: ['substrate', 'erc20', 'moloch', 'marlin', 'aave'],
     description:
       'If using a chain that is not natively supported by chain-events specify the base',
   },
@@ -44,12 +44,18 @@ const { argv } = yargs.options({
 });
 
 let listener;
-createListener(
-  <string>argv.network,
-  argv as any,
-  !!argv.base,
-  <string>argv.base
-)
+argv.network = 'usdc';
+argv.url = 'wss://mainnet.infura.io/ws';
+argv.address = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
+argv.tokenAddresses = [
+  '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+];
+argv.tokenNames = ['tether-usd', 'usdc'];
+argv.base = 'erc20';
+argv.verbose = true;
+
+createListener('erc20', argv as any, !!argv.base, <string>argv.base)
   .then(async (res) => {
     if (res instanceof Error) throw res;
     else listener = res;
