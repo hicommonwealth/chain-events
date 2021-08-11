@@ -8,13 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Poller = void 0;
 const interfaces_1 = require("../../interfaces");
-const logging_1 = __importDefault(require("../../logging"));
+const logging_1 = require("../../logging");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class Poller extends interfaces_1.IEventPoller {
     /**
      * Connects to chain, fetches specified blocks and passes them
@@ -29,14 +27,14 @@ class Poller extends interfaces_1.IEventPoller {
             if (!range.endBlock) {
                 const header = yield this._api.rpc.chain.getHeader();
                 range.endBlock = +header.number;
-                logging_1.default.info(`Discovered endBlock: ${range.endBlock}`);
+                log.info(`Discovered endBlock: ${range.endBlock}`);
             }
             if (range.endBlock - range.startBlock <= 0) {
-                logging_1.default.error(`End of range (${range.endBlock}) <= start (${range.startBlock})! No blocks to fetch.`);
+                log.error(`End of range (${range.endBlock}) <= start (${range.startBlock})! No blocks to fetch.`);
                 return [];
             }
             if (range.endBlock - range.startBlock > maxRange) {
-                logging_1.default.info(`Attempting to poll ${range.endBlock - range.startBlock} blocks, reducing query size to ${maxRange}.`);
+                log.info(`Attempting to poll ${range.endBlock - range.startBlock} blocks, reducing query size to ${maxRange}.`);
                 range.startBlock = range.endBlock - maxRange;
             }
             // discover current version
@@ -51,24 +49,24 @@ class Poller extends interfaces_1.IEventPoller {
             const blockNumbers = [
                 ...Array(range.endBlock - range.startBlock).keys(),
             ].map((i) => range.startBlock + i);
-            logging_1.default.info(`Fetching hashes for blocks: ${JSON.stringify(blockNumbers)}`);
+            log.info(`Fetching hashes for blocks: ${JSON.stringify(blockNumbers)}`);
             // the hashes are pruned when using api.query.system.blockHash.multi
             // therefore fetching hashes from chain. the downside is that for every
             // single hash a separate request is made
             const hashes = yield Promise.all(blockNumbers.map((number) => this._api.rpc.chain.getBlockHash(number)));
             // remove all-0 block hashes -- those blocks have been pruned & we cannot fetch their data
             const nonZeroHashes = hashes.filter((hash) => !hash.isEmpty);
-            logging_1.default.info(`${nonZeroHashes.length} active and ${hashes.length - nonZeroHashes.length} pruned hashes fetched!`);
-            logging_1.default.debug('Fetching headers and events...');
+            log.info(`${nonZeroHashes.length} active and ${hashes.length - nonZeroHashes.length} pruned hashes fetched!`);
+            log.debug('Fetching headers and events...');
             const blocks = yield Promise.all(nonZeroHashes.map((hash) => __awaiter(this, void 0, void 0, function* () {
                 const header = yield this._api.rpc.chain.getHeader(hash);
                 const events = yield this._api.query.system.events.at(hash);
                 const signedBlock = yield this._api.rpc.chain.getBlock(hash);
                 const { extrinsics } = signedBlock.block;
-                logging_1.default.trace(`Fetched Block for ${versionName}:${versionNumber}: ${+header.number}`);
+                log.trace(`Fetched Block for ${versionName}:${versionNumber}: ${+header.number}`);
                 return { header, events, extrinsics, versionNumber, versionName };
             })));
-            logging_1.default.info('Finished polling past blocks!');
+            log.info('Finished polling past blocks!');
             return blocks;
         });
     }
@@ -101,7 +99,7 @@ class Poller extends interfaces_1.IEventPoller {
                     }
                 }
                 catch (e) {
-                    logging_1.default.error(`Block polling failed after disconnect at block ${range.startBlock}`);
+                    log.error(`Block polling failed after disconnect at block ${range.startBlock}`);
                     return;
                 }
                 // if sync with head then update the endBlock to current header

@@ -8,9 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Listener = void 0;
 const index_1 = require("./index");
@@ -18,7 +15,8 @@ const interfaces_1 = require("../../interfaces");
 const index_2 = require("../../index");
 const Listener_1 = require("../../Listener");
 const types_1 = require("./types");
-const logging_1 = __importDefault(require("../../logging"));
+const logging_1 = require("../../logging");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class Listener extends Listener_1.Listener {
     constructor(chain, url, spec, archival, startBlock, skipCatchup, enricherConfig, verbose, ignoreChainType, discoverReconnectRange) {
         super(chain, verbose);
@@ -43,7 +41,7 @@ class Listener extends Listener_1.Listener {
                 this._api.on('connected', this.processMissedBlocks);
             }
             catch (error) {
-                logging_1.default.error(`[${this._chain}]: Fatal error occurred while starting the API`);
+                log.error(`[${this._chain}]: Fatal error occurred while starting the API`);
                 throw error;
             }
             try {
@@ -53,7 +51,7 @@ class Listener extends Listener_1.Listener {
                 this._subscriber = yield new index_1.Subscriber(this._api, this._verbose);
             }
             catch (error) {
-                logging_1.default.error(`[${this._chain}]: Fatal error occurred while starting the Poller, Processor, Subscriber, and Fetcher`);
+                log.error(`[${this._chain}]: Fatal error occurred while starting the Poller, Processor, Subscriber, and Fetcher`);
                 throw error;
             }
         });
@@ -61,41 +59,41 @@ class Listener extends Listener_1.Listener {
     subscribe() {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._subscriber) {
-                logging_1.default.warn(`[${this._chain}]: Subscriber isn't initialized. Please run init() first!`);
+                log.warn(`[${this._chain}]: Subscriber isn't initialized. Please run init() first!`);
                 return;
             }
             // processed blocks missed during downtime
             if (!this.options.skipCatchup)
                 yield this.processMissedBlocks();
             else
-                logging_1.default.info(`[${this._chain}]: Skipping event catchup on startup!`);
+                log.info(`[${this._chain}]: Skipping event catchup on startup!`);
             try {
-                logging_1.default.info(`[${this._chain}]: Subscribing to ${this._chain} on url ${this._options.url}`);
+                log.info(`[${this._chain}]: Subscribing to ${this._chain} on url ${this._options.url}`);
                 yield this._subscriber.subscribe(this.processBlock.bind(this));
                 this._subscribed = true;
             }
             catch (error) {
-                logging_1.default.error(`[${this._chain}]: Subscription error`, error.message);
+                log.error(`[${this._chain}]: Subscription error`, error.message);
             }
         });
     }
     processMissedBlocks() {
         return __awaiter(this, void 0, void 0, function* () {
-            logging_1.default.info(`[${this._chain}]: Detected offline time, polling missed blocks...`);
+            log.info(`[${this._chain}]: Detected offline time, polling missed blocks...`);
             if (!this.discoverReconnectRange) {
-                logging_1.default.info(`[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`);
+                log.info(`[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`);
             }
             let offlineRange;
             try {
                 // fetch the block of the last server event from database
                 offlineRange = yield this.discoverReconnectRange(this._chain);
                 if (!offlineRange) {
-                    logging_1.default.warn(`[${this._chain}]: No offline range found, skipping event catchup.`);
+                    log.warn(`[${this._chain}]: No offline range found, skipping event catchup.`);
                     return;
                 }
             }
             catch (error) {
-                logging_1.default.error(`[${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`);
+                log.error(`[${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`);
                 return;
             }
             // compare with default range algorithm: take last cached block in processor
@@ -111,7 +109,7 @@ class Listener extends Listener_1.Listener {
             // do nothing
             // (i.e. don't try and fetch all events from block 0 onward)
             if (!offlineRange || !offlineRange.startBlock) {
-                logging_1.default.warn(`[${this._chain}]: Unable to determine offline time range.`);
+                log.warn(`[${this._chain}]: Unable to determine offline time range.`);
                 return;
             }
             try {
@@ -119,7 +117,7 @@ class Listener extends Listener_1.Listener {
                 yield Promise.all(blocks.map(this.processBlock, this));
             }
             catch (error) {
-                logging_1.default.error(`[${this._chain}]: Block polling failed after disconnect at block ${offlineRange.startBlock}`, error);
+                log.error(`[${this._chain}]: Block polling failed after disconnect at block ${offlineRange.startBlock}`, error);
             }
         });
     }

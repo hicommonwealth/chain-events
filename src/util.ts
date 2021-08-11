@@ -17,7 +17,9 @@ import { Listener as AaveListener } from './chains/aave/Listener';
 
 import { Listener } from './Listener';
 import { molochContracts, networkUrls, networkSpecs } from './index';
-import log from './logging';
+import { factory, formatFilename } from './logging';
+
+const log = factory.getLogger(formatFilename(__filename));
 
 /**
  * Creates a listener instance and returns it if not error occurs. This function throws on error.

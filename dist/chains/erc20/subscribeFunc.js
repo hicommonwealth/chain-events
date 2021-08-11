@@ -15,10 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.subscribeEvents = exports.createApi = void 0;
 const sleep_promise_1 = __importDefault(require("sleep-promise"));
 const eth_1 = require("../../eth");
-const logging_1 = __importDefault(require("../../logging"));
+const logging_1 = require("../../logging");
 const contractTypes_1 = require("../../contractTypes");
 const subscriber_1 = require("./subscriber");
 const processor_1 = require("./processor");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
  * @param ethNetworkUrl
@@ -44,7 +45,7 @@ function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000, token
                     };
                 })
                     .catch((err) => {
-                    logging_1.default.error('Failed to deploy', err);
+                    log.error('Failed to deploy', err);
                     return {
                         token: o,
                         deployed: false,
@@ -52,7 +53,7 @@ function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000, token
                     };
                 })));
                 const result = deployResults.filter((o) => o.deployed);
-                logging_1.default.info(`[erc20]: Connection to ${ethNetworkUrl} successful!`);
+                log.info(`[erc20]: Connection to ${ethNetworkUrl} successful!`);
                 return {
                     tokens: result.map((o) => o.token),
                     provider,
@@ -60,9 +61,9 @@ function createApi(ethNetworkUrl, tokenAddresses, retryTimeMs = 10 * 1000, token
                 };
             }
             catch (err) {
-                logging_1.default.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
+                log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
                 yield sleep_promise_1.default(retryTimeMs);
-                logging_1.default.error('Retrying connection...');
+                log.error('Retrying connection...');
             }
         }
         throw new Error(`Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`);
@@ -88,7 +89,7 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
                 prevResult = yield handler.handle(event, prevResult);
             }
             catch (err) {
-                logging_1.default.error(`Event handle failure: ${err.message}`);
+                log.error(`Event handle failure: ${err.message}`);
                 break;
             }
         }
@@ -108,11 +109,11 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
     // helper function that runs after we've been offline/the server's been down,
     // and attempts to fetch skipped events
     try {
-        logging_1.default.info(`Subscribing to ERC20 contracts ${chain}...`);
+        log.info(`Subscribing to ERC20 contracts ${chain}...`);
         yield subscriber.subscribe(processEventFn);
     }
     catch (e) {
-        logging_1.default.error(`Subscription error: ${e.message}`);
+        log.error(`Subscription error: ${e.message}`);
     }
     return subscriber;
 });

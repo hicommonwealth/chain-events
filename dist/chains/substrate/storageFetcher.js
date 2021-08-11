@@ -22,13 +22,14 @@ exports.StorageFetcher = void 0;
 const underscore_1 = __importDefault(require("underscore"));
 const util_1 = require("@polkadot/util");
 const interfaces_1 = require("../../interfaces");
-const logging_1 = __importDefault(require("../../logging"));
+const logging_1 = require("../../logging");
 const types_1 = require("./types");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class StorageFetcher extends interfaces_1.IStorageFetcher {
     fetchIdentities(addresses) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.identity) {
-                logging_1.default.info('Identities module not detected.');
+                log.info('Identities module not detected.');
                 return [];
             }
             const blockNumber = +(yield this._api.rpc.chain.getHeader()).number;
@@ -76,7 +77,7 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
     fetchOne(id, kind, moduleName) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!Object.values(types_1.EntityKind).find((k) => k === kind)) {
-                logging_1.default.error(`Invalid entity kind: ${kind}`);
+                log.error(`Invalid entity kind: ${kind}`);
                 return [];
             }
             const blockNumber = +(yield this._api.rpc.chain.getHeader()).number;
@@ -132,7 +133,7 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             const tipsEvents = yield this.fetchTips(blockNumber);
             /** signaling proposals */
             const signalingProposalEvents = yield this.fetchSignalingProposals(blockNumber);
-            logging_1.default.info('Fetch complete.');
+            log.info('Fetch complete.');
             return [
                 ...democracyProposalEvents,
                 ...democracyReferendaEvents,
@@ -151,7 +152,7 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             if (!this._api.query.democracy) {
                 return [];
             }
-            logging_1.default.info('Migrating democracy proposals...');
+            log.info('Migrating democracy proposals...');
             const publicProps = yield this._api.query.democracy.publicProps();
             const constructEvent = (prop, depositOpt) => {
                 if (!depositOpt.isSome)
@@ -178,14 +179,14 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                 const proposedEvents = underscore_1.default.zip(publicProps, deposits)
                     .map(([prop, depositOpt]) => constructEvent(prop, depositOpt))
                     .filter((e) => !!e);
-                logging_1.default.info(`Found ${proposedEvents.length} democracy proposals!`);
+                log.info(`Found ${proposedEvents.length} democracy proposals!`);
                 return proposedEvents.map((data) => ({ blockNumber, data }));
                 // eslint-disable-next-line no-else-return
             }
             else {
                 const publicProp = publicProps.find(([idx]) => +idx === +id);
                 if (!publicProp) {
-                    logging_1.default.error(`Democracy proposal ${id} not found!`);
+                    log.error(`Democracy proposal ${id} not found!`);
                     return null;
                 }
                 const depositOpt = yield this._api.query.democracy.depositOf(publicProp[0]);
@@ -202,10 +203,10 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
     fetchDemocracyReferenda(blockNumber, id) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.democracy) {
-                logging_1.default.info('Democracy module not detected.');
+                log.info('Democracy module not detected.');
                 return [];
             }
-            logging_1.default.info('Migrating democracy referenda...');
+            log.info('Migrating democracy referenda...');
             const activeReferenda = yield this._api.derive.democracy.referendumsActive();
             const startEvents = activeReferenda.map((r) => {
                 return {
@@ -242,12 +243,12 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             if (id !== undefined) {
                 const data = results.filter(({ data: { referendumIndex } }) => referendumIndex === +id);
                 if (data.length === 0) {
-                    logging_1.default.error(`No referendum found with id ${id}!`);
+                    log.error(`No referendum found with id ${id}!`);
                     return null;
                 }
                 return data;
             }
-            logging_1.default.info(`Found ${startEvents.length} democracy referenda!`);
+            log.info(`Found ${startEvents.length} democracy referenda!`);
             return results;
         });
     }
@@ -257,7 +258,7 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             if (!this._api.query.democracy) {
                 return [];
             }
-            logging_1.default.info('Migrating preimages...');
+            log.info('Migrating preimages...');
             const hashCodecs = hashes.map((hash) => this._api.createType('Hash', hash));
             const preimages = yield this._api.derive.democracy.preimages(hashCodecs);
             const notedEvents = underscore_1.default.zip(hashes, preimages).map(([hash, preimage]) => {
@@ -280,23 +281,23 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             const cwEvents = notedEvents
                 .filter(([, data]) => !!data)
                 .map(([blockNumber, data]) => ({ blockNumber, data }));
-            logging_1.default.info(`Found ${cwEvents.length} preimages!`);
+            log.info(`Found ${cwEvents.length} preimages!`);
             return cwEvents;
         });
     }
     fetchTreasuryProposals(blockNumber, id) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.treasury) {
-                logging_1.default.info('Treasury module not detected.');
+                log.info('Treasury module not detected.');
                 return [];
             }
-            logging_1.default.info('Migrating treasury proposals...');
+            log.info('Migrating treasury proposals...');
             const approvals = yield this._api.query.treasury.approvals();
             const nProposals = yield this._api.query.treasury.proposalCount();
             if (id !== undefined) {
                 const proposal = yield this._api.query.treasury.proposals(+id);
                 if (!proposal.isSome) {
-                    logging_1.default.error(`No treasury proposal found with id ${id}!`);
+                    log.error(`No treasury proposal found with id ${id}!`);
                     return null;
                 }
                 const { proposer, value, beneficiary, bond } = proposal.unwrap();
@@ -336,7 +337,7 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                 };
             })
                 .filter((e) => !!e);
-            logging_1.default.info(`Found ${proposedEvents.length} treasury proposals!`);
+            log.info(`Found ${proposedEvents.length} treasury proposals!`);
             return proposedEvents.map((data) => ({ blockNumber, data }));
         });
     }
@@ -346,10 +347,10 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             // TODO: List all relevant events explicitly?
             if (!((_a = this._api.query.treasury) === null || _a === void 0 ? void 0 : _a.bountyCount) &&
                 !((_b = this._api.query.bounties) === null || _b === void 0 ? void 0 : _b.bountyCount)) {
-                logging_1.default.info('Bounties module not detected.');
+                log.info('Bounties module not detected.');
                 return [];
             }
-            logging_1.default.info('Migrating treasury bounties...');
+            log.info('Migrating treasury bounties...');
             const bounties = yield this._api.derive.bounties.bounties();
             const events = [];
             for (const b of bounties) {
@@ -393,19 +394,19 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             if (id !== undefined) {
                 const data = results.filter(({ data: { bountyIndex } }) => bountyIndex === +id);
                 if (data.length === 0) {
-                    logging_1.default.error(`No bounty found with id ${id}!`);
+                    log.error(`No bounty found with id ${id}!`);
                     return null;
                 }
                 return data;
             }
-            logging_1.default.info(`Found ${bounties.length} bounties!`);
+            log.info(`Found ${bounties.length} bounties!`);
             return results;
         });
     }
     fetchCollectiveProposals(moduleName, blockNumber, id) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query[moduleName]) {
-                logging_1.default.info(`${moduleName} module not detected.`);
+                log.info(`${moduleName} module not detected.`);
                 return [];
             }
             const constructEvent = (hash, proposalOpt, votesOpt) => {
@@ -448,20 +449,20 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                     })),
                 ];
             };
-            logging_1.default.info(`Migrating ${moduleName} proposals...`);
+            log.info(`Migrating ${moduleName} proposals...`);
             const proposalHashes = yield this._api.query[moduleName].proposals();
             // fetch one
             if (id !== undefined) {
                 const hash = proposalHashes.find((h) => h.toString() === id);
                 if (!hash) {
-                    logging_1.default.error(`No collective proposal found with hash ${id}!`);
+                    log.error(`No collective proposal found with hash ${id}!`);
                     return null;
                 }
                 const proposalOpt = yield this._api.query[moduleName].proposalOf(hash);
                 const votesOpt = yield this._api.query[moduleName].voting(hash);
                 const events = constructEvent(hash, proposalOpt, votesOpt);
                 if (!events) {
-                    logging_1.default.error(`No collective proposal found with hash ${id}!`);
+                    log.error(`No collective proposal found with hash ${id}!`);
                     return null;
                 }
                 return events.map((data) => ({ blockNumber, data }));
@@ -473,7 +474,7 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                     return yield this._api.query[moduleName].proposalOf(h);
                 }
                 catch (e) {
-                    logging_1.default.error(`Failed to fetch council motion hash ${h.toString()}`);
+                    log.error(`Failed to fetch council motion hash ${h.toString()}`);
                     return Promise.resolve(null);
                 }
             })));
@@ -486,17 +487,17 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             })
                 .filter((es) => !!es));
             const nProposalEvents = proposedEvents.filter((e) => e.kind === types_1.EventKind.CollectiveProposed).length;
-            logging_1.default.info(`Found ${nProposalEvents} ${moduleName} proposals and ${proposedEvents.length - nProposalEvents} votes!`);
+            log.info(`Found ${nProposalEvents} ${moduleName} proposals and ${proposedEvents.length - nProposalEvents} votes!`);
             return proposedEvents.map((data) => ({ blockNumber, data }));
         });
     }
     fetchTips(blockNumber, hash) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.tips) {
-                logging_1.default.info('Tips module not detected.');
+                log.info('Tips module not detected.');
                 return [];
             }
-            logging_1.default.info('Migrating tips...');
+            log.info('Migrating tips...');
             const openTipKeys = yield this._api.query.tips.tips.keys();
             const results = [];
             for (const key of openTipKeys) {
@@ -550,24 +551,24 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                         }
                     }
                     catch (e) {
-                        logging_1.default.error(`Unable to fetch tip "${key.args[0]}"!`);
+                        log.error(`Unable to fetch tip "${key.args[0]}"!`);
                     }
                 }
             }
             const newTips = results.filter((v) => v.data.kind === types_1.EventKind.NewTip);
-            logging_1.default.info(`Found ${newTips.length} open tips!`);
+            log.info(`Found ${newTips.length} open tips!`);
             return results;
         });
     }
     fetchSignalingProposals(blockNumber, id) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this._api.query.signaling || !this._api.query.voting) {
-                logging_1.default.info('Signaling module not detected.');
+                log.info('Signaling module not detected.');
                 return [];
             }
-            logging_1.default.info('Migrating signaling proposals...');
+            log.info('Migrating signaling proposals...');
             if (!this._api.query.voting || !this._api.query.signaling) {
-                logging_1.default.info('Found no signaling proposals (wrong chain)!');
+                log.info('Found no signaling proposals (wrong chain)!');
                 return [];
             }
             // in "prevoting" phase
@@ -650,12 +651,12 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
             if (id !== undefined) {
                 const data = results.filter(({ data: { proposalHash } }) => proposalHash === id);
                 if (data.length === 0) {
-                    logging_1.default.error(`No referendum found with id ${id}!`);
+                    log.error(`No referendum found with id ${id}!`);
                     return null;
                 }
                 return data;
             }
-            logging_1.default.info(`Found ${newProposalEvents.length} signaling proposals!`);
+            log.info(`Found ${newProposalEvents.length} signaling proposals!`);
             return results;
         });
     }

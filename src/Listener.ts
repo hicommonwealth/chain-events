@@ -8,7 +8,9 @@ import {
   CWEvent,
 } from './interfaces';
 
-import log from './logging';
+import { factory, formatFilename } from './logging';
+
+const log = factory.getLogger(formatFilename(__filename));
 
 // TODO: processBlock + processMissedBlocks can both be generalized and override in edge case listeners
 // TODO: subscribe method can be implemented here and override in edge case (or even use super.subscribe())

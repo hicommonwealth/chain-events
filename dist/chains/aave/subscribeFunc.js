@@ -15,11 +15,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.subscribeEvents = exports.createApi = void 0;
 const sleep_promise_1 = __importDefault(require("sleep-promise"));
 const eth_1 = require("../../eth");
-const logging_1 = __importDefault(require("../../logging"));
+const logging_1 = require("../../logging");
 const contractTypes_1 = require("../../contractTypes");
 const subscriber_1 = require("./subscriber");
 const processor_1 = require("./processor");
 const storageFetcher_1 = require("./storageFetcher");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
  * @param ethNetworkUrl
@@ -54,7 +55,7 @@ function createApi(ethNetworkUrl, governanceAddress, retryTimeMs = 10 * 1000, re
                     // confirm we the token types are correct
                     yield aaveToken.DELEGATE_TYPEHASH();
                     yield stkAaveToken.DELEGATE_TYPEHASH();
-                    logging_1.default.info('Connection successful!');
+                    log.info('Connection successful!');
                     return {
                         governance: governanceContract,
                         aaveToken,
@@ -62,17 +63,17 @@ function createApi(ethNetworkUrl, governanceAddress, retryTimeMs = 10 * 1000, re
                     };
                 }
                 catch (err) {
-                    logging_1.default.warn('Governance connection successful but token connections failed.');
-                    logging_1.default.warn('Delegation events will not be emitted.');
+                    log.warn('Governance connection successful but token connections failed.');
+                    log.warn('Delegation events will not be emitted.');
                     return {
                         governance: governanceContract,
                     };
                 }
             }
             catch (err) {
-                logging_1.default.error(`Aave ${governanceAddress} at ${ethNetworkUrl} failure: ${err.message}`);
+                log.error(`Aave ${governanceAddress} at ${ethNetworkUrl} failure: ${err.message}`);
                 yield sleep_promise_1.default(retryTimeMs);
-                logging_1.default.error('Retrying connection...');
+                log.error('Retrying connection...');
             }
         }
         throw new Error(`Failed to start Aave listener for ${governanceAddress} at ${ethNetworkUrl}`);
@@ -96,7 +97,7 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
                 prevResult = yield handler.handle(event, prevResult);
             }
             catch (err) {
-                logging_1.default.error(`Event handle failure: ${err.message}`);
+                log.error(`Event handle failure: ${err.message}`);
                 break;
             }
         }
@@ -117,20 +118,20 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
     // and attempts to fetch skipped events
     const pollMissedEventsFn = () => __awaiter(void 0, void 0, void 0, function* () {
         if (!discoverReconnectRange) {
-            logging_1.default.warn('No function to discover offline time found, skipping event catchup.');
+            log.warn('No function to discover offline time found, skipping event catchup.');
             return;
         }
-        logging_1.default.info(`Fetching missed events since last startup of ${chain}...`);
+        log.info(`Fetching missed events since last startup of ${chain}...`);
         let offlineRange;
         try {
             offlineRange = yield discoverReconnectRange();
             if (!offlineRange) {
-                logging_1.default.warn('No offline range found, skipping event catchup.');
+                log.warn('No offline range found, skipping event catchup.');
                 return;
             }
         }
         catch (e) {
-            logging_1.default.error(`Could not discover offline range: ${e.message}. Skipping event catchup.`);
+            log.error(`Could not discover offline range: ${e.message}. Skipping event catchup.`);
             return;
         }
         const fetcher = new storageFetcher_1.StorageFetcher(api);
@@ -142,21 +143,21 @@ const subscribeEvents = (options) => __awaiter(void 0, void 0, void 0, function*
             }
         }
         catch (e) {
-            logging_1.default.error(`Unable to fetch events from storage: ${e.message}`);
+            log.error(`Unable to fetch events from storage: ${e.message}`);
         }
     });
     if (!skipCatchup) {
         yield pollMissedEventsFn();
     }
     else {
-        logging_1.default.info('Skipping event catchup on startup!');
+        log.info('Skipping event catchup on startup!');
     }
     try {
-        logging_1.default.info(`Subscribing to contracts ${chain}...`);
+        log.info(`Subscribing to contracts ${chain}...`);
         yield subscriber.subscribe(processEventFn);
     }
     catch (e) {
-        logging_1.default.error(`Subscription error: ${e.message}`);
+        log.error(`Subscription error: ${e.message}`);
     }
     return subscriber;
 });

@@ -1,7 +1,10 @@
 import { providers } from 'ethers';
 import Web3 from 'web3';
-import log from './logging';
 import fetch from 'node-fetch';
+
+import { factory, formatFilename } from './logging';
+
+const log = factory.getLogger(formatFilename(__filename));
 
 export async function createProvider(
   ethNetworkUrl: string

@@ -17,8 +17,10 @@ import {
 import { networkUrls } from '../../index';
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
-import log from '../../logging';
 import { StorageFetcher } from './storageFetcher';
+import { factory, formatFilename } from '../../logging';
+
+const log = factory.getLogger(formatFilename(__filename));
 
 export class Listener extends BaseListener {
   private readonly _options: AaveListenerOptions;

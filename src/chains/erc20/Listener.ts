@@ -17,7 +17,9 @@ import { Processor } from './processor';
 import { Subscriber } from './subscriber';
 import { Listener as BaseListener } from '../../Listener';
 
-import log from '../../logging';
+import { factory, formatFilename } from '../../logging';
+
+const log = factory.getLogger(formatFilename(__filename));
 
 export class Listener extends BaseListener {
   private readonly _options: Erc20ListenerOptions;

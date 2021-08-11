@@ -8,14 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StorageFetcher = void 0;
 const interfaces_1 = require("../../interfaces");
-const logging_1 = __importDefault(require("../../logging"));
+const logging_1 = require("../../logging");
 const types_1 = require("./types");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class StorageFetcher extends interfaces_1.IStorageFetcher {
     constructor(_api, _dater) {
         super(_api);
@@ -87,14 +85,14 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
     fetchOne(id) {
         return __awaiter(this, void 0, void 0, function* () {
             this._currentBlock = +(yield this._api.governorAlpha.provider.getBlockNumber());
-            logging_1.default.info(`Current block: ${this._currentBlock}.`);
+            log.info(`Current block: ${this._currentBlock}.`);
             if (!this._currentBlock) {
-                logging_1.default.error('Failed to fetch current block! Aborting fetch.');
+                log.error('Failed to fetch current block! Aborting fetch.');
                 return [];
             }
             const proposal = yield this._api.governorAlpha.proposals(id);
             if (+proposal.id === 0) {
-                logging_1.default.error(`Marlin proposal ${id} not found.`);
+                log.error(`Marlin proposal ${id} not found.`);
                 return [];
             }
             const events = yield this._eventsFromProposal(proposal.id.toNumber(), proposal, +proposal.startBlock);
@@ -113,9 +111,9 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
     fetch(range, fetchAllCompleted = false) {
         return __awaiter(this, void 0, void 0, function* () {
             this._currentBlock = +(yield this._api.governorAlpha.provider.getBlockNumber());
-            logging_1.default.info(`Current block: ${this._currentBlock}.`);
+            log.info(`Current block: ${this._currentBlock}.`);
             if (!this._currentBlock) {
-                logging_1.default.error('Failed to fetch current block! Aborting fetch.');
+                log.error('Failed to fetch current block! Aborting fetch.');
                 return [];
             }
             // populate range fully if not given
@@ -126,17 +124,17 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                 range.startBlock = 0;
             }
             else if (range.startBlock >= this._currentBlock) {
-                logging_1.default.error(`Start block ${range.startBlock} greater than current block ${this._currentBlock}!`);
+                log.error(`Start block ${range.startBlock} greater than current block ${this._currentBlock}!`);
                 return [];
             }
             if (range.endBlock && range.startBlock >= range.endBlock) {
-                logging_1.default.error(`Invalid fetch range: ${range.startBlock}-${range.endBlock}.`);
+                log.error(`Invalid fetch range: ${range.startBlock}-${range.endBlock}.`);
                 return [];
             }
             if (!range.endBlock) {
                 range.endBlock = this._currentBlock;
             }
-            logging_1.default.info(`Fetching Marlin entities for range: ${range.startBlock}-${range.endBlock}.`);
+            log.info(`Fetching Marlin entities for range: ${range.startBlock}-${range.endBlock}.`);
             const queueLength = +(yield this._api.governorAlpha.proposalCount());
             const results = [];
             let nFetched = 0;
@@ -145,7 +143,7 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                 const queuePosition = queueLength - i;
                 const proposal = yield this._api.governorAlpha.proposals(queuePosition);
                 // fetch actual proposal
-                logging_1.default.debug(`Fetched Marlin proposal ${proposal.id} from storage.`);
+                log.debug(`Fetched Marlin proposal ${proposal.id} from storage.`);
                 const startBlock = +proposal.startBlock;
                 if (startBlock >= range.startBlock && startBlock <= range.endBlock) {
                     const events = yield this._eventsFromProposal(proposal.id.toNumber(), proposal, startBlock);
@@ -156,21 +154,21 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                     // strategy, but for now our API usage is limited.
                     if (!fetchAllCompleted &&
                         events.find((p) => p.data.kind === types_1.EventKind.ProposalExecuted)) {
-                        logging_1.default.debug(`Proposal ${proposal.id} is marked as executed, halting fetch.`);
+                        log.debug(`Proposal ${proposal.id} is marked as executed, halting fetch.`);
                         break;
                     }
                     if (range.maxResults && nFetched >= range.maxResults) {
-                        logging_1.default.debug(`Fetched ${nFetched} proposals, halting fetch.`);
+                        log.debug(`Fetched ${nFetched} proposals, halting fetch.`);
                         break;
                     }
                 }
                 else if (startBlock < range.startBlock) {
-                    logging_1.default.debug(`Marlin proposal start block (${startBlock}) is before ${range.startBlock}, ending fetch.`);
+                    log.debug(`Marlin proposal start block (${startBlock}) is before ${range.startBlock}, ending fetch.`);
                     break;
                 }
                 else if (startBlock > range.endBlock) {
                     // keep walking backwards until within range
-                    logging_1.default.debug(`Marlin proposal start block (${startBlock}) is after ${range.endBlock}, ending fetch.`);
+                    log.debug(`Marlin proposal start block (${startBlock}) is after ${range.endBlock}, ending fetch.`);
                 }
             }
             return results;

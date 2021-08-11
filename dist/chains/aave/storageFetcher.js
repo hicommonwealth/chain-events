@@ -8,14 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StorageFetcher = void 0;
 const interfaces_1 = require("../../interfaces");
-const logging_1 = __importDefault(require("../../logging"));
+const logging_1 = require("../../logging");
 const types_1 = require("./types");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class StorageFetcher extends interfaces_1.IStorageFetcher {
     constructor(_api) {
         super(_api);
@@ -106,15 +104,15 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
     fetchOne(id) {
         return __awaiter(this, void 0, void 0, function* () {
             this._currentBlock = +(yield this._api.governance.provider.getBlockNumber());
-            logging_1.default.info(`Current block: ${this._currentBlock}.`);
+            log.info(`Current block: ${this._currentBlock}.`);
             if (!this._currentBlock) {
-                logging_1.default.error('Failed to fetch current block! Aborting fetch.');
+                log.error('Failed to fetch current block! Aborting fetch.');
                 return [];
             }
             // TODO: handle errors
             const proposal = yield this._api.governance.getProposalById(id);
             if (+proposal.id === 0) {
-                logging_1.default.error(`Aave proposal ${id} not found.`);
+                log.error(`Aave proposal ${id} not found.`);
                 return [];
             }
             const state = yield this._api.governance.getProposalState(proposal.id);
@@ -137,9 +135,9 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
         return __awaiter(this, void 0, void 0, function* () {
             const block = yield this._api.governance.provider.getBlock('latest');
             this._currentBlock = block.number;
-            logging_1.default.info(`Current block: ${this._currentBlock}.`);
+            log.info(`Current block: ${this._currentBlock}.`);
             if (!this._currentBlock) {
-                logging_1.default.error('Failed to fetch current block! Aborting fetch.');
+                log.error('Failed to fetch current block! Aborting fetch.');
                 return [];
             }
             // populate range fully if not given
@@ -150,17 +148,17 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                 range.startBlock = 0;
             }
             else if (range.startBlock >= this._currentBlock) {
-                logging_1.default.error(`Start block ${range.startBlock} greater than current block ${this._currentBlock}!`);
+                log.error(`Start block ${range.startBlock} greater than current block ${this._currentBlock}!`);
                 return [];
             }
             if (range.endBlock && range.startBlock >= range.endBlock) {
-                logging_1.default.error(`Invalid fetch range: ${range.startBlock}-${range.endBlock}.`);
+                log.error(`Invalid fetch range: ${range.startBlock}-${range.endBlock}.`);
                 return [];
             }
             if (!range.endBlock) {
                 range.endBlock = this._currentBlock;
             }
-            logging_1.default.info(`Fetching Aave entities for range: ${range.startBlock}-${range.endBlock}.`);
+            log.info(`Fetching Aave entities for range: ${range.startBlock}-${range.endBlock}.`);
             const queueLength = +(yield this._api.governance.getProposalsCount());
             const results = [];
             // fetch historical votes
@@ -170,7 +168,7 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                 // work backwards through the queue, starting with the most recent
                 const queuePosition = queueLength - i - 1;
                 const proposal = yield this._api.governance.getProposalById(queuePosition);
-                logging_1.default.debug(`Fetched Aave proposal ${proposal.id} from storage.`);
+                log.debug(`Fetched Aave proposal ${proposal.id} from storage.`);
                 const proposalStartBlock = +proposal.startBlock;
                 // TODO: if proposal exists but is before start block, we skip.
                 //   is this desired behavior?
@@ -186,24 +184,24 @@ class StorageFetcher extends interfaces_1.IStorageFetcher {
                     // we may want to run once without this, in order to fetch backlog, or else develop a pagination
                     // strategy, but for now our API usage is limited.
                     if (!fetchAllCompleted && isCompleted) {
-                        logging_1.default.debug(`Proposal ${proposal.id} is marked as completed, halting fetch.`);
+                        log.debug(`Proposal ${proposal.id} is marked as completed, halting fetch.`);
                         break;
                     }
                     const propVoteEvents = voteEvents.filter(({ data: { id } }) => id === +proposal.id);
                     results.push(...events, ...propVoteEvents);
                     nFetched += 1;
                     if (range.maxResults && nFetched >= range.maxResults) {
-                        logging_1.default.debug(`Fetched ${nFetched} proposals, halting fetch.`);
+                        log.debug(`Fetched ${nFetched} proposals, halting fetch.`);
                         break;
                     }
                 }
                 else if (proposalStartBlock < range.startBlock) {
-                    logging_1.default.debug(`Aave proposal start block (${proposalStartBlock}) is before ${range.startBlock}, ending fetch.`);
+                    log.debug(`Aave proposal start block (${proposalStartBlock}) is before ${range.startBlock}, ending fetch.`);
                     break;
                 }
                 else if (proposalStartBlock > range.endBlock) {
                     // keep walking backwards until within range
-                    logging_1.default.debug(`Aave proposal start block (${proposalStartBlock}) is after ${range.endBlock}, continuing fetch.`);
+                    log.debug(`Aave proposal start block (${proposalStartBlock}) is after ${range.endBlock}, continuing fetch.`);
                 }
             }
             return results;

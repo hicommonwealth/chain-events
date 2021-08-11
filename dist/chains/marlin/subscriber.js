@@ -8,13 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Subscriber = void 0;
 const interfaces_1 = require("../../interfaces");
-const logging_1 = __importDefault(require("../../logging"));
+const logging_1 = require("../../logging");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class Subscriber extends interfaces_1.IEventSubscriber {
     constructor(api, name, verbose = false) {
         super(api, verbose);
@@ -28,7 +26,7 @@ class Subscriber extends interfaces_1.IEventSubscriber {
             this._listener = (event) => {
                 const logStr = `Received ${this._name} event: ${JSON.stringify(event, null, 2)}.`;
                 // eslint-disable-next-line no-unused-expressions
-                this._verbose ? logging_1.default.info(logStr) : logging_1.default.trace(logStr);
+                this._verbose ? log.info(logStr) : log.trace(logStr);
                 cb(event);
             };
             this._api.comp.on('*', this._listener);
@@ -38,7 +36,7 @@ class Subscriber extends interfaces_1.IEventSubscriber {
     }
     unsubscribe() {
         if (this._listener) {
-            logging_1.default.info(`Unsubscribing from ${this._name}`);
+            log.info(`Unsubscribing from ${this._name}`);
             this._api.comp.removeListener('*', this._listener);
             this._api.governorAlpha.removeListener('*', this._listener);
             this._api.timelock.removeListener('*', this._listener);

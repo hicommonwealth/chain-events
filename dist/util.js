@@ -8,9 +8,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createListener = void 0;
 const interfaces_1 = require("./interfaces");
@@ -25,7 +22,8 @@ const Listener_4 = require("./chains/erc20/Listener");
 const types_5 = require("./chains/aave/types");
 const Listener_5 = require("./chains/aave/Listener");
 const index_1 = require("./index");
-const logging_1 = __importDefault(require("./logging"));
+const logging_1 = require("./logging");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 /**
  * Creates a listener instance and returns it if not error occurs. This function throws on error.
  * @param chain The chain the listener is for
@@ -84,7 +82,7 @@ function createListener(chain, options, ignoreChainType, customChainBase) {
             yield listener.init();
         }
         catch (error) {
-            logging_1.default.error(`[${chain}]: Failed to initialize the listener`);
+            log.error(`[${chain}]: Failed to initialize the listener`);
             throw error;
         }
         return listener;

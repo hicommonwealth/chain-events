@@ -16,7 +16,8 @@ exports.Subscriber = void 0;
 const sleep_promise_1 = __importDefault(require("sleep-promise"));
 const interfaces_1 = require("../../interfaces");
 const contractTypes_1 = require("../../contractTypes");
-const logging_1 = __importDefault(require("../../logging"));
+const logging_1 = require("../../logging");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 class Subscriber extends interfaces_1.IEventSubscriber {
     constructor(api, name, verbose = false) {
         super(api, verbose);
@@ -30,7 +31,7 @@ class Subscriber extends interfaces_1.IEventSubscriber {
             this._listener = (tokenName, event) => {
                 const logStr = `Received ${this._name} event: ${JSON.stringify(event, null, 2)}.`;
                 // eslint-disable-next-line no-unused-expressions
-                this._verbose ? logging_1.default.info(logStr) : logging_1.default.trace(logStr);
+                this._verbose ? log.info(logStr) : log.trace(logStr);
                 cb(event, tokenName);
             };
             this._api.tokens.forEach((o, index) => o.on('*', this._listener.bind(this, this._api.tokenNames[index])));
@@ -48,7 +49,7 @@ class Subscriber extends interfaces_1.IEventSubscriber {
                 return o.address === tokenAddress;
             });
             if (existingToken) {
-                logging_1.default.info('Token is already being monitored');
+                log.info('Token is already being monitored');
                 return;
             }
             try {
@@ -60,7 +61,7 @@ class Subscriber extends interfaces_1.IEventSubscriber {
             catch (e) {
                 yield sleep_promise_1.default(retryTimeMs);
                 if (retries > 0) {
-                    logging_1.default.error('Retrying connection...');
+                    log.error('Retrying connection...');
                     this.addNewToken(tokenAddress, retryTimeMs, retries - 1);
                 }
             }

@@ -1,3 +1,3 @@
-import { Logger } from 'tslog';
-declare const log: Logger;
-export default log;
+export declare const formatFilename: (name: string) => string;
+export declare const factory: import("typescript-logging").LoggerFactory;
+export declare const factoryControl: import("typescript-logging").LoggerFactoryControl;

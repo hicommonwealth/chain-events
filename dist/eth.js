@@ -15,8 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.createProvider = void 0;
 const ethers_1 = require("ethers");
 const web3_1 = __importDefault(require("web3"));
-const logging_1 = __importDefault(require("./logging"));
 const node_fetch_1 = __importDefault(require("node-fetch"));
+const logging_1 = require("./logging");
+const log = logging_1.factory.getLogger(logging_1.formatFilename(__filename));
 function createProvider(ethNetworkUrl) {
     return __awaiter(this, void 0, void 0, function* () {
         if (ethNetworkUrl.includes('infura')) {
@@ -47,7 +48,7 @@ function createProvider(ethNetworkUrl) {
                         throw new Error('A connection to infura could not be established.');
                 }
                 catch (error) {
-                    logging_1.default.error('Check your INFURA_API_KEY');
+                    log.error('Check your INFURA_API_KEY');
                     throw error;
                 }
             }
