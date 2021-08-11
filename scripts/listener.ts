@@ -13,7 +13,7 @@ const { argv } = yargs.options({
     alias: 'b',
     choices: ['substrate', 'erc20', 'moloch', 'marlin', 'aave'],
     description:
-      'If using a chain that is not natively supported by chain-events specify the base',
+      'If using a chain that is not natively supported by chain-events specify the base (overrides built-in chain types)',
   },
   url: {
     alias: 'u',
