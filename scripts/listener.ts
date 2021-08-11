@@ -1,11 +1,14 @@
+import fetch from 'node-fetch';
 import * as yargs from 'yargs';
-import { createListener } from '../src';
+import { createListener, LoggingHandler } from '../src';
 
-import { LoggingHandler } from '../src';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const { argv } = yargs.options({
   network: {
     alias: 'n',
+    type: 'string',
     demandOption: true,
     description: 'chain to listen on',
   },
@@ -36,6 +39,11 @@ const { argv } = yargs.options({
     description:
       'when running in archival mode, which block should we start from',
   },
+  allTokens: {
+    alias: 't',
+    type: 'boolean',
+    description: 'Listen to all erc20 tokens - overrides address',
+  },
   verbose: {
     alias: 'v',
     types: 'boolean',
@@ -43,20 +51,44 @@ const { argv } = yargs.options({
   },
 });
 
-let listener;
-argv.network = 'usdc';
-argv.url = 'wss://mainnet.infura.io/ws';
-argv.address = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
-argv.tokenAddresses = [
-  '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-  '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+const tokenListUrls = [
+  'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://tokenlist.aave.eth.link',
+  'https://gateway.ipfs.io/ipns/tokens.uniswap.org',
+  'https://wispy-bird-88a7.uniswap.workers.dev/?url=http://defi.cmc.eth.link',
 ];
-argv.tokenNames = ['tether-usd', 'usdc'];
-argv.base = 'erc20';
-argv.verbose = true;
 
-createListener('erc20', argv as any, !!argv.base, <string>argv.base)
-  .then(async (res) => {
+async function getTokenLists() {
+  const data = await Promise.all(
+    tokenListUrls.map((listUrl) =>
+      fetch(listUrl)
+        .then((o) => o.json())
+        .catch((e) => {
+          console.error(e);
+          return [];
+        })
+    )
+  );
+  return data
+    .map((o) => o && o.tokens)
+    .flat()
+    .filter((o) => o);
+}
+
+let listener;
+async function main() {
+  if (argv.allTokens) {
+    const tokens = await getTokenLists();
+    argv.tokenAddresses = tokens.map((o) => o.address);
+    argv.tokenNames = tokens.map((o) => o.name);
+  }
+
+  try {
+    const res = await createListener(
+      argv.network,
+      argv as any,
+      !!argv.base,
+      <string>argv.base
+    );
     if (res instanceof Error) throw res;
     else listener = res;
 
@@ -70,7 +102,10 @@ createListener('erc20', argv as any, !!argv.base, <string>argv.base)
     }
 
     await listener.subscribe();
-  })
-  .catch((error) => {
-    throw error;
-  });
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+main();
