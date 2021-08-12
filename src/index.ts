@@ -19,7 +19,6 @@ export * as AaveTypes from './chains/aave/types';
 export * from './chains';
 
 export { Listener } from './Listener';
-export { createNode } from './server';
 export * from './handlers';
 export * from './util';
 
