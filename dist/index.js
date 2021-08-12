@@ -22,7 +22,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Erc20TokenUrls = exports.marlinContracts = exports.molochContracts = exports.networkSpecs = exports.networkUrls = exports.createNode = exports.Listener = exports.AaveTypes = exports.AaveEvents = exports.Erc20Types = exports.Erc20Events = exports.SubstrateTypes = exports.SubstrateEvents = exports.MarlinTypes = exports.MarlinEvents = exports.MolochTypes = exports.MolochEvents = void 0;
+exports.Erc20TokenUrls = exports.marlinContracts = exports.molochContracts = exports.networkSpecs = exports.networkUrls = exports.Listener = exports.AaveTypes = exports.AaveEvents = exports.Erc20Types = exports.Erc20Events = exports.SubstrateTypes = exports.SubstrateEvents = exports.MarlinTypes = exports.MarlinEvents = exports.MolochTypes = exports.MolochEvents = void 0;
 const clover_1 = require("./specs/clover");
 const kulupu_1 = require("./specs/kulupu");
 const hydraDX_1 = require("./specs/hydraDX");
@@ -42,8 +42,6 @@ exports.AaveTypes = __importStar(require("./chains/aave/types"));
 __exportStar(require("./chains"), exports);
 var Listener_1 = require("./Listener");
 Object.defineProperty(exports, "Listener", { enumerable: true, get: function () { return Listener_1.Listener; } });
-var server_1 = require("./server");
-Object.defineProperty(exports, "createNode", { enumerable: true, get: function () { return server_1.createNode; } });
 __exportStar(require("./handlers"), exports);
 __exportStar(require("./util"), exports);
 // defaults
