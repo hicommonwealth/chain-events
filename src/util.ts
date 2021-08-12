@@ -77,11 +77,11 @@ export async function createListener(
     listener = new SubstrateListener(
       <EventSupportingChainT>chain,
       options.url || networkUrls[chain],
-      options.spec || networkSpecs[chain] || {},
+      options.spec,
       !!options.archival,
       options.startBlock || 0,
       !!options.skipCatchup,
-      options.enricherConfig || {},
+      options.enricherConfig,
       !!options.verbose,
       !!ignoreChainType,
       options.discoverReconnectRange

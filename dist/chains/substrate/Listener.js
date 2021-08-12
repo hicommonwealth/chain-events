@@ -27,7 +27,7 @@ class Listener extends Listener_1.Listener {
             archival: !!archival,
             startBlock: startBlock !== null && startBlock !== void 0 ? startBlock : 0,
             url: url || index_2.networkUrls[chain],
-            spec: spec || index_2.networkSpecs[chain] || {},
+            spec: spec,
             skipCatchup: !!skipCatchup,
             enricherConfig: enricherConfig || {},
         };

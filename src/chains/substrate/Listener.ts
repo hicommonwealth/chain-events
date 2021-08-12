@@ -53,7 +53,7 @@ export class Listener extends BaseListener {
       archival: !!archival,
       startBlock: startBlock ?? 0,
       url: url || networkUrls[chain],
-      spec: spec || networkSpecs[chain] || {},
+      spec: spec,
       skipCatchup: !!skipCatchup,
       enricherConfig: enricherConfig || {},
     };
