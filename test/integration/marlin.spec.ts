@@ -18,14 +18,11 @@ import {
   Api,
   IEventData,
   EventKind,
-  IDelegateVotesChanged,
-  ITransfer,
   IProposalCreated,
   IProposalQueued,
-  IQueueTransaction,
   IProposalExecuted,
-  IExecuteTransaction,
   IVoteCast,
+  ProposalState,
 } from '../../src/marlin/types';
 import { subscribeEvents } from '../../src/marlin/subscribeFunc';
 import { IEventHandler, CWEvent, IChainEventData } from '../../src/interfaces';
@@ -41,18 +38,6 @@ function getProvider(): providers.Web3Provider {
     // logger: console,
   });
   return new providers.Web3Provider(web3Provider);
-}
-
-// eslint-disable-next-line no-shadow
-enum ProposalState {
-  Pending = 0,
-  Active = 1,
-  Canceled = 2,
-  Defeated = 3,
-  Succeeded = 4,
-  Queued = 5,
-  Expired = 6,
-  Executed = 7,
 }
 
 async function deployMPond(
@@ -164,6 +149,7 @@ async function performDelegation(
   amount: BigNumberish
 ): Promise<void> {
   await comp.delegate(to, amount);
+  /*
   await Promise.all([
     assertEvent(handler, EventKind.DelegateChanged, (evt) => {
       assert.deepEqual(evt.data, {
@@ -195,6 +181,7 @@ async function performDelegation(
       }
     ),
   ]);
+  */
 }
 
 async function createProposal(
@@ -218,17 +205,15 @@ async function createProposal(
     handler,
     EventKind.ProposalCreated,
     (evt: CWEvent<IProposalCreated>) => {
-      const { kind, proposer, description } = evt.data;
+      const { kind, proposer } = evt.data;
       assert.deepEqual(
         {
           kind,
           proposer,
-          description,
         },
         {
           kind: EventKind.ProposalCreated,
           proposer: from,
-          description: 'test description',
         }
       );
     }
@@ -326,21 +311,6 @@ async function proposeAndQueue(
         );
       }
     ),
-    assertEvent(
-      handler,
-      EventKind.QueueTransaction,
-      (evt: CWEvent<IQueueTransaction>) => {
-        const { kind } = evt.data;
-        assert.deepEqual(
-          {
-            kind,
-          },
-          {
-            kind: EventKind.QueueTransaction,
-          }
-        );
-      }
-    ),
   ]);
 }
 
@@ -357,6 +327,7 @@ describe('Marlin Event Integration Tests', () => {
       await comp.transfer(addresses[2], 100);
       const newUserNewBalance = await comp.balanceOf(addresses[2]);
       assert.isAtLeast(+newUserNewBalance, 100);
+      /*
       await assertEvent(
         handler,
         EventKind.Transfer,
@@ -378,6 +349,7 @@ describe('Marlin Event Integration Tests', () => {
           );
         }
       );
+      */
     });
 
     it('initial address should delegate to address 2', async () => {
@@ -489,21 +461,6 @@ describe('Marlin Event Integration Tests', () => {
               {
                 kind: EventKind.ProposalExecuted,
                 id: activeProposals,
-              }
-            );
-          }
-        ),
-        assertEvent(
-          handler,
-          EventKind.ProposalExecuted,
-          (evt: CWEvent<IExecuteTransaction>) => {
-            const { kind } = evt.data;
-            assert.deepEqual(
-              {
-                kind,
-              },
-              {
-                kind: EventKind.ExecuteTransaction,
               }
             );
           }

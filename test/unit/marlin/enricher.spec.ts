@@ -17,6 +17,7 @@ const api: Api = ({} as unknown) as Api;
 describe('Marlin Event Enricher Filter Tests', () => {
   // Comp Events
   // Approval
+  /*
   it('should enrich approval event', async () => {
     const kind = EventKind.Approval;
     const owner = 'fromAddress';
@@ -112,6 +113,7 @@ describe('Marlin Event Enricher Filter Tests', () => {
       },
     });
   });
+  */
 
   // GovernorAlpha Events
   // ProposalCreated
@@ -136,13 +138,13 @@ describe('Marlin Event Enricher Filter Tests', () => {
         kind,
         id: 1,
         proposer: 'sender',
-        targets: ['hello'],
-        values: ['hello2'],
-        signatures: ['hello3'],
-        calldatas: ['hello4'],
+        // targets: ['hello'],
+        // values: ['hello2'],
+        // signatures: ['hello3'],
+        // calldatas: ['hello4'],
         startBlock: blockNumber,
         endBlock: blockNumber + 172, // votingPeriod()
-        description: 'test description',
+        // description: 'test description',
       },
     });
   });
@@ -228,6 +230,7 @@ describe('Marlin Event Enricher Filter Tests', () => {
     });
   });
 
+  /*
   // Timelock Events
   // CancelTransaction
   it('should enrich CancelTransaction event', async () => {
@@ -381,4 +384,5 @@ describe('Marlin Event Enricher Filter Tests', () => {
       },
     });
   });
+  */
 });

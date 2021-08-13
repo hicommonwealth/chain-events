@@ -1,4 +1,3 @@
-import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
 import { createProvider } from '../eth';
@@ -9,11 +8,7 @@ import {
   ISubscribeOptions,
 } from '../interfaces';
 import { factory, formatFilename } from '../logging';
-import {
-  MPond__factory as MPondFactory,
-  GovernorAlpha__factory as GovernorAlphaFactory,
-  Timelock__factory as TimelockFactory,
-} from '../contractTypes';
+import { GovernorAlpha__factory as GovernorAlphaFactory } from '../contractTypes';
 
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
@@ -42,18 +37,9 @@ export async function createApi(
     );
     await governorAlphaContract.deployed();
 
-    // init secondary contracts
-    const compAddress = await governorAlphaContract.MPond();
-    const timelockAddress = await governorAlphaContract.timelock();
-    const compContract = MPondFactory.connect(compAddress, provider);
-    const timelockContract = TimelockFactory.connect(timelockAddress, provider);
-    await Promise.all([compContract.deployed(), timelockContract.deployed()]);
-
     log.info('Connection successful!');
     return {
-      comp: compContract,
       governorAlpha: governorAlphaContract,
-      timelock: timelockContract,
     };
   } catch (err) {
     log.error(
@@ -143,8 +129,7 @@ export const subscribeEvents: SubscribeFunc<
     }
 
     // defaulting to the governorAlpha contract provider, though could be any of the contracts
-    const dater = new EthDater(api.governorAlpha.provider);
-    const fetcher = new StorageFetcher(api, dater);
+    const fetcher = new StorageFetcher(api);
     try {
       const cwEvents = await fetcher.fetch(offlineRange);
 

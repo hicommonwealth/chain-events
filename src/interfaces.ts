@@ -249,31 +249,6 @@ export function eventToEntity(
   }
   if (MarlinTypes.EventChains.find((c) => c === chain)) {
     switch (event) {
-      // TODO: not all of these are entity-related...
-      case MarlinTypes.EventKind.Approval: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
-      }
-      case MarlinTypes.EventKind.CancelTransaction: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
-      }
-      case MarlinTypes.EventKind.DelegateChanged: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
-      }
-      case MarlinTypes.EventKind.DelegateVotesChanged: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
-      }
-      case MarlinTypes.EventKind.ExecuteTransaction: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
-      }
-      case MarlinTypes.EventKind.NewAdmin: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
-      }
-      case MarlinTypes.EventKind.NewDelay: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
-      }
-      case MarlinTypes.EventKind.NewPendingAdmin: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Create];
-      }
       case MarlinTypes.EventKind.ProposalCanceled: {
         return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
       }
@@ -285,12 +260,6 @@ export function eventToEntity(
       }
       case MarlinTypes.EventKind.ProposalQueued: {
         return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
-      }
-      case MarlinTypes.EventKind.QueueTransaction: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Update];
-      }
-      case MarlinTypes.EventKind.Transfer: {
-        return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Complete];
       }
       case MarlinTypes.EventKind.VoteCast: {
         return [MarlinTypes.EntityKind.Proposal, EntityEventKind.Vote];
