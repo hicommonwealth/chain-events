@@ -11,32 +11,6 @@ export const Label: LabelerFilter = (
   data: IEventData
 ): IEventLabel => {
   switch (data.kind) {
-    // MPond events
-    case EventKind.Approval: {
-      return {
-        heading: 'Approval',
-        label: `${data.spender} approved ${data.amount} to ${data.owner}.`,
-      };
-    }
-    case EventKind.DelegateChanged: {
-      return {
-        heading: 'Delegate Changed',
-        label: `Delegate (${data.fromDelegate}) has changed to delegate (${data.toDelegate}).`,
-      };
-    }
-    case EventKind.DelegateVotesChanged: {
-      return {
-        heading: 'Delegate Votes Changed',
-        label: `Delegate (${data.delegate}) changed votes from ${data.previousBalance} to ${data.newBalance}.`,
-      };
-    }
-    case EventKind.Transfer: {
-      return {
-        heading: 'Transfer Occurred',
-        label: `Transfer of ${data.amount}LIN from ${data.from} to ${data.to}.`,
-      };
-    }
-    // GovernorAlpha Events
     case EventKind.ProposalCanceled: {
       return {
         heading: 'Proposal Canceled',
@@ -82,43 +56,6 @@ export const Label: LabelerFilter = (
         linkUrl: chainId
           ? `/${chainId}/proposal/marlinproposal/${data.id}`
           : null,
-      };
-    }
-    // Timelock events
-    case EventKind.CancelTransaction: {
-      return {
-        heading: 'Transaction Cancelled',
-        label: `Transaction ${data.txHash} was cancelled.`,
-      };
-    }
-    case EventKind.ExecuteTransaction: {
-      return {
-        heading: 'Transaction Executed',
-        label: `Transaction ${data.txHash} was executed. ${data.value}LIN was transfered to ${data.target}.`,
-      };
-    }
-    case EventKind.NewAdmin: {
-      return {
-        heading: 'New Admin',
-        label: `New admin: ${data.newAdmin}.`,
-      };
-    }
-    case EventKind.NewDelay: {
-      return {
-        heading: 'New Delay',
-        label: `New delay of ${data.newDelay} length.`,
-      };
-    }
-    case EventKind.NewPendingAdmin: {
-      return {
-        heading: 'New Pending Admin',
-        label: `New pending admin (${data.newPendingAdmin}).`,
-      };
-    }
-    case EventKind.QueueTransaction: {
-      return {
-        heading: 'Transaction Queued',
-        label: `Transaction ${data.txHash} was queued. ETA: Block #${data.eta}.`,
       };
     }
     default: {

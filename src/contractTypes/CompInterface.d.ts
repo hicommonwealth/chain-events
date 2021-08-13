@@ -11,7 +11,6 @@ import {
   PopulatedTransaction,
   Contract,
   ContractTransaction,
-  Overrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -19,22 +18,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface IAaveStakingHelperInterface extends ethers.utils.Interface {
+interface CompInterfaceInterface extends ethers.utils.Interface {
   functions: {
-    "stake(address,uint256,uint8,bytes32,bytes32)": FunctionFragment;
+    "getPriorVotes(address,uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "stake",
-    values: [string, BigNumberish, BigNumberish, BytesLike, BytesLike]
+    functionFragment: "getPriorVotes",
+    values: [string, BigNumberish]
   ): string;
 
-  decodeFunctionResult(functionFragment: "stake", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "getPriorVotes",
+    data: BytesLike
+  ): Result;
 
   events: {};
 }
 
-export class IAaveStakingHelper extends Contract {
+export class CompInterface extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -75,105 +77,75 @@ export class IAaveStakingHelper extends Contract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: IAaveStakingHelperInterface;
+  interface: CompInterfaceInterface;
 
   functions: {
-    stake(
-      user: string,
-      amount: BigNumberish,
-      v: BigNumberish,
-      r: BytesLike,
-      s: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    getPriorVotes(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
-    "stake(address,uint256,uint8,bytes32,bytes32)"(
-      user: string,
-      amount: BigNumberish,
-      v: BigNumberish,
-      r: BytesLike,
-      s: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
   };
 
-  stake(
-    user: string,
-    amount: BigNumberish,
-    v: BigNumberish,
-    r: BytesLike,
-    s: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  getPriorVotes(
+    account: string,
+    blockNumber: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
-  "stake(address,uint256,uint8,bytes32,bytes32)"(
-    user: string,
-    amount: BigNumberish,
-    v: BigNumberish,
-    r: BytesLike,
-    s: BytesLike,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  "getPriorVotes(address,uint256)"(
+    account: string,
+    blockNumber: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   callStatic: {
-    stake(
-      user: string,
-      amount: BigNumberish,
-      v: BigNumberish,
-      r: BytesLike,
-      s: BytesLike,
+    getPriorVotes(
+      account: string,
+      blockNumber: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
-    "stake(address,uint256,uint8,bytes32,bytes32)"(
-      user: string,
-      amount: BigNumberish,
-      v: BigNumberish,
-      r: BytesLike,
-      s: BytesLike,
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
   };
 
   filters: {};
 
   estimateGas: {
-    stake(
-      user: string,
-      amount: BigNumberish,
-      v: BigNumberish,
-      r: BytesLike,
-      s: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    getPriorVotes(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "stake(address,uint256,uint8,bytes32,bytes32)"(
-      user: string,
-      amount: BigNumberish,
-      v: BigNumberish,
-      r: BytesLike,
-      s: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    stake(
-      user: string,
-      amount: BigNumberish,
-      v: BigNumberish,
-      r: BytesLike,
-      s: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    getPriorVotes(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "stake(address,uint256,uint8,bytes32,bytes32)"(
-      user: string,
-      amount: BigNumberish,
-      v: BigNumberish,
-      r: BytesLike,
-      s: BytesLike,
-      overrides?: Overrides & { from?: string | Promise<string> }
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

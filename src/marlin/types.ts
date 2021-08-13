@@ -1,21 +1,27 @@
 import { TypedEvent } from '../contractTypes/commons';
-import { MPond, GovernorAlpha, Timelock } from '../contractTypes';
+import {
+  GovernorBravoDelegateStorageV1,
+  GovernorBravoEvents,
+} from '../contractTypes';
 
 // Used to unwrap promises returned by contract functions
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 export type Proposal = UnPromisify<
-  ReturnType<GovernorAlpha['functions']['proposals']>
->;
-export type Receipt = UnPromisify<
-  ReturnType<GovernorAlpha['functions']['getReceipt']>
+  ReturnType<GovernorBravoDelegateStorageV1['functions']['proposals']>
 >;
 
 // API is imported contracts classes
 interface IMarlinContracts {
-  // keep arg name same as Compound structure, functions similarly
-  comp: MPond;
-  governorAlpha: GovernorAlpha;
-  timelock: Timelock;
+  // same address and contract e.g. GovernorBravoDelegate
+  bravoStorage: GovernorBravoDelegateStorageV1;
+  bravoEvents: GovernorBravoEvents;
+}
+
+// eslint-disable-next-line no-shadow
+export enum VoteSupport {
+  Against = 0,
+  For = 1,
+  Abstain = 2,
 }
 
 export type Api = IMarlinContracts;
@@ -33,24 +39,12 @@ export enum EntityKind {
 
 // eslint-disable-next-line no-shadow
 export enum EventKind {
-  // MPond Events
-  Approval = 'approval',
-  DelegateChanged = 'delegate-changed',
-  DelegateVotesChanged = 'delegate-votes-changed',
-  Transfer = 'transfer',
   // GovernorAlpha Events
-  ProposalExecuted = 'proposal-executed',
   ProposalCreated = 'proposal-created',
   ProposalCanceled = 'proposal-canceled',
   ProposalQueued = 'proposal-queued',
+  ProposalExecuted = 'proposal-executed',
   VoteCast = 'vote-cast',
-  // Timelock Events
-  CancelTransaction = 'cancel-transaction',
-  ExecuteTransaction = 'execute-transactions',
-  NewAdmin = 'new-admin',
-  NewDelay = 'new-delay',
-  NewPendingAdmin = 'new-pending-admin',
-  QueueTransaction = 'queue-transaction',
 }
 
 interface IEvent {
@@ -58,58 +52,21 @@ interface IEvent {
 }
 
 type Address = string;
-type Balance = string; // number???
-
-// MPond Event Interfaces
-export interface IApproval extends IEvent {
-  kind: EventKind.Approval;
-  owner: Address;
-  spender: Address;
-  amount: Balance;
-}
-
-export interface IDelegateChanged extends IEvent {
-  kind: EventKind.DelegateChanged;
-  delegator: Address;
-  fromDelegate: Address;
-  toDelegate: Address;
-}
-
-export interface IDelegateVotesChanged extends IEvent {
-  kind: EventKind.DelegateVotesChanged;
-  delegate: Address;
-  previousBalance: Balance;
-  newBalance: Balance;
-}
-
-export interface ITransfer extends IEvent {
-  kind: EventKind.Transfer;
-  from: Address;
-  to: Address;
-  amount: Balance;
-}
-
-// GovernorAlpha Event Interfaces
-export interface IProposalCanceled extends IEvent {
-  kind: EventKind.ProposalCanceled;
-  id: number;
-}
+type Balance = string;
 
 export interface IProposalCreated extends IEvent {
   kind: EventKind.ProposalCreated;
   id: number;
-  proposer?: Address;
-  targets?: Address[];
-  values: string[];
-  signatures: Address[];
-  calldatas: string[];
+  proposer: Address;
   startBlock: number;
   endBlock: number;
-  description: string;
+  // TODO: we can only support description field if we use event filter
+  //   rather than storage for fetching (same for calldatas etc)
+  // description: string;
 }
 
-export interface IProposalExecuted extends IEvent {
-  kind: EventKind.ProposalExecuted;
+export interface IProposalCanceled extends IEvent {
+  kind: EventKind.ProposalCanceled;
   id: number;
 }
 
@@ -119,79 +76,26 @@ export interface IProposalQueued extends IEvent {
   eta: number;
 }
 
+export interface IProposalExecuted extends IEvent {
+  kind: EventKind.ProposalExecuted;
+  id: number;
+}
+
 export interface IVoteCast extends IEvent {
   kind: EventKind.VoteCast;
   voter: Address;
   id: number;
-  support: boolean;
+  support: VoteSupport;
   votes: Balance;
-}
-
-// Timelock Event Interfaces
-export interface ICancelTransaction extends IEvent {
-  kind: EventKind.CancelTransaction;
-  txHash: string;
-  target: Address;
-  value: Balance;
-  signature: string;
-  data: string;
-  eta: number;
-}
-
-export interface IExecuteTransaction extends IEvent {
-  kind: EventKind.ExecuteTransaction;
-  txHash: string;
-  target: Address;
-  value: Balance;
-  signature: string;
-  data: string;
-  eta: number;
-}
-
-export interface INewAdmin extends IEvent {
-  kind: EventKind.NewAdmin;
-  newAdmin: Address;
-}
-
-export interface INewDelay extends IEvent {
-  kind: EventKind.NewDelay;
-  newDelay: number;
-}
-
-export interface INewPendingAdmin extends IEvent {
-  kind: EventKind.NewPendingAdmin;
-  newPendingAdmin: Address;
-}
-
-export interface IQueueTransaction extends IEvent {
-  kind: EventKind.QueueTransaction;
-  txHash: string;
-  target: Address;
-  value: Balance;
-  signature: string;
-  data: string;
-  eta: number;
+  // TODO: we may want to fetch reason later but for now it's wasted data
+  // reason: string;
 }
 
 export type IEventData =
-  // MPond
-  | IApproval
-  | IDelegateChanged
-  | IDelegateVotesChanged
-  | ITransfer
-  // GovernorAlpha
   | IProposalCanceled
   | IProposalCreated
   | IProposalExecuted
   | IProposalQueued
-  | IVoteCast
-  // Timelock
-  | ICancelTransaction
-  | IExecuteTransaction
-  | INewAdmin
-  | INewDelay
-  | INewPendingAdmin
-  | IQueueTransaction;
-// eslint-disable-next-line semi-style
+  | IVoteCast;
 
 export const EventKinds: EventKind[] = Object.values(EventKind);

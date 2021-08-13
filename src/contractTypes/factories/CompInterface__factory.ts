@@ -5,53 +5,42 @@
 import { Contract, Signer } from "ethers";
 import { Provider } from "@ethersproject/providers";
 
-import type { IMinter } from "../IMinter";
+import type { CompInterface } from "../CompInterface";
 
-export class IMinter__factory {
+export class CompInterface__factory {
   static connect(
     address: string,
     signerOrProvider: Signer | Provider
-  ): IMinter {
-    return new Contract(address, _abi, signerOrProvider) as IMinter;
+  ): CompInterface {
+    return new Contract(address, _abi, signerOrProvider) as CompInterface;
   }
 }
 
 const _abi = [
   {
-    inputs: [],
-    name: "isEthRequired",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
-    stateMutability: "pure",
-    type: "function",
-  },
-  {
+    constant: true,
     inputs: [
       {
         internalType: "address",
-        name: "_token",
+        name: "account",
         type: "address",
       },
       {
         internalType: "uint256",
-        name: "_amount",
+        name: "blockNumber",
         type: "uint256",
       },
     ],
-    name: "mint",
+    name: "getPriorVotes",
     outputs: [
       {
-        internalType: "uint256",
+        internalType: "uint96",
         name: "",
-        type: "uint256",
+        type: "uint96",
       },
     ],
-    stateMutability: "payable",
+    payable: false,
+    stateMutability: "view",
     type: "function",
   },
 ];

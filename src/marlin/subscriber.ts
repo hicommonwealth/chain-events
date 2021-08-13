@@ -34,16 +34,12 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
       this._verbose ? log.info(logStr) : log.trace(logStr);
       cb(event);
     };
-    this._api.comp.on('*', this._listener);
-    this._api.governorAlpha.on('*', this._listener);
-    this._api.timelock.on('*', this._listener);
+    this._api.bravoEvents.on('*', this._listener);
   }
 
   public unsubscribe(): void {
     if (this._listener) {
-      this._api.comp.removeListener('*', this._listener);
-      this._api.governorAlpha.removeListener('*', this._listener);
-      this._api.timelock.removeListener('*', this._listener);
+      this._api.bravoEvents.removeListener('*', this._listener);
       this._listener = null;
     }
   }

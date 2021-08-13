@@ -208,11 +208,10 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
 } else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
   if (!contract) throw new Error(`no contract address for ${network}`);
   MarlinEvents.createApi(url, contract).then(async (api) => {
-    const dater = new EthDater(api.governorAlpha.provider);
-    const fetcher = new MarlinEvents.StorageFetcher(api, dater);
+    const fetcher = new MarlinEvents.StorageFetcher(api);
     try {
       const fetched = await fetcher.fetch(
-        { startBlock: 0, maxResults: 1 },
+        undefined, // { startBlock: 0, maxResults: 3 },
         true
       );
       // const fetched = await fetcher.fetchOne('2');

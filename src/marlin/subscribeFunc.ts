@@ -1,4 +1,3 @@
-import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
 import { createProvider } from '../eth';
@@ -10,9 +9,8 @@ import {
 } from '../interfaces';
 import { factory, formatFilename } from '../logging';
 import {
-  MPond__factory as MPondFactory,
-  GovernorAlpha__factory as GovernorAlphaFactory,
-  Timelock__factory as TimelockFactory,
+  GovernorBravoDelegateStorageV1__factory as GovernorBravoDelegateStorageV1Factory,
+  GovernorBravoEvents__factory as GovernorBravoEventsFactory,
 } from '../contractTypes';
 
 import { Subscriber } from './subscriber';
@@ -29,39 +27,36 @@ const log = factory.getLogger(formatFilename(__filename));
  */
 export async function createApi(
   ethNetworkUrl: string,
-  governorAlphaAddress: string,
+  governorBravoAddress: string,
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
   try {
     const provider = createProvider(ethNetworkUrl);
 
-    // init governance contract
-    const governorAlphaContract = GovernorAlphaFactory.connect(
-      governorAlphaAddress,
+    // init governance contracts
+    const storageContract = GovernorBravoDelegateStorageV1Factory.connect(
+      governorBravoAddress,
       provider
     );
-    await governorAlphaContract.deployed();
-
-    // init secondary contracts
-    const compAddress = await governorAlphaContract.MPond();
-    const timelockAddress = await governorAlphaContract.timelock();
-    const compContract = MPondFactory.connect(compAddress, provider);
-    const timelockContract = TimelockFactory.connect(timelockAddress, provider);
-    await Promise.all([compContract.deployed(), timelockContract.deployed()]);
+    await storageContract.deployed();
+    const eventsContract = GovernorBravoEventsFactory.connect(
+      governorBravoAddress,
+      provider
+    );
+    await eventsContract.deployed();
 
     log.info('Connection successful!');
     return {
-      comp: compContract,
-      governorAlpha: governorAlphaContract,
-      timelock: timelockContract,
+      bravoEvents: eventsContract,
+      bravoStorage: storageContract,
     };
   } catch (err) {
     log.error(
-      `Marlin ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
+      `Marlin ${governorBravoAddress} at ${ethNetworkUrl} failure: ${err.message}`
     );
     await sleep(retryTimeMs);
     log.error('Retrying connection...');
-    return createApi(ethNetworkUrl, governorAlphaAddress, retryTimeMs);
+    return createApi(ethNetworkUrl, governorBravoAddress, retryTimeMs);
   }
 }
 
@@ -142,9 +137,7 @@ export const subscribeEvents: SubscribeFunc<
       return;
     }
 
-    // defaulting to the governorAlpha contract provider, though could be any of the contracts
-    const dater = new EthDater(api.governorAlpha.provider);
-    const fetcher = new StorageFetcher(api, dater);
+    const fetcher = new StorageFetcher(api);
     try {
       const cwEvents = await fetcher.fetch(offlineRange);
 

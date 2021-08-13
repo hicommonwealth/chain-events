@@ -18,25 +18,38 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface ISynthetixInterface extends ethers.utils.Interface {
+interface GovernorBravoDelegatorStorageInterface
+  extends ethers.utils.Interface {
   functions: {
-    "transferableSynthetix(address)": FunctionFragment;
+    "admin()": FunctionFragment;
+    "implementation()": FunctionFragment;
+    "pendingAdmin()": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "admin", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "transferableSynthetix",
-    values: [string]
+    functionFragment: "implementation",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "pendingAdmin",
+    values?: undefined
   ): string;
 
+  decodeFunctionResult(functionFragment: "admin", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "transferableSynthetix",
+    functionFragment: "implementation",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "pendingAdmin",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export class ISynthetix extends Contract {
+export class GovernorBravoDelegatorStorage extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -77,65 +90,77 @@ export class ISynthetix extends Contract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: ISynthetixInterface;
+  interface: GovernorBravoDelegatorStorageInterface;
 
   functions: {
-    transferableSynthetix(
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { transferable: BigNumber }>;
+    admin(overrides?: CallOverrides): Promise<[string]>;
 
-    "transferableSynthetix(address)"(
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber] & { transferable: BigNumber }>;
+    "admin()"(overrides?: CallOverrides): Promise<[string]>;
+
+    implementation(overrides?: CallOverrides): Promise<[string]>;
+
+    "implementation()"(overrides?: CallOverrides): Promise<[string]>;
+
+    pendingAdmin(overrides?: CallOverrides): Promise<[string]>;
+
+    "pendingAdmin()"(overrides?: CallOverrides): Promise<[string]>;
   };
 
-  transferableSynthetix(
-    account: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  admin(overrides?: CallOverrides): Promise<string>;
 
-  "transferableSynthetix(address)"(
-    account: string,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  "admin()"(overrides?: CallOverrides): Promise<string>;
+
+  implementation(overrides?: CallOverrides): Promise<string>;
+
+  "implementation()"(overrides?: CallOverrides): Promise<string>;
+
+  pendingAdmin(overrides?: CallOverrides): Promise<string>;
+
+  "pendingAdmin()"(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
-    transferableSynthetix(
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    admin(overrides?: CallOverrides): Promise<string>;
 
-    "transferableSynthetix(address)"(
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    "admin()"(overrides?: CallOverrides): Promise<string>;
+
+    implementation(overrides?: CallOverrides): Promise<string>;
+
+    "implementation()"(overrides?: CallOverrides): Promise<string>;
+
+    pendingAdmin(overrides?: CallOverrides): Promise<string>;
+
+    "pendingAdmin()"(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {};
 
   estimateGas: {
-    transferableSynthetix(
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    admin(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "transferableSynthetix(address)"(
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    "admin()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    implementation(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "implementation()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    pendingAdmin(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "pendingAdmin()"(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    transferableSynthetix(
-      account: string,
+    admin(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "admin()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    implementation(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "implementation()"(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "transferableSynthetix(address)"(
-      account: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    pendingAdmin(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "pendingAdmin()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }
