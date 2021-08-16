@@ -21,7 +21,13 @@ export enum ProposalState {
 
 export type Api = GovernorAlpha;
 
-export const EventChains = ['marlin', 'marlin-local', 'uniswap'] as const;
+// TODO: clarify how this section works
+export const EventChains = [
+  'compound',
+  'marlin-local',
+  'marlin',
+  'uniswap',
+] as const;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type RawEvent = TypedEvent<any>;
