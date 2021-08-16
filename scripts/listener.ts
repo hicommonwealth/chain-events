@@ -42,6 +42,7 @@ const networkUrls = {
 
   marlin: 'wss://mainnet.infura.io/ws',
   'marlin-local': 'ws://127.0.0.1:9545',
+  uniswap: 'wss://mainnet.infura.io/ws',
 
   aave: 'wss://mainnet.infura.io/ws',
   'aave-local': 'ws://127.0.0.1:9545',
@@ -68,6 +69,7 @@ const contracts = {
   'aave-local': '0xcf7ed3acca5a467e9e704c703e8d87f634fb0fc9',
   'dydx-ropsten': '0x6938240Ba19cB8a614444156244b658f650c8D5c',
   dydx: '0x7E9B1672616FF6D6629Ef2879419aaE79A9018D2',
+  uniswap: '0x5e4be8Bc9637f0EAA1A755019e06A68ce081D58F',
 };
 
 const { argv } = yargs

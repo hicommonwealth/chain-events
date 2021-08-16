@@ -89,8 +89,8 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     end: number,
     id?: number
   ): Promise<CWEvent<IVoteCast>[]> {
-    const votesEmitted = await this._api.governorAlpha.queryFilter(
-      this._api.governorAlpha.filters.VoteCast(null, null, null, null),
+    const votesEmitted = await this._api.queryFilter(
+      this._api.filters.VoteCast(null, null, null, null),
       start,
       end
     );
@@ -113,7 +113,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
   }
 
   public async fetchOne(id: string): Promise<CWEvent<IEventData>[]> {
-    this._currentBlock = +(await this._api.governorAlpha.provider.getBlockNumber());
+    this._currentBlock = +(await this._api.provider.getBlockNumber());
     log.info(`Current block: ${this._currentBlock}.`);
     if (!this._currentBlock) {
       log.error('Failed to fetch current block! Aborting fetch.');
@@ -121,12 +121,12 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     }
 
     // TODO: handle errors
-    const proposal: Proposal = await this._api.governorAlpha.proposals(id);
+    const proposal: Proposal = await this._api.proposals(id);
     if (+proposal.id === 0) {
       log.error(`Aave proposal ${id} not found.`);
       return [];
     }
-    const state = await this._api.governorAlpha.state(proposal.id);
+    const state = await this._api.state(proposal.id);
 
     // fetch historical votes
     const voteEvents = await this._fetchVotes(
@@ -157,7 +157,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     range?: IDisconnectedRange,
     fetchAllCompleted = false
   ): Promise<CWEvent<IEventData>[]> {
-    this._currentBlock = await this._api.governorAlpha.provider.getBlockNumber();
+    this._currentBlock = await this._api.provider.getBlockNumber();
     log.info(`Current block: ${this._currentBlock}.`);
     if (!this._currentBlock) {
       log.error('Failed to fetch current block! Aborting fetch.');
@@ -186,7 +186,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       `Fetching Aave entities for range: ${range.startBlock}-${range.endBlock}.`
     );
 
-    const proposalCount = +(await this._api.governorAlpha.proposalCount());
+    const proposalCount = +(await this._api.proposalCount());
     log.info(`Found ${proposalCount} proposals!`);
     const results: CWEvent<IEventData>[] = [];
 
@@ -198,9 +198,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       // work backwards through the queue, starting with the most recent
       const proposalNum = proposalCount - i;
       log.debug(`Fetching Aave proposal ${proposalNum} from storage.`);
-      const proposal: Proposal = await this._api.governorAlpha.proposals(
-        proposalNum
-      );
+      const proposal: Proposal = await this._api.proposals(proposalNum);
 
       const proposalStartBlock = +proposal.startBlock;
       // TODO: if proposal exists but is before start block, we skip.
@@ -209,7 +207,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
         proposalStartBlock >= range.startBlock &&
         proposalStartBlock <= range.endBlock
       ) {
-        const state = await this._api.governorAlpha.state(proposal.id);
+        const state = await this._api.state(proposal.id);
         const events = await this._eventsFromProposal(
           +proposal.id,
           proposal,
