@@ -20,7 +20,7 @@ export function ParseType(name: string): EventKind | null {
     case 'VoteCast':
       return EventKind.VoteCast;
     default: {
-      log.warn(`Unknown Marlin event name: ${name}!`);
+      log.warn(`Unknown Compound event name: ${name}!`);
       return null;
     }
   }

@@ -11,7 +11,7 @@ import {
   IEventHandler,
   CWEvent,
   SubstrateEvents,
-  MarlinEvents,
+  CompoundEvents,
   MolochEvents,
   EventSupportingChains,
   AaveEvents,
@@ -205,10 +205,10 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
       verbose: true,
     });
   });
-} else if (chainSupportedBy(network, MarlinEvents.Types.EventChains)) {
+} else if (chainSupportedBy(network, CompoundEvents.Types.EventChains)) {
   if (!contract) throw new Error(`no contract address for ${network}`);
-  MarlinEvents.createApi(url, contract).then(async (api) => {
-    const fetcher = new MarlinEvents.StorageFetcher(api);
+  CompoundEvents.createApi(url, contract).then(async (api) => {
+    const fetcher = new CompoundEvents.StorageFetcher(api);
     try {
       const fetched = await fetcher.fetch(
         undefined, // { startBlock: 0, maxResults: 1 },
@@ -220,7 +220,7 @@ if (chainSupportedBy(network, SubstrateEvents.Types.EventChains)) {
       console.log(err);
       console.error(`Got error from fetcher: ${JSON.stringify(err, null, 2)}.`);
     }
-    MarlinEvents.subscribeEvents({
+    CompoundEvents.subscribeEvents({
       chain: network,
       api,
       handlers: [new StandaloneEventHandler()],

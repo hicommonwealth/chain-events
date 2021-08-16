@@ -2,8 +2,8 @@ import { EventEmitter } from 'events';
 
 import chai from 'chai';
 
-import { Subscriber } from '../../../src/marlin/subscriber';
-import { Api, RawEvent } from '../../../src/marlin/types';
+import { Subscriber } from '../../../src/compound/subscriber';
+import { Api, RawEvent } from '../../../src/compound/types';
 
 const { assert } = chai;
 
@@ -13,12 +13,12 @@ const constructEvent = (data): RawEvent => {
   } as RawEvent;
 };
 
-describe('Marlin Event Subscriber Tests', () => {
+describe('Compound Event Subscriber Tests', () => {
   it('should callback with event data', async (done) => {
-    const marlinApi = { governorAlpha: new EventEmitter() };
+    const compoundApi = new EventEmitter();
     const subscriber = new Subscriber(
-      (marlinApi as unknown) as Api,
-      'marlin-test'
+      (compoundApi as unknown) as Api,
+      'compound-test'
     );
     const id = 5;
     const executionTime = 100;
@@ -29,33 +29,33 @@ describe('Marlin Event Subscriber Tests', () => {
       assert.deepEqual(event, receivedEvent);
     };
     subscriber.subscribe(cb).then(() => {
-      marlinApi.governorAlpha.emit('*', event);
+      compoundApi.emit('*', event);
     });
     done();
   });
 
   it('should no-op on unnecessary unsubscribe', (done) => {
-    const marlinApi = { governance: new EventEmitter() };
+    const compoundApi = { governance: new EventEmitter() };
     const subscriber = new Subscriber(
-      (marlinApi as unknown) as Api,
-      'marlin-test'
+      (compoundApi as unknown) as Api,
+      'compound-test'
     );
     subscriber.unsubscribe();
     done();
   });
 
   it('should unsubscribe successfully', (done) => {
-    const marlinApi = { governance: new EventEmitter() };
+    const compoundApi = { governance: new EventEmitter() };
     const subscriber = new Subscriber(
-      (marlinApi as unknown) as Api,
-      'marlin-test'
+      (compoundApi as unknown) as Api,
+      'compound-test'
     );
     const cb = () => {
       assert.fail('should not reach callback');
     };
     subscriber.subscribe(cb).then(() => {
       subscriber.unsubscribe();
-      assert.deepEqual(marlinApi.governance.listeners('*'), []);
+      assert.deepEqual(compoundApi.governance.listeners('*'), []);
       done();
     });
   });

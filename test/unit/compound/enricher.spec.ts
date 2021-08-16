@@ -1,7 +1,7 @@
 import chai from 'chai';
 
-import { EventKind, RawEvent, Api } from '../../../src/marlin/types';
-import { Enrich } from '../../../src/marlin/filters/enricher';
+import { EventKind, RawEvent, Api } from '../../../src/compound/types';
+import { Enrich } from '../../../src/compound/filters/enricher';
 
 const { assert } = chai;
 
@@ -14,7 +14,7 @@ const constructEvent = (data): RawEvent => {
 const blockNumber = 10000;
 const api: Api = ({} as unknown) as Api;
 
-describe('Marlin Event Enricher Filter Tests', () => {
+describe('Compound Event Enricher Filter Tests', () => {
   // Comp Events
   // Approval
   /*

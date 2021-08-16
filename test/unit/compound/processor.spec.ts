@@ -1,7 +1,7 @@
 import chai from 'chai';
 
-import { Processor } from '../../../src/marlin/processor';
-import { Api, RawEvent, EventKind } from '../../../src/marlin/types';
+import { Processor } from '../../../src/compound/processor';
+import { Api, RawEvent, EventKind } from '../../../src/compound/types';
 
 const { assert } = chai;
 
@@ -14,7 +14,7 @@ const constructEvent = (data): RawEvent => {
   } as RawEvent;
 };
 
-describe('Marlin Event Processor Tests', () => {
+describe('Compound Event Processor Tests', () => {
   it('should process a raw event into a CWEvent', async () => {
     const processor = new Processor(({} as unknown) as Api);
     const kind = EventKind.ProposalQueued;

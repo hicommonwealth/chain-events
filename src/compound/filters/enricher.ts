@@ -98,7 +98,7 @@ export async function Enrich(
       };
     }
     default: {
-      throw new Error('unknown marlin event kind!');
+      throw new Error('unknown compound event kind!');
     }
   }
 

@@ -23,8 +23,8 @@ import {
   IProposalExecuted,
   IVoteCast,
   ProposalState,
-} from '../../src/marlin/types';
-import { subscribeEvents } from '../../src/marlin/subscribeFunc';
+} from '../../src/compound/types';
+import { subscribeEvents } from '../../src/compound/subscribeFunc';
 import { IEventHandler, CWEvent, IChainEventData } from '../../src/interfaces';
 
 const { assert } = chai;
@@ -71,7 +71,7 @@ async function deployTimelock(
   return timelock;
 }
 
-class MarlinEventHandler extends IEventHandler {
+class CompoundEventHandler extends IEventHandler {
   constructor(public readonly emitter: EventEmitter) {
     super();
   }
@@ -83,7 +83,7 @@ class MarlinEventHandler extends IEventHandler {
 }
 
 function assertEvent<T extends IEventData>(
-  handler: MarlinEventHandler,
+  handler: CompoundEventHandler,
   event: EventKind,
   cb: (evt: CWEvent<T>) => void
 ) {
@@ -105,7 +105,7 @@ interface ISetupData {
   governorAlpha: GovernorAlpha;
   addresses: string[];
   provider: providers.Web3Provider;
-  handler: MarlinEventHandler;
+  handler: CompoundEventHandler;
 }
 
 async function setupSubscription(subscribe = true): Promise<ISetupData> {
@@ -127,9 +127,9 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
   // console.log('member: ', member);
   // console.log('timelock admin address: ', await timelock.admin());
   // console.log('governorAlpha guardian:', await governorAlpha.guardian());
-  const api = { comp, governorAlpha, timelock };
+  const api = governorAlpha;
   const emitter = new EventEmitter();
-  const handler = new MarlinEventHandler(emitter);
+  const handler = new CompoundEventHandler(emitter);
   if (subscribe) {
     await subscribeEvents({
       chain: 'marlin-local',
@@ -142,7 +142,7 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
 }
 
 async function performDelegation(
-  handler: MarlinEventHandler,
+  handler: CompoundEventHandler,
   comp: MPond,
   from: string,
   to: string,
@@ -185,7 +185,7 @@ async function performDelegation(
 }
 
 async function createProposal(
-  handler: MarlinEventHandler,
+  handler: CompoundEventHandler,
   gov: GovernorAlpha,
   comp: MPond,
   from: string
@@ -221,7 +221,7 @@ async function createProposal(
 }
 
 async function proposeAndVote(
-  handler: MarlinEventHandler,
+  handler: CompoundEventHandler,
   provider: providers.Web3Provider,
   gov: GovernorAlpha,
   comp: MPond,
@@ -259,7 +259,7 @@ async function proposeAndVote(
 }
 
 async function proposeAndWait(
-  handler: MarlinEventHandler,
+  handler: CompoundEventHandler,
   provider: providers.Web3Provider,
   gov: GovernorAlpha,
   comp: MPond,
@@ -283,7 +283,7 @@ async function proposeAndWait(
 }
 
 async function proposeAndQueue(
-  handler: MarlinEventHandler,
+  handler: CompoundEventHandler,
   provider: providers.Web3Provider,
   gov: GovernorAlpha,
   comp: MPond,
@@ -314,7 +314,7 @@ async function proposeAndQueue(
   ]);
 }
 
-describe('Marlin Event Integration Tests', () => {
+describe('Compound Event Integration Tests', () => {
   describe('COMP contract function events', () => {
     it('initial address should transfer tokens to an address', async () => {
       const { comp, addresses, handler } = await setupSubscription();

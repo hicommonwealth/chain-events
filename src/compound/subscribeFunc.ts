@@ -38,12 +38,10 @@ export async function createApi(
     await governorAlphaContract.deployed();
 
     log.info('Connection successful!');
-    return {
-      governorAlpha: governorAlphaContract,
-    };
+    return governorAlphaContract;
   } catch (err) {
     log.error(
-      `Marlin ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
+      `Compound ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
     );
     await sleep(retryTimeMs);
     log.error('Retrying connection...');
@@ -149,7 +147,7 @@ export const subscribeEvents: SubscribeFunc<
   }
 
   try {
-    log.info(`Subscribing to Marlin contracts ${chain}...`);
+    log.info(`Subscribing to Compound contracts ${chain}...`);
     await subscriber.subscribe(processEventFn);
   } catch (e) {
     log.error(`Subscription error: ${e.message}`);

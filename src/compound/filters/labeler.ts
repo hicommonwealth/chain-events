@@ -16,7 +16,7 @@ export const Label: LabelerFilter = (
         heading: 'Proposal Canceled',
         label: `Proposal ${data.id} was cancelled.`,
         linkUrl: chainId
-          ? `/${chainId}/proposal/marlinproposal/${data.id}`
+          ? `/${chainId}/proposal/compoundproposal/${data.id}`
           : null,
       };
     }
@@ -25,7 +25,7 @@ export const Label: LabelerFilter = (
         heading: 'Proposal Created',
         label: `Proposal ${data.id} was created.`,
         linkUrl: chainId
-          ? `/${chainId}/proposal/marlinproposal/${data.id}`
+          ? `/${chainId}/proposal/compoundproposal/${data.id}`
           : null,
       };
     }
@@ -34,7 +34,7 @@ export const Label: LabelerFilter = (
         heading: 'Proposal Executed',
         label: `Proposal ${data.id} was executed.`,
         linkUrl: chainId
-          ? `/${chainId}/proposal/marlinproposal/${data.id}`
+          ? `/${chainId}/proposal/compoundproposal/${data.id}`
           : null,
       };
     }
@@ -43,7 +43,7 @@ export const Label: LabelerFilter = (
         heading: 'Proposal Queued',
         label: `Proposal ${data.id} queued up. ETA: Block ${data.eta}.`,
         linkUrl: chainId
-          ? `/${chainId}/proposal/marlinproposal/${data.id}`
+          ? `/${chainId}/proposal/compoundproposal/${data.id}`
           : null,
       };
     }
@@ -54,7 +54,7 @@ export const Label: LabelerFilter = (
           data.support ? 'not' : null
         } in support of proposal ${data.id}.`,
         linkUrl: chainId
-          ? `/${chainId}/proposal/marlinproposal/${data.id}`
+          ? `/${chainId}/proposal/compoundproposal/${data.id}`
           : null,
       };
     }

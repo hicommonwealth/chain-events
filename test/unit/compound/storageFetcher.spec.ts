@@ -1,8 +1,12 @@
 import chai from 'chai';
 import { BigNumber } from 'ethers';
 
-import { StorageFetcher } from '../../../src/marlin/storageFetcher';
-import { EventKind, Proposal, ProposalState } from '../../../src/marlin/types';
+import { StorageFetcher } from '../../../src/compound/storageFetcher';
+import {
+  EventKind,
+  Proposal,
+  ProposalState,
+} from '../../../src/compound/types';
 import { GovernorAlpha } from '../../../src/contractTypes';
 
 const { assert } = chai;
@@ -25,12 +29,10 @@ const makeApi = (proposals: Proposal[]) => {
       VoteCast: async () => null,
     },
   } as unknown) as GovernorAlpha;
-  return {
-    governorAlpha,
-  };
+  return governorAlpha;
 };
 
-describe('Marlin Storage Fetcher Tests', () => {
+describe('Compound Storage Fetcher Tests', () => {
   it('should run gracefully with nothing in storage', async () => {
     const api = makeApi([]);
     const fetcher = new StorageFetcher(api);

@@ -19,11 +19,7 @@ export enum ProposalState {
   Executed = 7,
 }
 
-interface IMarlinContracts {
-  governorAlpha: GovernorAlpha;
-}
-
-export type Api = IMarlinContracts;
+export type Api = GovernorAlpha;
 
 export const EventChains = ['marlin', 'marlin-local'] as const;
 
