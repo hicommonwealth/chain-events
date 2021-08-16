@@ -34,10 +34,13 @@ export async function Enrich(
       };
     }
     case EventKind.ProposalCreated: {
-      const { id, proposer, startBlock, endBlock } = rawData.args as GetArgType<
-        GovernorAlpha,
-        'ProposalCreated'
-      >;
+      const {
+        id,
+        proposer,
+        startBlock,
+        endBlock,
+        description,
+      } = rawData.args as GetArgType<GovernorAlpha, 'ProposalCreated'>;
 
       return {
         blockNumber,
@@ -48,6 +51,7 @@ export async function Enrich(
           proposer,
           startBlock: +startBlock,
           endBlock: +endBlock,
+          description,
         },
       };
     }

@@ -59,8 +59,7 @@ export interface IProposalCreated extends IEvent {
   proposer: Address;
   startBlock: number;
   endBlock: number;
-  // TODO: can only query description via event filter
-  // description: string;
+  description: string;
 }
 
 export interface IProposalExecuted extends IEvent {

@@ -1,19 +1,15 @@
-import {
-  CWEvent,
-  IStorageFetcher,
-  IDisconnectedRange,
-  isEntityCompleted,
-} from '../interfaces';
+import { CWEvent, IStorageFetcher, IDisconnectedRange } from '../interfaces';
 import { factory, formatFilename } from '../logging';
 
+import { Enrich } from './filters/enricher';
 import {
   IEventData,
   EventKind,
   Api,
-  Proposal,
-  ProposalState,
   IVoteCast,
-  EventChains,
+  IProposalCreated,
+  IProposalCanceled,
+  IProposalQueued,
 } from './types';
 
 const log = factory.getLogger(formatFilename(__filename));
@@ -25,93 +21,6 @@ export class StorageFetcher extends IStorageFetcher<Api> {
 
   private _currentBlock: number;
 
-  // eslint-disable-next-line class-methods-use-this
-  private async _eventsFromProposal(
-    index: number,
-    proposal: Proposal,
-    state: ProposalState
-  ): Promise<CWEvent<IEventData>[]> {
-    // Only GovernorAlpha events are on Proposals
-    const events: CWEvent<IEventData>[] = [];
-
-    // All proposals had to have at least been created
-    const createdEvent: CWEvent<IEventData> = {
-      blockNumber: +proposal.startBlock,
-      data: {
-        kind: EventKind.ProposalCreated,
-        id: index,
-        proposer: proposal.proposer,
-        startBlock: +proposal.startBlock,
-        endBlock: +proposal.endBlock,
-      },
-    };
-    events.push(createdEvent);
-
-    if (state === ProposalState.Canceled) {
-      const canceledEvent: CWEvent<IEventData> = {
-        blockNumber: Math.min(+proposal.endBlock, this._currentBlock),
-        data: {
-          kind: EventKind.ProposalCanceled,
-          id: +proposal.id,
-        },
-      };
-      events.push(canceledEvent);
-    }
-    if (proposal.eta?.gt(0)) {
-      const queuedEvent: CWEvent<IEventData> = {
-        blockNumber: Math.min(+proposal.endBlock, this._currentBlock),
-        data: {
-          kind: EventKind.ProposalQueued,
-          id: +proposal.id,
-          eta: +proposal.eta,
-        },
-      };
-      events.push(queuedEvent);
-      if (state === ProposalState.Executed) {
-        const proposalExecuted: CWEvent<IEventData> = {
-          blockNumber: Math.min(+proposal.endBlock, this._currentBlock),
-          data: {
-            kind: EventKind.ProposalExecuted,
-            id: +proposal.id,
-          },
-        };
-        events.push(proposalExecuted);
-      }
-    }
-
-    // Vote Cast events are unfetchable
-    // No events emitted for failed/expired
-    return events;
-  }
-
-  private async _fetchVotes(
-    start: number,
-    end: number,
-    id?: number
-  ): Promise<CWEvent<IVoteCast>[]> {
-    const votesEmitted = await this._api.queryFilter(
-      this._api.filters.VoteCast(null, null, null, null),
-      start,
-      end
-    );
-    const voteEvents: CWEvent<IVoteCast>[] = votesEmitted.map(
-      ({ args: [voter, pId, support, votingPower], blockNumber }) => ({
-        blockNumber,
-        data: {
-          kind: EventKind.VoteCast,
-          id: +pId,
-          voter,
-          support,
-          votes: votingPower.toString(),
-        },
-      })
-    );
-    if (id) {
-      return voteEvents.filter(({ data: { id: pId } }) => id === pId);
-    }
-    return voteEvents;
-  }
-
   public async fetchOne(id: string): Promise<CWEvent<IEventData>[]> {
     this._currentBlock = +(await this._api.provider.getBlockNumber());
     log.info(`Current block: ${this._currentBlock}.`);
@@ -120,29 +29,9 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       return [];
     }
 
-    // TODO: handle errors
-    const proposal: Proposal = await this._api.proposals(id);
-    if (+proposal.id === 0) {
-      log.error(`Aave proposal ${id} not found.`);
-      return [];
-    }
-    const state = await this._api.state(proposal.id);
-
-    // fetch historical votes
-    const voteEvents = await this._fetchVotes(
-      +proposal.startBlock,
-      Math.min(+proposal.endBlock, this._currentBlock)
-    );
-
-    const events = await this._eventsFromProposal(
-      +proposal.id,
-      proposal,
-      state
-    );
-    const propVoteEvents = voteEvents.filter(
-      ({ data: { id: pId } }) => pId === +proposal.id
-    );
-    return [...events, ...propVoteEvents];
+    // TODO: can we make this more efficient?
+    const allProposals = await this.fetch();
+    return allProposals.filter((v) => v.data.id === +id);
   }
 
   /**
@@ -186,72 +75,116 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       `Fetching Aave entities for range: ${range.startBlock}-${range.endBlock}.`
     );
 
-    const proposalCount = +(await this._api.proposalCount());
-    log.info(`Found ${proposalCount} proposals!`);
-    const results: CWEvent<IEventData>[] = [];
+    const proposalCreatedEvents = await this._api.queryFilter(
+      this._api.filters.ProposalCreated(
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ),
+      range.startBlock,
+      range.endBlock
+    );
 
-    // fetch historical votes
-    const voteEvents = await this._fetchVotes(range.startBlock, range.endBlock);
+    // sort in descending order (newest first)
+    proposalCreatedEvents.sort((a, b) => b.blockNumber - a.blockNumber);
+    log.info(`Found ${proposalCreatedEvents.length} proposals!`);
 
-    let nFetched = 0;
-    for (let i = 0; i < proposalCount; i++) {
-      // work backwards through the queue, starting with the most recent
-      const proposalNum = proposalCount - i;
-      log.debug(`Fetching Aave proposal ${proposalNum} from storage.`);
-      const proposal: Proposal = await this._api.proposals(proposalNum);
+    const voteCastEvents = await this._api.queryFilter(
+      this._api.filters.VoteCast(null, null, null, null),
+      range.startBlock,
+      range.endBlock
+    );
+    const proposalQueuedEvents = await this._api.queryFilter(
+      this._api.filters.ProposalQueued(null, null),
+      range.startBlock,
+      range.endBlock
+    );
+    const proposalCanceledEvents = await this._api.queryFilter(
+      this._api.filters.ProposalCanceled(null),
+      range.startBlock,
+      range.endBlock
+    );
+    const proposalExecutedEvents = await this._api.queryFilter(
+      this._api.filters.ProposalExecuted(null),
+      range.startBlock,
+      range.endBlock
+    );
 
-      const proposalStartBlock = +proposal.startBlock;
-      // TODO: if proposal exists but is before start block, we skip.
-      //   is this desired behavior?
-      if (
-        proposalStartBlock >= range.startBlock &&
-        proposalStartBlock <= range.endBlock
-      ) {
-        const state = await this._api.state(proposal.id);
-        const events = await this._eventsFromProposal(
-          +proposal.id,
-          proposal,
-          state
+    const proposals = await Promise.all(
+      proposalCreatedEvents.map(async (p) => {
+        const createdEvent = (await Enrich(
+          this._api,
+          p.blockNumber,
+          EventKind.ProposalCreated,
+          p
+        )) as CWEvent<IProposalCreated>;
+        const voteRawEvents = voteCastEvents.filter(
+          (v) => +v.args.proposalId === createdEvent.data.id
         );
-
-        // special cases to handle lack of failed / expired events
-        const isCompleted =
-          state === ProposalState.Defeated ||
-          state === ProposalState.Expired ||
-          isEntityCompleted(EventChains[0], events);
-
-        // halt fetch once we find a completed/executed proposal in order to save data
-        // we may want to run once without this, in order to fetch backlog, or else develop a pagination
-        // strategy, but for now our API usage is limited.
-        if (!fetchAllCompleted && isCompleted) {
-          log.debug(
-            `Proposal ${proposal.id} is marked as completed, halting fetch.`
-          );
-          break;
+        const voteEvents = await Promise.all(
+          voteRawEvents.map(
+            (evt) =>
+              Enrich(
+                this._api,
+                evt.blockNumber,
+                EventKind.VoteCast,
+                evt
+              ) as Promise<CWEvent<IVoteCast>>
+          )
+        );
+        const proposalEvents: CWEvent<IEventData>[] = [
+          createdEvent,
+          ...voteEvents,
+        ];
+        const cancelledRawEvent = proposalCanceledEvents.find(
+          (evt) => +evt.args.id === createdEvent.data.id
+        );
+        if (cancelledRawEvent) {
+          const cancelledEvent = (await Enrich(
+            this._api,
+            cancelledRawEvent.blockNumber,
+            EventKind.ProposalCanceled,
+            cancelledRawEvent
+          )) as CWEvent<IProposalCanceled>;
+          proposalEvents.push(cancelledEvent);
         }
-
-        const propVoteEvents = voteEvents.filter(
-          ({ data: { id } }) => id === +proposal.id
+        const queuedRawEvent = proposalQueuedEvents.find(
+          (evt) => +evt.args.id === createdEvent.data.id
         );
-        results.push(...events, ...propVoteEvents);
-        nFetched += 1;
-
-        if (range.maxResults && nFetched >= range.maxResults) {
-          log.debug(`Fetched ${nFetched} proposals, halting fetch.`);
-          break;
+        if (queuedRawEvent) {
+          const queuedEvent = (await Enrich(
+            this._api,
+            queuedRawEvent.blockNumber,
+            EventKind.ProposalQueued,
+            queuedRawEvent
+          )) as CWEvent<IProposalQueued>;
+          proposalEvents.push(queuedEvent);
         }
-      } else if (proposalStartBlock < range.startBlock) {
-        log.debug(
-          `Aave proposal start block (${proposalStartBlock}) is before ${range.startBlock}, ending fetch.`
+        const executedRawEvent = proposalExecutedEvents.find(
+          (evt) => +evt.args.id === createdEvent.data.id
         );
-        break;
-      } else if (proposalStartBlock > range.endBlock) {
-        // keep walking backwards until within range
-        log.debug(
-          `Aave proposal start block (${proposalStartBlock}) is after ${range.endBlock}, continuing fetch.`
-        );
-      }
+        if (executedRawEvent) {
+          const executedEvent = (await Enrich(
+            this._api,
+            executedRawEvent.blockNumber,
+            EventKind.ProposalExecuted,
+            executedRawEvent
+          )) as CWEvent<IProposalQueued>;
+          proposalEvents.push(executedEvent);
+        }
+        return proposalEvents;
+      })
+    );
+
+    if (range.maxResults) {
+      return proposals.slice(0, range.maxResults).flat();
     }
-    return results;
+    return proposals.flat();
   }
 }
