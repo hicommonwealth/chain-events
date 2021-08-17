@@ -4,6 +4,7 @@ export * from './subscriber';
 export * from './poller';
 export * from './processor';
 export * from './storageFetcher';
+export * from './Listener';
 
 export * from './filters/enricher';
 export * from './filters/labeler';

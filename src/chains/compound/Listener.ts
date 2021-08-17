@@ -1,8 +1,8 @@
 import {
-  ListenerOptions as MarlinListenerOptions,
+  ListenerOptions as CompoundListenerOptions,
   RawEvent,
   Api,
-  EventChains as MarlinChains,
+  EventChains as CompoundChains,
   IEventData,
 } from './types';
 
@@ -19,11 +19,10 @@ import { networkUrls } from '../../index';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
 import { Subscriber } from './subscriber';
-import EthDater from 'ethereum-block-by-date';
 import { Listener as BaseListener } from '../../Listener';
 
 export class Listener extends BaseListener {
-  private readonly _options: MarlinListenerOptions;
+  private readonly _options: CompoundListenerOptions;
   public _storageFetcher: IStorageFetcher<Api>;
   private _lastBlockNumber: number;
 
@@ -35,7 +34,7 @@ export class Listener extends BaseListener {
     verbose?: boolean
   ) {
     super(chain, verbose);
-    if (!chainSupportedBy(this._chain, MarlinChains))
+    if (!chainSupportedBy(this._chain, CompoundChains))
       throw new Error(`${this._chain} is not a Substrate chain`);
 
     this._options = {
@@ -73,8 +72,7 @@ export class Listener extends BaseListener {
     }
 
     try {
-      const dater = new EthDater(this._api.governorAlpha.provider);
-      this._storageFetcher = new StorageFetcher(this._api, dater);
+      this._storageFetcher = new StorageFetcher(this._api);
     } catch (error) {
       console.error(
         'Fatal error occurred while starting the Ethereum dater and storage fetcher'
@@ -97,7 +95,7 @@ export class Listener extends BaseListener {
 
     try {
       console.info(
-        `Subscribing to Marlin contract: ${this._chain}, on url ${this._options.url}`
+        `Subscribing to Compound contract: ${this._chain}, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
@@ -172,7 +170,7 @@ export class Listener extends BaseListener {
     return this._chain;
   }
 
-  public get options(): MarlinListenerOptions {
+  public get options(): CompoundListenerOptions {
     return this._options;
   }
 

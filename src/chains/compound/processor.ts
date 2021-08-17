@@ -1,5 +1,5 @@
 /**
- * Processes Marlin events.
+ * Processes Compound events.
  */
 import { IEventProcessor, CWEvent } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
@@ -14,7 +14,8 @@ export class Processor extends IEventProcessor<Api, RawEvent> {
   /**
    * Parse events out of an ethereum block and standardizes their format
    * for processing.
-   * @param event
+   *
+   * @param block the block received for processing
    * @returns an array of processed events
    */
   public async process(event: RawEvent): Promise<CWEvent<IEventData>[]> {

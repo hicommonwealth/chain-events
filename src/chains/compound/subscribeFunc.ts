@@ -1,4 +1,3 @@
-import EthDater from 'ethereum-block-by-date';
 import sleep from 'sleep-promise';
 
 import { createProvider } from '../../eth';
@@ -9,11 +8,7 @@ import {
   ISubscribeOptions,
 } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
-import {
-  MPond__factory as MPondFactory,
-  GovernorAlpha__factory as GovernorAlphaFactory,
-  Timelock__factory as TimelockFactory,
-} from '../../contractTypes';
+import { GovernorAlpha__factory as GovernorAlphaFactory } from '../../contractTypes';
 
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
@@ -34,43 +29,42 @@ export async function createApi(
   governorAlphaAddress: string,
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
-  try {
-    const provider = await createProvider(ethNetworkUrl);
+  for (let i = 0; i < 3; ++i) {
+    try {
+      const provider = await createProvider(ethNetworkUrl);
 
-    // init governance contract
-    const governorAlphaContract = GovernorAlphaFactory.connect(
-      governorAlphaAddress,
-      provider
-    );
-    await governorAlphaContract.deployed();
+      // init governance contract
+      const governorAlphaContract = GovernorAlphaFactory.connect(
+        governorAlphaAddress,
+        provider
+      );
+      await governorAlphaContract.deployed();
 
-    // init secondary contracts
-    const compAddress = await governorAlphaContract.MPond();
-    const timelockAddress = await governorAlphaContract.timelock();
-    const compContract = MPondFactory.connect(compAddress, provider);
-    const timelockContract = TimelockFactory.connect(timelockAddress, provider);
-    await Promise.all([compContract.deployed(), timelockContract.deployed()]);
-
-    log.info('Connection successful!');
-    return {
-      comp: compContract,
-      governorAlpha: governorAlphaContract,
-      timelock: timelockContract,
-    };
-  } catch (err) {
-    log.error(
-      `Marlin ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
-    );
-    await sleep(retryTimeMs);
-    log.error('Retrying connection...');
-    return createApi(ethNetworkUrl, governorAlphaAddress, retryTimeMs);
+      log.info('Connection successful!');
+      return governorAlphaContract;
+    } catch (err) {
+      log.error(
+        `Compound ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
+      );
+      await sleep(retryTimeMs);
+      log.error('Retrying connection...');
+    }
   }
+
+  throw new Error(
+    `Failed to start Compound listener for ${governorAlphaAddress} at ${ethNetworkUrl}`
+  );
 }
 
 /**
  * This is the main function for edgeware event handling. It constructs a connection
  * to the chain, connects all event-related modules, and initializes event handling.
- * @param options
+ *
+ * @param url The edgeware chain endpoint to connect to.
+ * @param handler An event handler object for processing received events.
+ * @param skipCatchup If true, skip all fetching of "historical" chain data that may have been
+ *                    emitted during downtime.
+ * @param discoverReconnectRange A function to determine how long we were offline upon reconnection.
  * @returns An active block subscriber.
  */
 export const subscribeEvents: SubscribeFunc<
@@ -91,8 +85,6 @@ export const subscribeEvents: SubscribeFunc<
     let prevResult = null;
     for (const handler of handlers) {
       try {
-        event.chain = chain;
-        event.received = Date.now();
         // pass result of last handler into next one (chaining db events)
         prevResult = await handler.handle(event, prevResult);
       } catch (err) {
@@ -142,8 +134,7 @@ export const subscribeEvents: SubscribeFunc<
     }
 
     // defaulting to the governorAlpha contract provider, though could be any of the contracts
-    const dater = new EthDater(api.governorAlpha.provider);
-    const fetcher = new StorageFetcher(api, dater);
+    const fetcher = new StorageFetcher(api);
     try {
       const cwEvents = await fetcher.fetch(offlineRange);
 
@@ -163,7 +154,7 @@ export const subscribeEvents: SubscribeFunc<
   }
 
   try {
-    log.info(`Subscribing to Marlin contracts ${chain}...`);
+    log.info(`Subscribing to Compound contracts ${chain}...`);
     await subscriber.subscribe(processEventFn);
   } catch (e) {
     log.error(`Subscription error: ${e.message}`);

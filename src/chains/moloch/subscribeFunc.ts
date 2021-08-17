@@ -30,31 +30,31 @@ export async function createApi(
   contractAddress: string,
   retryTimeMs = 10 * 1000
 ): Promise<Api> {
-  try {
-    const provider = await createProvider(ethNetworkUrl);
-    const contract =
-      contractVersion === 1
-        ? Moloch1Factory.connect(contractAddress, provider)
-        : Moloch2Factory.connect(contractAddress, provider);
-    await contract.deployed();
+  for (let i = 0; i < 3; ++i) {
+    try {
+      const provider = await createProvider(ethNetworkUrl);
+      const contract =
+        contractVersion === 1
+          ? Moloch1Factory.connect(contractAddress, provider)
+          : Moloch2Factory.connect(contractAddress, provider);
+      await contract.deployed();
 
-    // fetch summoning time to guarantee connected
-    await contract.summoningTime();
-    log.info('Connection successful!');
-    return contract;
-  } catch (err) {
-    log.error(
-      `Moloch ${contractAddress} at ${ethNetworkUrl} failure: ${err.message}`
-    );
-    await sleep(retryTimeMs);
-    log.error('Retrying connection...');
-    return createApi(
-      ethNetworkUrl,
-      contractVersion,
-      contractAddress,
-      retryTimeMs
-    );
+      // fetch summoning time to guarantee connected
+      await contract.summoningTime();
+      log.info('Connection successful!');
+      return contract;
+    } catch (err) {
+      log.error(
+        `Moloch ${contractAddress} at ${ethNetworkUrl} failure: ${err.message}`
+      );
+      await sleep(retryTimeMs);
+      log.error('Retrying connection...');
+    }
   }
+
+  throw new Error(
+    `Failed to start Moloch listener for ${contractAddress} at ${ethNetworkUrl}`
+  );
 }
 
 /**

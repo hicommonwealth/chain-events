@@ -4,29 +4,28 @@ import {
   IDisconnectedRange,
 } from './interfaces';
 import { EventChains as SubstrateChains } from './chains/substrate/types';
-import { Listener as SubstrateListener } from './chains/substrate/Listener';
+import { Listener as SubstrateListener } from './chains/substrate';
 import { EnricherConfig } from './chains/substrate';
 import { EventChains as MolochChains } from './chains/moloch/types';
 import { Listener as MolochListener } from './chains/moloch/Listener';
-import { EventChains as MarlinChains } from './chains/marlin/types';
-import { Listener as MarlinListener } from './chains/marlin/Listener';
+import { EventChains as CompoundChains } from './chains/compound/types';
+import { Listener as CompoundListener } from './chains/compound/Listener';
 import { EventChains as Erc20Chain } from './chains/erc20/types';
-import { Listener as Erc20Listener } from './chains/erc20/Listener';
+import { Listener as Erc20Listener } from './chains/erc20';
 import { EventChains as AaveChains } from './chains/aave/types';
-import { Listener as AaveListener } from './chains/aave/Listener';
+import { Listener as AaveListener } from './chains/aave';
 
 import { Listener } from './Listener';
-import { molochContracts, networkUrls, networkSpecs } from './index';
+import { networkUrls } from './index';
 import { factory, formatFilename } from './logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 
 /**
- * Creates a listener instance and returns it if not error occurs. This function throws on error.
- * @param chain The chain the listener is for
+ * Creates a listener instance and returns it if no error occurs. This function throws on error.
+ * @param chain The chain to create a listener for
  * @param options The listener options for the specified chain
- * @param ignoreChainType If set to true the function will create the appropriate listener regardless of whether chain is listed in supported EventChains type.
- * @param customChainBase Used with ignoreChainType to override the base system the chain is from (i.e. substrate/cosmos/etc)
+ * @param customChainBase Used to override the base system the chain is from if it does not yet exist in EventChains
  */
 export async function createListener(
   chain: string,
@@ -44,26 +43,21 @@ export async function createListener(
     enricherConfig?: EnricherConfig;
     discoverReconnectRange?: (chain: string) => Promise<IDisconnectedRange>;
   },
-  ignoreChainType?: boolean,
   customChainBase?: string
 ): Promise<Listener> {
   let listener;
 
-  if (ignoreChainType && !customChainBase)
-    throw new Error(
-      'customChainBase must be set when ignoreChainType is true!'
-    );
-
+  // checks chain compatibility or overrides
   function basePicker(chain: string, base: string): boolean {
-    if (ignoreChainType && customChainBase == base) return true;
+    if (customChainBase == base) return true;
     else {
       switch (base) {
         case 'substrate':
           return chainSupportedBy(chain, SubstrateChains);
         case 'moloch':
           return chainSupportedBy(chain, MolochChains);
-        case 'marlin':
-          return chainSupportedBy(chain, MarlinChains);
+        case 'compound':
+          return chainSupportedBy(chain, CompoundChains);
         case 'erc20':
           return chainSupportedBy(chain, Erc20Chain);
         case 'aave':
@@ -83,22 +77,20 @@ export async function createListener(
       !!options.skipCatchup,
       options.enricherConfig,
       !!options.verbose,
-      !!ignoreChainType,
+      !!customChainBase,
       options.discoverReconnectRange
     );
   } else if (basePicker(chain, 'moloch')) {
     listener = new MolochListener(
       <EventSupportingChainT>chain,
-      options.MolochContractVersion == 1 || options.MolochContractVersion == 2
-        ? options.MolochContractVersion
-        : 2,
-      options.address || molochContracts[chain],
+      options.MolochContractVersion ? options.MolochContractVersion : 2,
+      options.address,
       options.url || networkUrls[chain],
       !!options.skipCatchup,
       !!options.verbose
     );
-  } else if (basePicker(chain, 'marlin')) {
-    listener = new MarlinListener(
+  } else if (basePicker(chain, 'compound')) {
+    listener = new CompoundListener(
       <EventSupportingChainT>chain,
       options.address,
       options.url || networkUrls[chain],
@@ -109,10 +101,10 @@ export async function createListener(
     listener = new Erc20Listener(
       <EventSupportingChainT>chain,
       options.tokenAddresses || [options.address],
-      options.url || 'wss://mainnet.infura.io/ws/v3/', // ethNetowrkUrl aka the access point to ethereum (usually Infura)
+      options.url || 'wss://mainnet.infura.io/ws/v3/',
       Array.isArray(options.tokenNames) ? options.tokenNames : undefined,
       !!options.verbose,
-      !!ignoreChainType
+      !!customChainBase
     );
   } else if (basePicker(chain, 'aave')) {
     listener = new AaveListener(
@@ -121,18 +113,19 @@ export async function createListener(
       options.url,
       !!options.skipCatchup,
       !!options.verbose,
-      !!ignoreChainType,
+      !!customChainBase,
       options.discoverReconnectRange
     );
   } else {
     throw new Error(
-      'The chain did not match any known supported chain or the given customBase'
+      customChainBase
+        ? `No listener built for ${customChainBase}`
+        : "The given chain's base does not match any built in listener"
     );
   }
 
   try {
-    if (!listener)
-      throw new Error('An unknown error occurred while starting the listener');
+    if (!listener) throw new Error('Listener is still null');
     await listener.init();
   } catch (error) {
     log.error(`[${chain}]: Failed to initialize the listener`);
