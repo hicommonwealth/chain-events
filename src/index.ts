@@ -48,7 +48,7 @@ export const networkSpecs: { [chain: string]: RegisteredTypes } = {
   stafi: StafiSpec,
 };
 
-const contracts = {
+export const contracts = {
   moloch: '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
   marlin: '0x777992c2E4EDF704e49680468a9299C6679e37F6',

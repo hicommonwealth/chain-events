@@ -25,6 +25,7 @@ import { factory, formatFilename } from '../../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 
+// TODO: archival support
 export class Listener extends BaseListener {
   private readonly _options: ISubstrateListenerOptions;
   public _storageFetcher: IStorageFetcher<ApiPromise>;
@@ -59,7 +60,6 @@ export class Listener extends BaseListener {
     };
 
     this.discoverReconnectRange = discoverReconnectRange;
-
     this._subscribed = false;
   }
 
@@ -120,6 +120,7 @@ export class Listener extends BaseListener {
       log.info(
         `[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
       );
+      return;
     }
 
     let offlineRange: IDisconnectedRange;

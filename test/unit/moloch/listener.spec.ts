@@ -1,16 +1,17 @@
 import {
-  Poller,
   Processor,
   StorageFetcher,
   Subscriber,
-} from '../../../src/chains/substrate';
-import { Listener } from '../../../src/chains/substrate';
+} from '../../../src/chains/moloch';
+import { Listener } from '../../../src/chains/moloch';
 import { EventKind } from '../../../src/chains/substrate/types';
-import { networkUrls, EventSupportingChainT } from '../../../src';
+import { networkUrls, EventSupportingChainT, contracts } from '../../../src';
 import * as chai from 'chai';
-import { ApiPromise } from '@polkadot/api';
 import * as events from 'events';
 import { testHandler } from '../../util';
+
+import dotenv from 'dotenv';
+dotenv.config();
 
 const { assert } = chai;
 
@@ -20,11 +21,11 @@ function delay(interval) {
   }).timeout(interval + 100);
 }
 
-describe('Substrate listener class tests', () => {
+describe.only('Moloch listener class tests', () => {
   let listener;
   let handlerEmitter = new events.EventEmitter();
 
-  it('should throw if the chain is not a substrate chain', () => {
+  it('should throw if the chain is not a moloch chain', () => {
     try {
       new Listener('randomChain' as EventSupportingChainT);
     } catch (error) {
@@ -32,31 +33,24 @@ describe('Substrate listener class tests', () => {
     }
   });
 
-  it('should allow overriding the built in chain types', () => {});
-
-  it('should create the substrate listener', () => {
-    // @ts-ignore
-    listener = new Listener('polkadot', ...Array(4), true, null, true);
-    assert.equal(listener.chain, 'polkadot');
+  it('should create the moloch listener', () => {
+    listener = new Listener('moloch');
+    assert.equal(listener.chain, 'moloch');
     assert.deepEqual(listener.options, {
-      archival: false,
-      startBlock: 0,
-      url: networkUrls['polkadot'],
-      spec: {},
-      skipCatchup: true,
-      enricherConfig: {},
+      url: networkUrls['moloch'],
+      skipCatchup: false,
+      contractAddress: contracts['moloch'],
+      contractVersion: 1,
     });
     assert.equal(listener.subscribed, false);
-    assert.equal(listener._verbose, true);
+    assert.equal(listener._verbose, false);
   });
 
   it('should initialize the substrate listener class', async () => {
     await listener.init();
     assert(listener._subscriber instanceof Subscriber);
-    assert(listener._poller instanceof Poller);
     assert(listener._storageFetcher instanceof StorageFetcher);
     assert(listener._processor instanceof Processor);
-    assert(listener._api instanceof ApiPromise);
     return;
   });
 
@@ -87,11 +81,6 @@ describe('Substrate listener class tests', () => {
     handlerEmitter.on('eventHandled', verifyHandler);
   }).timeout(20000);
 
-  it('should update the chain spec', async () => {
-    await listener.updateSpec({ randomSpec: 0 });
-    assert.deepEqual(listener._options.spec, { randomSpec: 0 });
-  });
-
   it('should verify that the handler handled an event successfully after restarting', (done) => {
     listener.eventHandlers['testHandler'].handler.counter = 0;
     let counter = 0;
@@ -106,7 +95,10 @@ describe('Substrate listener class tests', () => {
   xit('should update the url to the listener should connect to', async () => {});
 
   it('should verify that the handler handled an event successfully', () => {
-    assert(listener.eventHandlers['testHandler'].handler.counter >= 1);
+    assert(
+      listener.eventHandlers['testHandler'].handler.counter >= 1,
+      'Handler was not triggered/used'
+    );
     listener.eventHandlers['testHandler'].handler.counter = 0;
     return;
   });
@@ -118,12 +110,10 @@ describe('Substrate listener class tests', () => {
 
   it('should return the updated options', async () => {
     assert.deepEqual(listener.options, {
-      archival: false,
-      startBlock: 0,
-      url: networkUrls['polkadot'],
-      spec: { randomSpec: 0 },
-      skipCatchup: true,
-      enricherConfig: {},
+      url: networkUrls['moloch'],
+      skipCatchup: false,
+      contractAddress: contracts['moloch'],
+      contractVersion: 1,
     });
   });
 });

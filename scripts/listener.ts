@@ -83,12 +83,7 @@ async function main() {
   }
 
   try {
-    const res = await createListener(
-      argv.network,
-      argv as any,
-      !!argv.base,
-      <string>argv.base
-    );
+    const res = await createListener(argv.network, argv as any, argv.base);
     if (res instanceof Error) throw res;
     else listener = res;
 

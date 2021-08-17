@@ -17,20 +17,26 @@ import {
 import { createApi, Processor, StorageFetcher, Subscriber } from '../moloch';
 import EthDater from 'ethereum-block-by-date';
 import { Listener as BaseListener } from '../../Listener';
+import { contracts } from '../../index';
+import { factory, formatFilename } from '../../logging';
+
+const log = factory.getLogger(formatFilename(__filename));
 
 export class Listener extends BaseListener {
   private readonly _options: MolochListenerOptions;
   public globalExcludedEvents: MolochEventKinds[];
   public _storageFetcher: IStorageFetcher<Api>;
   private _lastBlockNumber: number;
+  public discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
 
   constructor(
     chain: EventSupportingChainT,
-    contractVersion: 1 | 2,
-    contractAddress: string,
-    url: string,
+    contractVersion?: 1 | 2,
+    contractAddress?: string,
+    url?: string,
     skipCatchup?: boolean,
-    verbose?: boolean
+    verbose?: boolean,
+    discoverReconnectRange?: (chain: string) => Promise<IDisconnectedRange>
   ) {
     super(chain, verbose);
     if (!chainSupportedBy(this._chain, molochChains))
@@ -39,10 +45,11 @@ export class Listener extends BaseListener {
     this._options = {
       url: url || networkUrls[chain],
       skipCatchup: !!skipCatchup,
-      contractAddress: contractAddress,
-      contractVersion: contractVersion,
+      contractAddress: contractAddress || contracts[chain],
+      contractVersion: contractVersion || 1,
     };
 
+    this.discoverReconnectRange = discoverReconnectRange;
     this._subscribed = false;
   }
 
@@ -116,29 +123,52 @@ export class Listener extends BaseListener {
     for (const cwEvent of cwEvents) await this.handleEvent(cwEvent);
   }
 
-  private async processMissedBlocks(
-    discoverReconnectRange?: () => Promise<IDisconnectedRange>
-  ): Promise<void> {
-    if (!discoverReconnectRange) {
-      console.warn(
-        'No function to discover offline time found, skipping event catchup.'
+  private async processMissedBlocks(): Promise<void> {
+    log.info(
+      `[${this._chain}]: Detected offline time, polling missed blocks...`
+    );
+
+    if (!this.discoverReconnectRange) {
+      log.info(
+        `[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
       );
       return;
     }
-    console.info(
-      `Fetching missed events since last startup of ${this._chain}...`
-    );
+
     let offlineRange: IDisconnectedRange;
     try {
-      offlineRange = await discoverReconnectRange();
+      // fetch the block of the last server event from database
+      offlineRange = await this.discoverReconnectRange(this._chain);
       if (!offlineRange) {
-        console.warn('No offline range found, skipping event catchup.');
+        log.warn(
+          `[${this._chain}]: No offline range found, skipping event catchup.`
+        );
         return;
       }
-    } catch (e) {
-      console.error(
-        `Could not discover offline range: ${e.message}. Skipping event catchup.`
+    } catch (error) {
+      log.error(
+        `[${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
       );
+      return;
+    }
+
+    // compare with default range algorithm: take last cached block in processor
+    // if it exists, and is more recent than the provided algorithm
+    // (note that on first run, we wont have a cached block/this wont do anything)
+    if (
+      this._lastBlockNumber &&
+      (!offlineRange ||
+        !offlineRange.startBlock ||
+        offlineRange.startBlock < this._lastBlockNumber)
+    ) {
+      offlineRange = { startBlock: this._lastBlockNumber };
+    }
+
+    // if we can't figure out when the last block we saw was,
+    // do nothing
+    // (i.e. don't try and fetch all events from block 0 onward)
+    if (!offlineRange || !offlineRange.startBlock) {
+      log.warn(`[${this._chain}]: Unable to determine offline time range.`);
       return;
     }
 
