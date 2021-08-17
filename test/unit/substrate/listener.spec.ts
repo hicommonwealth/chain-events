@@ -1,10 +1,10 @@
 import {
-  Listener,
   Poller,
   Processor,
   StorageFetcher,
   Subscriber,
 } from '../../../src/chains/substrate';
+import { Listener } from '../../../src/chains/substrate/Listener';
 import { EventKind } from '../../../src/chains/substrate/types';
 import {
   networkUrls,
