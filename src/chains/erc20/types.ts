@@ -13,6 +13,7 @@ interface IErc20Contracts {
 export interface ListenerOptions {
   url: string;
   tokenAddresses: string[];
+  tokenNames?: string[];
 }
 
 export type Api = IErc20Contracts;

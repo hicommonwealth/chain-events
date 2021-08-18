@@ -2,6 +2,7 @@ import { Listener as BaseListener } from '../../Listener';
 import {
   ListenerOptions as AaveListenerOptions,
   EventChains as AaveEventChains,
+  EventKind,
   IEventData,
   RawEvent,
   Api,
@@ -12,7 +13,6 @@ import {
   CWEvent,
   EventSupportingChainT,
   IDisconnectedRange,
-  IStorageFetcher,
 } from '../../interfaces';
 import { networkUrls } from '../../index';
 import { Subscriber } from './subscriber';
@@ -22,10 +22,15 @@ import { factory, formatFilename } from '../../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 
-export class Listener extends BaseListener {
-  private readonly _options: AaveListenerOptions;
+export class Listener extends BaseListener<
+  Api,
+  StorageFetcher,
+  Processor,
+  Subscriber,
+  EventKind
+> {
   public discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
-  public storageFetcher: IStorageFetcher<Api>;
+  private readonly _options: AaveListenerOptions;
 
   constructor(
     chain: EventSupportingChainT,
@@ -145,21 +150,19 @@ export class Listener extends BaseListener {
   }
 
   protected async processBlock(event: RawEvent): Promise<void> {
+    const blockNumber = event.blockNumber;
+    if (!this._lastBlockNumber || blockNumber > this._lastBlockNumber) {
+      this._lastBlockNumber = blockNumber;
+    }
+
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     for (const event of cwEvents) {
       await this.handleEvent(event as CWEvent<IEventData>);
     }
   }
-  public get chain(): string {
-    return this._chain;
-  }
 
   public get options(): AaveListenerOptions {
     return this._options;
-  }
-
-  public get subscribed(): boolean {
-    return this._subscribed;
   }
 }

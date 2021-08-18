@@ -1,6 +1,6 @@
 import { CWEvent, IChainEventData, IEventHandler } from '../src';
 import events from 'events';
-import { EventKind } from '../src/chains/substrate/types';
+import { ChainEventKinds } from '../src';
 
 export class testHandler implements IEventHandler {
   private counter = 0;
@@ -15,12 +15,18 @@ export class testHandler implements IEventHandler {
   ): Promise<IChainEventData> {
     if (this._verbose)
       console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
-    if ((<any>Object).values(EventKind).includes(event.data.kind)) {
+    if (ChainEventKinds.includes(event.data.kind)) {
       ++this.counter;
       this.emitter.emit('eventHandled');
     }
     return event.data;
   }
+}
+
+function delay(interval) {
+  return it('delaying...', (done) => {
+    setTimeout(() => done(), interval);
+  }).timeout(interval + 100);
 }
 
 export function discoverReconnectRange(chain: string) {

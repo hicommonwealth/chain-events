@@ -14,23 +14,26 @@ import {
   EventSupportingChainT,
   IDisconnectedRange,
   IEventPoller,
-  IStorageFetcher,
 } from '../../interfaces';
-import { networkSpecs, networkUrls } from '../../index';
+import { networkUrls } from '../../index';
 import { Listener as BaseListener } from '../../Listener';
 
-import { EventChains as SubstrateChains } from './types';
+import { EventChains as SubstrateChains, EventKind } from './types';
 import { RegisteredTypes } from '@polkadot/types/types';
 import { factory, formatFilename } from '../../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 
 // TODO: archival support
-export class Listener extends BaseListener {
+export class Listener extends BaseListener<
+  ApiPromise,
+  StorageFetcher,
+  Processor,
+  Subscriber,
+  EventKind
+> {
   private readonly _options: ISubstrateListenerOptions;
-  public _storageFetcher: IStorageFetcher<ApiPromise>;
   private _poller: IEventPoller<ApiPromise, Block>;
-  public _lastBlockNumber: number;
   public discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
 
   constructor(
@@ -78,7 +81,7 @@ export class Listener extends BaseListener {
     try {
       this._poller = new Poller(this._api);
       this._processor = new Processor(this._api, this._options.enricherConfig);
-      this._storageFetcher = new StorageFetcher(this._api);
+      this.storageFetcher = new StorageFetcher(this._api);
       this._subscriber = await new Subscriber(this._api, this._verbose);
     } catch (error) {
       log.error(
@@ -212,15 +215,7 @@ export class Listener extends BaseListener {
     }
   }
 
-  public get lastBlockNumber(): number {
-    return this._lastBlockNumber;
-  }
-
   public get options(): ISubstrateListenerOptions {
     return this._options;
-  }
-
-  public get storageFetcher(): IStorageFetcher<ApiPromise> {
-    return this._storageFetcher;
   }
 }

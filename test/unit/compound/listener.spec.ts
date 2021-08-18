@@ -2,8 +2,8 @@ import {
   Processor,
   StorageFetcher,
   Subscriber,
-} from '../../../src/chains/moloch';
-import { Listener } from '../../../src/chains/moloch';
+} from '../../../src/chains/compound';
+import { Listener } from '../../../src/chains/compound';
 import { networkUrls, EventSupportingChainT, contracts } from '../../../src';
 import * as chai from 'chai';
 import * as events from 'events';
@@ -14,32 +14,31 @@ dotenv.config();
 
 const { assert } = chai;
 
-describe('Moloch listener class tests', () => {
+describe('Compound listener class tests', () => {
   let listener;
   let handlerEmitter = new events.EventEmitter();
 
-  it('should throw if the chain is not a moloch chain', () => {
+  it('should throw if the chain is not a Compound based chain', () => {
     try {
-      new Listener('randomChain' as EventSupportingChainT);
+      new Listener('randomChain' as EventSupportingChainT, contracts['marlin']);
     } catch (error) {
       assert(String(error).includes('randomChain'));
     }
   });
 
-  it('should create the moloch listener', () => {
-    listener = new Listener('moloch');
-    assert.equal(listener.chain, 'moloch');
+  it('should create a Compound listener', () => {
+    listener = new Listener('marlin', contracts['marlin'], null, true, false);
+    assert.equal(listener.chain, 'marlin');
     assert.deepEqual(listener.options, {
-      url: networkUrls['moloch'],
-      skipCatchup: false,
-      contractAddress: contracts['moloch'],
-      contractVersion: 1,
+      url: networkUrls['marlin'],
+      skipCatchup: true,
+      contractAddress: contracts['marlin'],
     });
     assert.equal(listener.subscribed, false);
     assert.equal(listener._verbose, false);
   });
 
-  it('should initialize the substrate listener class', async () => {
+  it('should initialize the Compound listener', async () => {
     await listener.init();
     assert(listener._subscriber instanceof Subscriber);
     assert(listener.storageFetcher instanceof StorageFetcher);
@@ -90,9 +89,7 @@ describe('Moloch listener class tests', () => {
 
   xit('should update the contract address');
 
-  xit('should update the contract version');
-
-  xit('should verify that the handler handled an event successfully after changing contract versions', (done) => {
+  xit('should verify that the handler handled an event successfully after changing contract address', (done) => {
     listener.eventHandlers['testHandler'].handler.counter = 0;
     let counter = 0;
     const verifyHandler = () => {
@@ -121,10 +118,9 @@ describe('Moloch listener class tests', () => {
 
   it('should return the updated options', async () => {
     assert.deepEqual(listener.options, {
-      url: networkUrls['moloch'],
-      skipCatchup: false,
-      contractAddress: contracts['moloch'],
-      contractVersion: 1,
+      url: networkUrls['marlin'],
+      skipCatchup: true,
+      contractAddress: contracts['marlin'],
     });
   });
 });

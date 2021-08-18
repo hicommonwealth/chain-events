@@ -25,17 +25,27 @@ export * from './util';
 export const networkUrls = {
   clover: 'wss://api.clover.finance',
   hydradx: 'wss://rpc-01.snakenet.hydradx.io',
-  edgeware: 'ws://mainnet1.edgewa.re:9944',
+  edgeware: 'ws://mainnet2.edgewa.re:9944',
   'edgeware-local': 'ws://localhost:9944',
   'edgeware-testnet': 'wss://beresheet1.edgewa.re',
   kusama: 'wss://kusama-rpc.polkadot.io',
   polkadot: 'wss://rpc.polkadot.io',
   kulupu: 'ws://rpc.kulupu.corepaper.org/ws',
   stafi: 'wss://scan-rpc.stafi.io/ws',
+
   moloch: 'wss://mainnet.infura.io/ws',
   'moloch-local': 'ws://127.0.0.1:9545',
-  compound: 'wss://mainnet.infura.io/ws',
+
+  marlin: 'wss://mainnet.infura.io/ws',
   'marlin-local': 'ws://127.0.0.1:9545',
+  uniswap: 'wss://mainnet.infura.io/ws',
+
+  aave: 'wss://mainnet.infura.io/ws',
+  'aave-local': 'ws://127.0.0.1:9545',
+  'dydx-ropsten': 'wss://ropsten.infura.io/ws',
+  dydx: 'wss://mainnet.infura.io/ws',
+
+  erc20: 'wss://mainnet.infura.io/ws',
 } as const;
 
 export const networkSpecs: { [chain: string]: RegisteredTypes } = {

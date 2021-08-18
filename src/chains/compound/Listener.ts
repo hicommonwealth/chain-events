@@ -4,6 +4,7 @@ import {
   Api,
   EventChains as CompoundChains,
   IEventData,
+  EventKind,
 } from './types';
 
 import { createApi } from './subscribeFunc';
@@ -13,29 +14,36 @@ import {
   CWEvent,
   EventSupportingChainT,
   IDisconnectedRange,
-  IStorageFetcher,
 } from '../../interfaces';
 import { networkUrls } from '../../index';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
 import { Subscriber } from './subscriber';
 import { Listener as BaseListener } from '../../Listener';
+import { factory, formatFilename } from '../../logging';
 
-export class Listener extends BaseListener {
+const log = factory.getLogger(formatFilename(__filename));
+
+export class Listener extends BaseListener<
+  Api,
+  StorageFetcher,
+  Processor,
+  Subscriber,
+  EventKind
+> {
   private readonly _options: CompoundListenerOptions;
-  public _storageFetcher: IStorageFetcher<Api>;
-  private _lastBlockNumber: number;
 
   constructor(
     chain: EventSupportingChainT,
     contractAddress: string,
     url?: string,
     skipCatchup?: boolean,
-    verbose?: boolean
+    verbose?: boolean,
+    discoverReconnectRange?: (chain: string) => Promise<IDisconnectedRange>
   ) {
     super(chain, verbose);
     if (!chainSupportedBy(this._chain, CompoundChains))
-      throw new Error(`${this._chain} is not a Substrate chain`);
+      throw new Error(`${this._chain} is not a Compound contract`);
 
     this._options = {
       url: url || networkUrls[chain],
@@ -44,6 +52,7 @@ export class Listener extends BaseListener {
     };
 
     this._subscribed = false;
+    this.discoverReconnectRange = discoverReconnectRange;
   }
 
   public async init(): Promise<void> {
@@ -53,7 +62,7 @@ export class Listener extends BaseListener {
         this._options.contractAddress
       );
     } catch (error) {
-      console.error('Fatal error occurred while starting the API');
+      log.error('Fatal error occurred while starting the API');
       throw error;
     }
 
@@ -65,16 +74,16 @@ export class Listener extends BaseListener {
         this._verbose
       );
     } catch (error) {
-      console.error(
+      log.error(
         'Fatal error occurred while starting the Processor, and Subscriber'
       );
       throw error;
     }
 
     try {
-      this._storageFetcher = new StorageFetcher(this._api);
+      this.storageFetcher = new StorageFetcher(this._api);
     } catch (error) {
-      console.error(
+      log.error(
         'Fatal error occurred while starting the Ethereum dater and storage fetcher'
       );
       throw error;
@@ -83,7 +92,7 @@ export class Listener extends BaseListener {
 
   public async subscribe(): Promise<void> {
     if (!this._subscriber) {
-      console.log(
+      log.info(
         `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
       );
       return;
@@ -91,16 +100,16 @@ export class Listener extends BaseListener {
 
     // processed blocks missed during downtime
     if (!this._options.skipCatchup) await this.processMissedBlocks();
-    else console.log('Skipping event catchup on startup!');
+    else log.info('Skipping event catchup on startup!');
 
     try {
-      console.info(
+      log.info(
         `Subscribing to Compound contract: ${this._chain}, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
-      console.error(`Subscription error: ${error.message}`);
+      log.error(`Subscription error: ${error.message}`);
     }
   }
 
@@ -109,7 +118,7 @@ export class Listener extends BaseListener {
     address: string
   ): Promise<void> {
     if (contractName != ('comp' || 'governorAlpha' || 'timelock')) {
-      console.log('Contract is not supported');
+      log.info('Contract is not supported');
       return;
     }
     this._options.contractAddress = address;
@@ -119,6 +128,11 @@ export class Listener extends BaseListener {
   }
 
   protected async processBlock(event: RawEvent): Promise<void> {
+    const blockNumber = event.blockNumber;
+    if (!this._lastBlockNumber || blockNumber > this._lastBlockNumber) {
+      this._lastBlockNumber = blockNumber;
+    }
+
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
@@ -126,55 +140,66 @@ export class Listener extends BaseListener {
       await this.handleEvent(event as CWEvent<IEventData>);
   }
 
-  private async processMissedBlocks(
-    discoverReconnectRange?: () => Promise<IDisconnectedRange>
-  ): Promise<void> {
-    if (!discoverReconnectRange) {
-      console.warn(
-        'No function to discover offline time found, skipping event catchup.'
-      );
-      return;
-    }
-    console.info(
-      `Fetching missed events since last startup of ${this._chain}...`
+  private async processMissedBlocks(): Promise<void> {
+    log.info(
+      `[${this._chain}]: Detected offline time, polling missed blocks...`
     );
-    let offlineRange: IDisconnectedRange;
-    try {
-      offlineRange = await discoverReconnectRange();
-      if (!offlineRange) {
-        console.warn('No offline range found, skipping event catchup.');
-        return;
-      }
-    } catch (e) {
-      console.error(
-        `Could not discover offline range: ${e.message}. Skipping event catchup.`
+
+    if (!this.discoverReconnectRange) {
+      log.info(
+        `[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
       );
       return;
     }
 
+    let offlineRange: IDisconnectedRange;
     try {
-      const cwEvents = await this._storageFetcher.fetch(offlineRange);
+      // fetch the block of the last server event from database
+      offlineRange = await this.discoverReconnectRange(this._chain);
+      if (!offlineRange) {
+        log.warn(
+          `[${this._chain}]: No offline range found, skipping event catchup.`
+        );
+        return;
+      }
+    } catch (error) {
+      log.error(
+        `[${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
+      );
+      return;
+    }
+
+    // compare with default range algorithm: take last cached block in processor
+    // if it exists, and is more recent than the provided algorithm
+    // (note that on first run, we wont have a cached block/this wont do anything)
+    if (
+      this._lastBlockNumber &&
+      (!offlineRange ||
+        !offlineRange.startBlock ||
+        offlineRange.startBlock < this._lastBlockNumber)
+    ) {
+      offlineRange = { startBlock: this._lastBlockNumber };
+    }
+
+    // if we can't figure out when the last block we saw was,
+    // do nothing
+    // (i.e. don't try and fetch all events from block 0 onward)
+    if (!offlineRange || !offlineRange.startBlock) {
+      log.warn(`[${this._chain}]: Unable to determine offline time range.`);
+      return;
+    }
+
+    try {
+      const cwEvents = await this.storageFetcher.fetch(offlineRange);
       for (const event of cwEvents) {
         await this.handleEvent(event as CWEvent<IEventData>);
       }
     } catch (error) {
-      console.error(`Unable to fetch events from storage: ${error.message}`);
+      log.error(`Unable to fetch events from storage: ${error.message}`);
     }
-  }
-
-  public get lastBlockNumber(): number {
-    return this._lastBlockNumber;
-  }
-
-  public get chain(): string {
-    return this._chain;
   }
 
   public get options(): CompoundListenerOptions {
     return this._options;
-  }
-
-  public get subscribed(): boolean {
-    return this._subscribed;
   }
 }

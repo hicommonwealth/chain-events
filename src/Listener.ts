@@ -6,6 +6,8 @@ import {
   EventSupportingChainT,
   IChainEventData,
   CWEvent,
+  IStorageFetcher,
+  IDisconnectedRange,
 } from './interfaces';
 
 import { factory, formatFilename } from './logging';
@@ -13,20 +15,30 @@ import { factory, formatFilename } from './logging';
 const log = factory.getLogger(formatFilename(__filename));
 
 // TODO: processBlock + processMissedBlocks can both be generalized and override in edge case listeners
-// TODO: subscribe method can be implemented here and override in edge case (or even use super.subscribe())
-export abstract class Listener {
+// TODO: subscribe method can be implemented here and override in edge case (or use super.subscribe() in edge cases)
+export abstract class Listener<
+  Api,
+  StorageFetcher extends IStorageFetcher<Api>,
+  Processor extends IEventProcessor<Api, any>,
+  Subscriber extends IEventSubscriber<Api, any>,
+  EventKind extends IChainEventKind
+> {
   public eventHandlers: {
     [key: string]: {
       handler: IEventHandler;
-      excludedEvents: IChainEventKind[];
+      excludedEvents: EventKind[];
     };
   };
   // events to be excluded regardless of handler (overrides handler specific excluded events
-  public globalExcludedEvents: IChainEventKind[];
-  protected _subscriber: IEventSubscriber<any, any>;
-  protected _processor: IEventProcessor<any, any>;
+  public globalExcludedEvents: EventKind[];
+  public storageFetcher: StorageFetcher;
+  public discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
+
+  protected _subscriber: Subscriber;
+  protected _processor: Processor;
   protected _api: any;
   protected _subscribed: boolean;
+  protected _lastBlockNumber: number;
   protected readonly _chain: string;
   protected readonly _verbose: boolean;
 
@@ -67,8 +79,8 @@ export abstract class Listener {
     for (const key in this.eventHandlers) {
       const eventHandler = this.eventHandlers[key];
       if (
-        this.globalExcludedEvents.includes(event.data.kind) ||
-        eventHandler.excludedEvents?.includes(event.data.kind)
+        this.globalExcludedEvents.includes(event.data.kind as EventKind) ||
+        eventHandler.excludedEvents?.includes(event.data.kind as EventKind)
       )
         continue;
 
@@ -92,4 +104,8 @@ export abstract class Listener {
   }
 
   public abstract get options(): {};
+
+  public get lastBlockNumber(): number {
+    return this._lastBlockNumber;
+  }
 }

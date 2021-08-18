@@ -2,6 +2,9 @@ import {
   chainSupportedBy,
   EventSupportingChainT,
   IDisconnectedRange,
+  IEventProcessor,
+  IEventSubscriber,
+  IStorageFetcher,
 } from './interfaces';
 import { EventChains as SubstrateChains } from './chains/substrate/types';
 import { Listener as SubstrateListener } from './chains/substrate';
@@ -44,7 +47,15 @@ export async function createListener(
     discoverReconnectRange?: (chain: string) => Promise<IDisconnectedRange>;
   },
   customChainBase?: string
-): Promise<Listener> {
+): Promise<
+  Listener<
+    any,
+    IStorageFetcher<any>,
+    IEventProcessor<any, any>,
+    IEventSubscriber<any, any>,
+    any
+  >
+> {
   let listener;
 
   // checks chain compatibility or overrides

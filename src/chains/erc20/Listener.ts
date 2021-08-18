@@ -2,7 +2,8 @@ import {
   ListenerOptions as Erc20ListenerOptions,
   RawEvent,
   EventChains as erc20Chains,
-  IEventData,
+  Api,
+  EventKind,
 } from './types';
 
 import { createApi } from './subscribeFunc';
@@ -21,14 +22,19 @@ import { factory, formatFilename } from '../../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 
-export class Listener extends BaseListener {
+export class Listener extends BaseListener<
+  Api,
+  any,
+  Processor,
+  Subscriber,
+  EventKind
+> {
   private readonly _options: Erc20ListenerOptions;
-  private readonly _tokenNames: string[];
 
   constructor(
     chain: EventSupportingChainT,
     tokenAddresses: string[],
-    url: string,
+    url?: string,
     tokenNames?: string[],
     verbose?: boolean,
     ignoreChainType?: boolean
@@ -40,9 +46,9 @@ export class Listener extends BaseListener {
     this._options = {
       url: url || networkUrls[chain],
       tokenAddresses: tokenAddresses,
+      tokenNames: tokenNames,
     };
 
-    this._tokenNames = tokenNames;
     this._subscribed = false;
   }
 
@@ -52,7 +58,7 @@ export class Listener extends BaseListener {
         this._options.url,
         this._options.tokenAddresses,
         10000,
-        this._tokenNames
+        this.options.tokenNames
       );
     } catch (error) {
       log.error(
@@ -83,7 +89,7 @@ export class Listener extends BaseListener {
     try {
       log.info(
         `[${this._chain}]: Subscribing to the following token(s): ${
-          this._tokenNames || '[token names not given!]'
+          this.options.tokenNames || '[token names not given!]'
         }, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock.bind(this));
@@ -108,8 +114,8 @@ export class Listener extends BaseListener {
     for (const key in this.eventHandlers) {
       const eventHandler = this.eventHandlers[key];
       if (
-        this.globalExcludedEvents.includes(event.data.kind) ||
-        eventHandler.excludedEvents?.includes(event.data.kind)
+        this.globalExcludedEvents.includes(event.data.kind as EventKind) ||
+        eventHandler.excludedEvents?.includes(event.data.kind as EventKind)
       )
         continue;
 
@@ -135,15 +141,7 @@ export class Listener extends BaseListener {
     }
   }
 
-  public get chain(): string {
-    return this._chain;
-  }
-
   public get options(): Erc20ListenerOptions {
     return this._options;
-  }
-
-  public get subscribed(): boolean {
-    return this._subscribed;
   }
 }

@@ -3,11 +3,10 @@ import {
   CWEvent,
   EventSupportingChainT,
   IDisconnectedRange,
-  IStorageFetcher,
 } from '../../interfaces';
 import { networkUrls } from '../../index';
 import {
-  EventKind as MolochEventKinds,
+  EventKind,
   Api,
   RawEvent,
   EventChains as molochChains,
@@ -22,12 +21,14 @@ import { factory, formatFilename } from '../../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 
-export class Listener extends BaseListener {
+export class Listener extends BaseListener<
+  Api,
+  StorageFetcher,
+  Processor,
+  Subscriber,
+  EventKind
+> {
   private readonly _options: MolochListenerOptions;
-  public globalExcludedEvents: MolochEventKinds[];
-  public _storageFetcher: IStorageFetcher<Api>;
-  private _lastBlockNumber: number;
-  public discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
 
   constructor(
     chain: EventSupportingChainT,
@@ -80,7 +81,7 @@ export class Listener extends BaseListener {
     }
     try {
       const dater = new EthDater(this._api.provider);
-      this._storageFetcher = new StorageFetcher(
+      this.storageFetcher = new StorageFetcher(
         this._api,
         this._options.contractVersion,
         dater
@@ -117,6 +118,11 @@ export class Listener extends BaseListener {
   }
 
   protected async processBlock(event: RawEvent): Promise<void> {
+    const blockNumber = event.blockNumber;
+    if (!this._lastBlockNumber || blockNumber > this._lastBlockNumber) {
+      this._lastBlockNumber = blockNumber;
+    }
+
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
@@ -173,7 +179,7 @@ export class Listener extends BaseListener {
     }
 
     try {
-      const cwEvents = await this._storageFetcher.fetch(offlineRange);
+      const cwEvents = await this.storageFetcher.fetch(offlineRange);
 
       // process events in sequence
       for (const event of cwEvents) {
@@ -207,19 +213,7 @@ export class Listener extends BaseListener {
     if (this._subscribed === true) await this.subscribe();
   }
 
-  public get lastBlockNumber(): number {
-    return this._lastBlockNumber;
-  }
-
-  public get chain(): string {
-    return this._chain;
-  }
-
   public get options(): MolochListenerOptions {
     return this._options;
-  }
-
-  public get subscribed(): boolean {
-    return this._subscribed;
   }
 }
