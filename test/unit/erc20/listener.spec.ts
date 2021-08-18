@@ -15,7 +15,7 @@ const tokenAddresses = [
 ];
 const tokenNames = ['USDT', 'USDC'];
 
-describe.only('Erc20 listener class tests', () => {
+describe('Erc20 listener class tests', () => {
   let listener;
   let handlerEmitter = new events.EventEmitter();
 
