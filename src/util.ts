@@ -98,7 +98,8 @@ export async function createListener(
       options.address,
       options.url || networkUrls[chain],
       !!options.skipCatchup,
-      !!options.verbose
+      !!options.verbose,
+      options.discoverReconnectRange
     );
   } else if (basePicker(chain, 'compound')) {
     listener = new CompoundListener(
@@ -106,7 +107,8 @@ export async function createListener(
       options.address,
       options.url || networkUrls[chain],
       !!options.skipCatchup,
-      !!options.verbose
+      !!options.verbose,
+      options.discoverReconnectRange
     );
   } else if (basePicker(chain, 'erc20')) {
     listener = new Erc20Listener(
