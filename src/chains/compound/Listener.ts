@@ -1,4 +1,14 @@
 import {
+  chainSupportedBy,
+  CWEvent,
+  EventSupportingChainT,
+  IDisconnectedRange,
+} from '../../interfaces';
+import { networkUrls } from '../../index';
+import { Listener as BaseListener } from '../../Listener';
+import { factory, formatFilename } from '../../logging';
+
+import {
   ListenerOptions as CompoundListenerOptions,
   RawEvent,
   Api,
@@ -6,21 +16,10 @@ import {
   IEventData,
   EventKind,
 } from './types';
-
 import { createApi } from './subscribeFunc';
-
-import {
-  chainSupportedBy,
-  CWEvent,
-  EventSupportingChainT,
-  IDisconnectedRange,
-} from '../../interfaces';
-import { networkUrls } from '../../index';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
 import { Subscriber } from './subscriber';
-import { Listener as BaseListener } from '../../Listener';
-import { factory, formatFilename } from '../../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -128,7 +127,7 @@ export class Listener extends BaseListener<
   }
 
   protected async processBlock(event: RawEvent): Promise<void> {
-    const blockNumber = event.blockNumber;
+    const { blockNumber } = event;
     if (!this._lastBlockNumber || blockNumber > this._lastBlockNumber) {
       this._lastBlockNumber = blockNumber;
     }

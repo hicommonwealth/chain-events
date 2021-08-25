@@ -18,7 +18,8 @@ export async function createProvider(
       }
       ethNetworkUrl = `${networkPrefix}infura.io/ws/v3/${INFURA_API_KEY}`;
 
-      let res, data;
+      let res;
+      let data;
       try {
         res = await fetch(`https://mainnet.infura.io/v3/${INFURA_API_KEY}`, {
           method: 'POST',

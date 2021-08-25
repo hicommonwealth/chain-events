@@ -7,8 +7,10 @@ import {
   IStorageFetcher,
 } from './interfaces';
 import { EventChains as SubstrateChains } from './chains/substrate/types';
-import { Listener as SubstrateListener } from './chains/substrate';
-import { EnricherConfig } from './chains/substrate';
+import {
+  Listener as SubstrateListener,
+  EnricherConfig,
+} from './chains/substrate';
 import { EventChains as MolochChains } from './chains/moloch/types';
 import { Listener as MolochListener } from './chains/moloch/Listener';
 import { EventChains as CompoundChains } from './chains/compound/types';
@@ -17,10 +19,10 @@ import { EventChains as Erc20Chain } from './chains/erc20/types';
 import { Listener as Erc20Listener } from './chains/erc20';
 import { EventChains as AaveChains } from './chains/aave/types';
 import { Listener as AaveListener } from './chains/aave';
-
 import { Listener } from './Listener';
-import { networkUrls } from './index';
 import { factory, formatFilename } from './logging';
+
+import { networkUrls } from './index';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -41,10 +43,10 @@ export async function createListener(
     skipCatchup?: boolean;
     startBlock?: number;
     archival?: boolean;
-    spec?: {};
+    spec?: Record<string, unknown>;
     url?: string;
     enricherConfig?: EnricherConfig;
-    discoverReconnectRange?: (chain: string) => Promise<IDisconnectedRange>;
+    discoverReconnectRange?: (c: string) => Promise<IDisconnectedRange>;
   },
   customChainBase?: string
 ): Promise<
@@ -56,28 +58,34 @@ export async function createListener(
     any
   >
 > {
-  let listener;
+  let listener: Listener<
+    any,
+    IStorageFetcher<any>,
+    IEventProcessor<any, any>,
+    IEventSubscriber<any, any>,
+    any
+  >;
 
   // checks chain compatibility or overrides
-  function basePicker(chain: string, base: string): boolean {
-    if (customChainBase == base) return true;
-    else {
-      switch (base) {
-        case 'substrate':
-          return chainSupportedBy(chain, SubstrateChains);
-        case 'moloch':
-          return chainSupportedBy(chain, MolochChains);
-        case 'compound':
-          return chainSupportedBy(chain, CompoundChains);
-        case 'erc20':
-          return chainSupportedBy(chain, Erc20Chain);
-        case 'aave':
-          return chainSupportedBy(chain, AaveChains);
-      }
+  function basePicker(base: string): boolean {
+    if (customChainBase === base) return true;
+    switch (base) {
+      case 'substrate':
+        return chainSupportedBy(chain, SubstrateChains);
+      case 'moloch':
+        return chainSupportedBy(chain, MolochChains);
+      case 'compound':
+        return chainSupportedBy(chain, CompoundChains);
+      case 'erc20':
+        return chainSupportedBy(chain, Erc20Chain);
+      case 'aave':
+        return chainSupportedBy(chain, AaveChains);
+      default:
+        return false;
     }
   }
 
-  if (basePicker(chain, 'substrate')) {
+  if (basePicker('substrate')) {
     // start a substrate listener
     listener = new SubstrateListener(
       <EventSupportingChainT>chain,
@@ -91,7 +99,7 @@ export async function createListener(
       !!customChainBase,
       options.discoverReconnectRange
     );
-  } else if (basePicker(chain, 'moloch')) {
+  } else if (basePicker('moloch')) {
     listener = new MolochListener(
       <EventSupportingChainT>chain,
       options.MolochContractVersion ? options.MolochContractVersion : 2,
@@ -101,7 +109,7 @@ export async function createListener(
       !!options.verbose,
       options.discoverReconnectRange
     );
-  } else if (basePicker(chain, 'compound')) {
+  } else if (basePicker('compound')) {
     listener = new CompoundListener(
       <EventSupportingChainT>chain,
       options.address,
@@ -110,7 +118,7 @@ export async function createListener(
       !!options.verbose,
       options.discoverReconnectRange
     );
-  } else if (basePicker(chain, 'erc20')) {
+  } else if (basePicker('erc20')) {
     listener = new Erc20Listener(
       <EventSupportingChainT>chain,
       options.tokenAddresses || [options.address],
@@ -119,7 +127,7 @@ export async function createListener(
       !!options.verbose,
       !!customChainBase
     );
-  } else if (basePicker(chain, 'aave')) {
+  } else if (basePicker('aave')) {
     listener = new AaveListener(
       <EventSupportingChainT>chain,
       options.address,

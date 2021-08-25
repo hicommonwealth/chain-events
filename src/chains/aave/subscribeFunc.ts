@@ -32,8 +32,7 @@ const log = factory.getLogger(formatFilename(__filename));
 export async function createApi(
   ethNetworkUrl: string,
   governanceAddress: string,
-  retryTimeMs = 10 * 1000,
-  retryCount: number = 0
+  retryTimeMs = 10 * 1000
 ): Promise<Api> {
   for (let i = 0; i < 3; ++i) {
     try {

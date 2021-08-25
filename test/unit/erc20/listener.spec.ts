@@ -1,11 +1,12 @@
-import { Processor, Subscriber } from '../../../src/chains/erc20';
-import { Listener } from '../../../src/chains/erc20';
-import { networkUrls, EventSupportingChainT } from '../../../src';
-import * as chai from 'chai';
 import * as events from 'events';
+
+import * as chai from 'chai';
+import dotenv from 'dotenv';
+
+import { Processor, Subscriber, Listener } from '../../../src/chains/erc20';
+import { networkUrls, EventSupportingChainT } from '../../../src';
 import { testHandler } from '../../util';
 
-import dotenv from 'dotenv';
 dotenv.config();
 
 const { assert } = chai;
@@ -17,14 +18,14 @@ const tokenNames = ['USDT', 'USDC'];
 
 describe('Erc20 listener class tests', () => {
   let listener;
-  let handlerEmitter = new events.EventEmitter();
+  const handlerEmitter = new events.EventEmitter();
 
   it('should throw if the chain is not an Aave based contract', () => {
     try {
       new Listener(
         'randomChain' as EventSupportingChainT,
         tokenAddresses,
-        networkUrls['erc20'],
+        networkUrls.erc20,
         tokenNames,
         false
       );
@@ -37,13 +38,13 @@ describe('Erc20 listener class tests', () => {
     listener = new Listener(
       'erc20',
       tokenAddresses,
-      networkUrls['erc20'],
+      networkUrls.erc20,
       tokenNames,
       false
     );
     assert.equal(listener.chain, 'erc20');
     assert.deepEqual(listener.options, {
-      url: networkUrls['erc20'],
+      url: networkUrls.erc20,
       tokenAddresses,
       tokenNames,
     });
@@ -55,19 +56,15 @@ describe('Erc20 listener class tests', () => {
     await listener.init();
     assert(listener._subscriber instanceof Subscriber);
     assert(listener._processor instanceof Processor);
-    return;
   });
 
   it('should add a handler', async () => {
-    listener.eventHandlers['testHandler'] = {
+    listener.eventHandlers.testHandler = {
       handler: new testHandler(listener._verbose, handlerEmitter),
       excludedEvents: [],
     };
 
-    assert(
-      listener.eventHandlers['testHandler'].handler instanceof testHandler
-    );
-    return;
+    assert(listener.eventHandlers.testHandler.handler instanceof testHandler);
   });
 
   it('should subscribe the listener to the specified erc20 tokens', async () => {
@@ -78,7 +75,7 @@ describe('Erc20 listener class tests', () => {
   it('should verify that the handler handled an event successfully', (done) => {
     let counter = 0;
     const verifyHandler = () => {
-      assert(listener.eventHandlers['testHandler'].handler.counter >= 1);
+      assert(listener.eventHandlers.testHandler.handler.counter >= 1);
       ++counter;
       if (counter == 1) {
         done();
@@ -90,10 +87,10 @@ describe('Erc20 listener class tests', () => {
   xit('should update a contract address');
 
   xit('should verify that the handler handled an event successfully after changing contract address', (done) => {
-    listener.eventHandlers['testHandler'].handler.counter = 0;
+    listener.eventHandlers.testHandler.handler.counter = 0;
     let counter = 0;
     const verifyHandler = () => {
-      assert(listener.eventHandlers['testHandler'].handler.counter >= 1);
+      assert(listener.eventHandlers.testHandler.handler.counter >= 1);
       ++counter;
       if (counter == 1) done();
     };
@@ -104,11 +101,10 @@ describe('Erc20 listener class tests', () => {
 
   xit('should verify that the handler handled an event successfully after changing urls', () => {
     assert(
-      listener.eventHandlers['testHandler'].handler.counter >= 1,
+      listener.eventHandlers.testHandler.handler.counter >= 1,
       'Handler was not triggered/used'
     );
-    listener.eventHandlers['testHandler'].handler.counter = 0;
-    return;
+    listener.eventHandlers.testHandler.handler.counter = 0;
   });
 
   it('should unsubscribe from the chain', async () => {
@@ -118,7 +114,7 @@ describe('Erc20 listener class tests', () => {
 
   it('should return the updated options', async () => {
     assert.deepEqual(listener.options, {
-      url: networkUrls['erc20'],
+      url: networkUrls.erc20,
       tokenAddresses,
       tokenNames,
     });

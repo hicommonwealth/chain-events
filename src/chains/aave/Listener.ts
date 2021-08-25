@@ -1,5 +1,14 @@
 import { Listener as BaseListener } from '../../Listener';
 import {
+  chainSupportedBy,
+  CWEvent,
+  EventSupportingChainT,
+  IDisconnectedRange,
+} from '../../interfaces';
+import { networkUrls } from '../../index';
+import { factory, formatFilename } from '../../logging';
+
+import {
   ListenerOptions as AaveListenerOptions,
   EventChains as AaveEventChains,
   EventKind,
@@ -8,17 +17,9 @@ import {
   Api,
 } from './types';
 import { createApi } from './subscribeFunc';
-import {
-  chainSupportedBy,
-  CWEvent,
-  EventSupportingChainT,
-  IDisconnectedRange,
-} from '../../interfaces';
-import { networkUrls } from '../../index';
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
-import { factory, formatFilename } from '../../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -30,6 +31,7 @@ export class Listener extends BaseListener<
   EventKind
 > {
   public discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
+
   private readonly _options: AaveListenerOptions;
 
   constructor(
@@ -150,7 +152,7 @@ export class Listener extends BaseListener<
   }
 
   protected async processBlock(event: RawEvent): Promise<void> {
-    const blockNumber = event.blockNumber;
+    const { blockNumber } = event;
     if (!this._lastBlockNumber || blockNumber > this._lastBlockNumber) {
       this._lastBlockNumber = blockNumber;
     }

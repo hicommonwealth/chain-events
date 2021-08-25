@@ -1,9 +1,10 @@
 import { RegisteredTypes } from '@polkadot/types/types';
+import { spec as EdgewareSpec } from '@edgeware/node-types';
+
 import { CloverSpec } from './specs/clover';
 import { KulupuSpec } from './specs/kulupu';
 import { HydraDXSpec } from './specs/hydraDX';
 import { StafiSpec } from './specs/stafi';
-import { spec as EdgewareSpec } from '@edgeware/node-types';
 
 export * from './interfaces';
 export * as MolochEvents from './chains/moloch/index';
@@ -47,16 +48,6 @@ export const networkUrls = {
 
   erc20: 'wss://mainnet.infura.io/ws',
 } as const;
-
-export const networkSpecs: { [chain: string]: RegisteredTypes } = {
-  clover: CloverSpec,
-  hydradx: HydraDXSpec,
-  kulupu: KulupuSpec,
-  edgeware: EdgewareSpec,
-  'edgeware-local': EdgewareSpec,
-  'edgeware-testnet': EdgewareSpec,
-  stafi: StafiSpec,
-};
 
 export const contracts = {
   moloch: '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',

@@ -1,38 +1,40 @@
+import * as events from 'events';
+
+import * as chai from 'chai';
+import dotenv from 'dotenv';
+
 import {
   Processor,
   StorageFetcher,
   Subscriber,
+  Listener,
 } from '../../../src/chains/aave';
-import { Listener } from '../../../src/chains/aave';
 import { networkUrls, EventSupportingChainT, contracts } from '../../../src';
-import * as chai from 'chai';
-import * as events from 'events';
 import { testHandler } from '../../util';
 
-import dotenv from 'dotenv';
 dotenv.config();
 
 const { assert } = chai;
 
 describe('Aave listener class tests', () => {
   let listener;
-  let handlerEmitter = new events.EventEmitter();
+  const handlerEmitter = new events.EventEmitter();
 
   it('should throw if the chain is not an Aave based contract', () => {
     try {
-      new Listener('randomChain' as EventSupportingChainT, contracts['aave']);
+      new Listener('randomChain' as EventSupportingChainT, contracts.aave);
     } catch (error) {
       assert(String(error).includes('randomChain'));
     }
   });
 
   it('should create an Aave listener', () => {
-    listener = new Listener('aave', contracts['aave'], null, true, false);
+    listener = new Listener('aave', contracts.aave, null, true, false);
     assert.equal(listener.chain, 'aave');
     assert.deepEqual(listener.options, {
-      url: networkUrls['aave'],
+      url: networkUrls.aave,
       skipCatchup: true,
-      govContractAddress: contracts['aave'],
+      govContractAddress: contracts.aave,
     });
     assert.equal(listener.subscribed, false);
     assert.equal(listener._verbose, false);
@@ -43,19 +45,15 @@ describe('Aave listener class tests', () => {
     assert(listener._subscriber instanceof Subscriber);
     assert(listener.storageFetcher instanceof StorageFetcher);
     assert(listener._processor instanceof Processor);
-    return;
   });
 
   it('should add a handler', async () => {
-    listener.eventHandlers['testHandler'] = {
+    listener.eventHandlers.testHandler = {
       handler: new testHandler(listener._verbose, handlerEmitter),
       excludedEvents: [],
     };
 
-    assert(
-      listener.eventHandlers['testHandler'].handler instanceof testHandler
-    );
-    return;
+    assert(listener.eventHandlers.testHandler.handler instanceof testHandler);
   });
 
   it('should subscribe the listener to the specified chain', async () => {
@@ -66,7 +64,7 @@ describe('Aave listener class tests', () => {
   it('should verify that the handler handled an event successfully', (done) => {
     let counter = 0;
     const verifyHandler = () => {
-      assert(listener.eventHandlers['testHandler'].handler.counter >= 1);
+      assert(listener.eventHandlers.testHandler.handler.counter >= 1);
       ++counter;
       if (counter == 1) {
         clearTimeout(timeoutHandler);
@@ -78,7 +76,7 @@ describe('Aave listener class tests', () => {
     // after 10 seconds with no event received use storage fetcher to verify api/connection
     const timeoutHandler = setTimeout(() => {
       // handlerEmitter.removeAllListeners();
-      let startBlock = 9786650;
+      const startBlock = 9786650;
 
       listener.storageFetcher.fetch({ startBlock }).then((events) => {
         if (events.length > 0) done();
@@ -90,10 +88,10 @@ describe('Aave listener class tests', () => {
   xit('should update the contract address');
 
   xit('should verify that the handler handled an event successfully after changing contract address', (done) => {
-    listener.eventHandlers['testHandler'].handler.counter = 0;
+    listener.eventHandlers.testHandler.handler.counter = 0;
     let counter = 0;
     const verifyHandler = () => {
-      assert(listener.eventHandlers['testHandler'].handler.counter >= 1);
+      assert(listener.eventHandlers.testHandler.handler.counter >= 1);
       ++counter;
       if (counter == 1) done();
     };
@@ -104,11 +102,10 @@ describe('Aave listener class tests', () => {
 
   xit('should verify that the handler handled an event successfully after changing urls', () => {
     assert(
-      listener.eventHandlers['testHandler'].handler.counter >= 1,
+      listener.eventHandlers.testHandler.handler.counter >= 1,
       'Handler was not triggered/used'
     );
-    listener.eventHandlers['testHandler'].handler.counter = 0;
-    return;
+    listener.eventHandlers.testHandler.handler.counter = 0;
   });
 
   it('should unsubscribe from the chain', async () => {
@@ -118,9 +115,9 @@ describe('Aave listener class tests', () => {
 
   it('should return the updated options', async () => {
     assert.deepEqual(listener.options, {
-      url: networkUrls['aave'],
+      url: networkUrls.aave,
       skipCatchup: true,
-      govContractAddress: contracts['aave'],
+      govContractAddress: contracts.aave,
     });
   });
 });

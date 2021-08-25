@@ -9,7 +9,6 @@ import {
   IStorageFetcher,
   IDisconnectedRange,
 } from './interfaces';
-
 import { factory, formatFilename } from './logging';
 
 const log = factory.getLogger(formatFilename(__filename));
@@ -29,17 +28,26 @@ export abstract class Listener<
       excludedEvents: EventKind[];
     };
   };
+
   // events to be excluded regardless of handler (overrides handler specific excluded events
   public globalExcludedEvents: EventKind[];
+
   public storageFetcher: StorageFetcher;
+
   public discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
 
   protected _subscriber: Subscriber;
+
   protected _processor: Processor;
-  protected _api: any;
+
+  protected _api: Api;
+
   protected _subscribed: boolean;
+
   protected _lastBlockNumber: number;
+
   protected readonly _chain: string;
+
   protected readonly _verbose: boolean;
 
   protected constructor(chain: EventSupportingChainT, verbose?: boolean) {
@@ -76,19 +84,18 @@ export abstract class Listener<
     event.chain = this._chain as EventSupportingChainT;
     event.received = Date.now();
 
-    for (const key in this.eventHandlers) {
+    for (const key of Object.keys(this.eventHandlers)) {
       const eventHandler = this.eventHandlers[key];
       if (
-        this.globalExcludedEvents.includes(event.data.kind as EventKind) ||
-        eventHandler.excludedEvents?.includes(event.data.kind as EventKind)
-      )
-        continue;
-
-      try {
-        prevResult = await eventHandler.handler.handle(event, prevResult);
-      } catch (err) {
-        log.error(`Event handle failure: ${err.message}`);
-        break;
+        !this.globalExcludedEvents.includes(event.data.kind as EventKind) &&
+        !eventHandler.excludedEvents?.includes(event.data.kind as EventKind)
+      ) {
+        try {
+          prevResult = await eventHandler.handler.handle(event, prevResult);
+        } catch (err) {
+          log.error(`Event handle failure: ${err.message}`);
+          break;
+        }
       }
     }
   }
@@ -103,7 +110,7 @@ export abstract class Listener<
     return this._subscribed;
   }
 
-  public abstract get options(): {};
+  public abstract get options(): any;
 
   public get lastBlockNumber(): number {
     return this._lastBlockNumber;
