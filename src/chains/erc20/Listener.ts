@@ -14,7 +14,6 @@ import {
   EventKind,
 } from './types';
 import { createApi } from './subscribeFunc';
-
 import { Processor } from './processor';
 import { Subscriber } from './subscriber';
 
@@ -42,7 +41,7 @@ export class Listener extends BaseListener<
       throw new Error(`${chain} is not an ERC20 token`);
 
     this._options = {
-      url: url,
+      url,
       tokenAddresses,
       tokenNames,
     };

@@ -17,6 +17,7 @@ import {
   ListenerOptions as MolochListenerOptions,
   IEventData,
 } from './types';
+
 import { createApi, Processor, StorageFetcher, Subscriber } from '.';
 
 const log = factory.getLogger(formatFilename(__filename));
@@ -44,9 +45,9 @@ export class Listener extends BaseListener<
       throw new Error(`${this._chain} is not a moloch network`);
 
     this._options = {
-      url: url,
+      url,
       skipCatchup: !!skipCatchup,
-      contractAddress: contractAddress,
+      contractAddress,
       contractVersion: contractVersion || 1,
     };
 

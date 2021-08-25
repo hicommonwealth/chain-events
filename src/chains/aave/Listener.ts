@@ -47,7 +47,7 @@ export class Listener extends BaseListener<
       throw new Error(`${this._chain} is not an Aave chain`);
 
     this._options = {
-      url: url,
+      url,
       govContractAddress,
       skipCatchup: !!skipCatchup,
     };
