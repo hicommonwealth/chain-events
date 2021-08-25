@@ -59,7 +59,7 @@ interface IEvent {
 }
 
 type Address = string;
-type Balance = string; // number???
+type Balance = string; // queried as BigNumber
 
 export interface IProposalCanceled extends IEvent {
   kind: EventKind.ProposalCanceled;
@@ -70,6 +70,10 @@ export interface IProposalCreated extends IEvent {
   kind: EventKind.ProposalCreated;
   id: number;
   proposer: Address;
+  targets: Address[];
+  values: Balance[];
+  signatures: string[];
+  calldatas: string[];
   startBlock: number;
   endBlock: number;
   description: string;
