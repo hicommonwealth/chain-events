@@ -13,7 +13,6 @@ import {
   CWEvent,
   EventSupportingChainT,
 } from '../../interfaces';
-import { networkUrls } from '../../index';
 import { Processor } from './processor';
 import { Subscriber } from './subscriber';
 import { Listener as BaseListener } from '../../Listener';
@@ -44,7 +43,7 @@ export class Listener extends BaseListener<
       throw new Error(`${chain} is not an ERC20 token`);
 
     this._options = {
-      url: url || networkUrls[chain],
+      url: url,
       tokenAddresses: tokenAddresses,
       tokenNames: tokenNames,
     };

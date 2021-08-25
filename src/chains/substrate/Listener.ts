@@ -15,7 +15,6 @@ import {
   IDisconnectedRange,
   IEventPoller,
 } from '../../interfaces';
-import { networkUrls } from '../../index';
 import { Listener as BaseListener } from '../../Listener';
 
 import { EventChains as SubstrateChains, EventKind } from './types';
@@ -56,7 +55,7 @@ export class Listener extends BaseListener<
     this._options = {
       archival: !!archival,
       startBlock: startBlock ?? 0,
-      url: url || networkUrls[chain],
+      url: url,
       spec: spec || {},
       skipCatchup: !!skipCatchup,
       enricherConfig: enricherConfig || {},

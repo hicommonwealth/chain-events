@@ -19,7 +19,6 @@ import { EventChains as AaveChains } from './chains/aave/types';
 import { Listener as AaveListener } from './chains/aave';
 
 import { Listener } from './Listener';
-import { networkUrls } from './index';
 import { factory, formatFilename } from './logging';
 
 const log = factory.getLogger(formatFilename(__filename));
@@ -81,7 +80,7 @@ export async function createListener(
     // start a substrate listener
     listener = new SubstrateListener(
       <EventSupportingChainT>chain,
-      options.url || networkUrls[chain],
+      options.url,
       options.spec,
       !!options.archival,
       options.startBlock || 0,
@@ -96,7 +95,7 @@ export async function createListener(
       <EventSupportingChainT>chain,
       options.MolochContractVersion ? options.MolochContractVersion : 2,
       options.address,
-      options.url || networkUrls[chain],
+      options.url,
       !!options.skipCatchup,
       !!options.verbose,
       options.discoverReconnectRange
@@ -105,7 +104,7 @@ export async function createListener(
     listener = new CompoundListener(
       <EventSupportingChainT>chain,
       options.address,
-      options.url || networkUrls[chain],
+      options.url,
       !!options.skipCatchup,
       !!options.verbose,
       options.discoverReconnectRange
@@ -114,7 +113,7 @@ export async function createListener(
     listener = new Erc20Listener(
       <EventSupportingChainT>chain,
       options.tokenAddresses || [options.address],
-      options.url || 'wss://mainnet.infura.io/ws/v3/',
+      options.url,
       Array.isArray(options.tokenNames) ? options.tokenNames : undefined,
       !!options.verbose,
       !!customChainBase

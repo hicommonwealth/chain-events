@@ -4,7 +4,6 @@ import {
   EventSupportingChainT,
   IDisconnectedRange,
 } from '../../interfaces';
-import { networkUrls } from '../../index';
 import {
   EventKind,
   Api,
@@ -16,7 +15,6 @@ import {
 import { createApi, Processor, StorageFetcher, Subscriber } from '../moloch';
 import EthDater from 'ethereum-block-by-date';
 import { Listener as BaseListener } from '../../Listener';
-import { contracts } from '../../index';
 import { factory, formatFilename } from '../../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
@@ -44,9 +42,9 @@ export class Listener extends BaseListener<
       throw new Error(`${this._chain} is not a moloch network`);
 
     this._options = {
-      url: url || networkUrls[chain],
+      url: url,
       skipCatchup: !!skipCatchup,
-      contractAddress: contractAddress || contracts[chain],
+      contractAddress: contractAddress,
       contractVersion: contractVersion || 1,
     };
 

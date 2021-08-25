@@ -14,7 +14,6 @@ import {
   EventSupportingChainT,
   IDisconnectedRange,
 } from '../../interfaces';
-import { networkUrls } from '../../index';
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
@@ -46,7 +45,7 @@ export class Listener extends BaseListener<
       throw new Error(`${this._chain} is not an Aave chain`);
 
     this._options = {
-      url: url || networkUrls[chain],
+      url: url,
       govContractAddress,
       skipCatchup: !!skipCatchup,
     };

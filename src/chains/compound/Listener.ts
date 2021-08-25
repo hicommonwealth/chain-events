@@ -15,7 +15,6 @@ import {
   EventSupportingChainT,
   IDisconnectedRange,
 } from '../../interfaces';
-import { networkUrls } from '../../index';
 import { Processor } from './processor';
 import { StorageFetcher } from './storageFetcher';
 import { Subscriber } from './subscriber';
@@ -46,7 +45,7 @@ export class Listener extends BaseListener<
       throw new Error(`${this._chain} is not a Compound contract`);
 
     this._options = {
-      url: url || networkUrls[chain],
+      url: url,
       skipCatchup: !!skipCatchup,
       contractAddress,
     };
