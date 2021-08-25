@@ -1,9 +1,14 @@
+import EthDater from 'ethereum-block-by-date';
+
 import {
   chainSupportedBy,
   CWEvent,
   EventSupportingChainT,
   IDisconnectedRange,
 } from '../../interfaces';
+import { Listener as BaseListener } from '../../Listener';
+import { factory, formatFilename } from '../../logging';
+
 import {
   EventKind,
   Api,
@@ -11,11 +16,8 @@ import {
   EventChains as molochChains,
   ListenerOptions as MolochListenerOptions,
   IEventData,
-} from '../moloch/types';
-import { createApi, Processor, StorageFetcher, Subscriber } from '../moloch';
-import EthDater from 'ethereum-block-by-date';
-import { Listener as BaseListener } from '../../Listener';
-import { factory, formatFilename } from '../../logging';
+} from './types';
+import { createApi, Processor, StorageFetcher, Subscriber } from '.';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -116,7 +118,7 @@ export class Listener extends BaseListener<
   }
 
   protected async processBlock(event: RawEvent): Promise<void> {
-    const blockNumber = event.blockNumber;
+    const { blockNumber } = event;
     if (!this._lastBlockNumber || blockNumber > this._lastBlockNumber) {
       this._lastBlockNumber = blockNumber;
     }

@@ -1,21 +1,23 @@
+import * as events from 'events';
+
+import * as chai from 'chai';
+import { ApiPromise } from '@polkadot/api';
+
 import {
   Poller,
   Processor,
   StorageFetcher,
   Subscriber,
+  Listener,
 } from '../../../src/chains/substrate';
-import { Listener } from '../../../src/chains/substrate';
 import { networkUrls, EventSupportingChainT } from '../../../src';
-import * as chai from 'chai';
-import { ApiPromise } from '@polkadot/api';
-import * as events from 'events';
 import { testHandler } from '../../util';
 
 const { assert } = chai;
 
 describe('Substrate listener class tests', () => {
   let listener;
-  let handlerEmitter = new events.EventEmitter();
+  const handlerEmitter = new events.EventEmitter();
 
   it('should throw if the chain is not a substrate chain', () => {
     try {
@@ -34,7 +36,7 @@ describe('Substrate listener class tests', () => {
     assert.deepEqual(listener.options, {
       archival: false,
       startBlock: 0,
-      url: networkUrls['polkadot'],
+      url: networkUrls.polkadot,
       spec: {},
       skipCatchup: true,
       enricherConfig: {},
@@ -59,19 +61,15 @@ describe('Substrate listener class tests', () => {
       'Processor should be initialized'
     );
     assert(listener._api instanceof ApiPromise, 'Api should be initialized');
-    return;
   });
 
   it('should add a handler', async () => {
-    listener.eventHandlers['testHandler'] = {
+    listener.eventHandlers.testHandler = {
       handler: new testHandler(listener._verbose, handlerEmitter),
       excludedEvents: [],
     };
 
-    assert(
-      listener.eventHandlers['testHandler'].handler instanceof testHandler
-    );
-    return;
+    assert(listener.eventHandlers.testHandler.handler instanceof testHandler);
   });
 
   it('should subscribe the listener to the specified chain', async () => {
@@ -82,7 +80,7 @@ describe('Substrate listener class tests', () => {
   it('should verify that the handler handled an event successfully', (done) => {
     let counter = 0;
     const verifyHandler = () => {
-      assert(listener.eventHandlers['testHandler'].handler.counter >= 1);
+      assert(listener.eventHandlers.testHandler.handler.counter >= 1);
       ++counter;
       if (counter == 1) {
         clearTimeout(timeoutHandler);
@@ -94,7 +92,7 @@ describe('Substrate listener class tests', () => {
     // after 10 seconds with no event received use storage fetcher to verify api/connection
     const timeoutHandler = setTimeout(() => {
       // handlerEmitter.removeAllListeners();
-      let startBlock = 6435620;
+      const startBlock = 6435620;
 
       listener.storageFetcher.fetch({ startBlock }).then((events) => {
         if (events.length > 0) done();
@@ -111,7 +109,7 @@ describe('Substrate listener class tests', () => {
   it('should verify that the handler handled an event successfully after changing specs', (done) => {
     let counter = 0;
     const verifyHandler = () => {
-      assert(listener.eventHandlers['testHandler'].handler.counter >= 1);
+      assert(listener.eventHandlers.testHandler.handler.counter >= 1);
       ++counter;
       if (counter == 1) {
         clearTimeout(timeoutHandler);
@@ -123,7 +121,7 @@ describe('Substrate listener class tests', () => {
     // after 10 seconds with no event received use storage fetcher to verify api/connection
     const timeoutHandler = setTimeout(() => {
       // handlerEmitter.removeAllListeners();
-      let startBlock = 6435620;
+      const startBlock = 6435620;
 
       listener.storageFetcher.fetch({ startBlock }).then((events) => {
         if (events.length > 0) done();
@@ -135,9 +133,8 @@ describe('Substrate listener class tests', () => {
   xit('should update the url to the listener should connect to', async () => {});
 
   xit('should verify that the handler handled an event successfully after changing urls', () => {
-    assert(listener.eventHandlers['testHandler'].handler.counter >= 1);
-    listener.eventHandlers['testHandler'].handler.counter = 0;
-    return;
+    assert(listener.eventHandlers.testHandler.handler.counter >= 1);
+    listener.eventHandlers.testHandler.handler.counter = 0;
   });
 
   it('should unsubscribe from the chain', async () => {
@@ -149,7 +146,7 @@ describe('Substrate listener class tests', () => {
     assert.deepEqual(listener.options, {
       archival: false,
       startBlock: 0,
-      url: networkUrls['polkadot'],
+      url: networkUrls.polkadot,
       spec: { randomSpec: 0 },
       skipCatchup: true,
       enricherConfig: {},

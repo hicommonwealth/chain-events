@@ -1,13 +1,6 @@
-import { Block, ISubstrateListenerOptions } from './types';
-import {
-  createApi,
-  EnricherConfig,
-  Poller,
-  Processor,
-  StorageFetcher,
-  Subscriber,
-} from './index';
 import { ApiPromise } from '@polkadot/api';
+import { RegisteredTypes } from '@polkadot/types/types';
+
 import {
   chainSupportedBy,
   CWEvent,
@@ -16,10 +9,23 @@ import {
   IEventPoller,
 } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
-
-import { EventChains as SubstrateChains, EventKind } from './types';
-import { RegisteredTypes } from '@polkadot/types/types';
 import { factory, formatFilename } from '../../logging';
+
+import {
+  EventChains as SubstrateChains,
+  EventKind,
+  Block,
+  ISubstrateListenerOptions,
+} from './types';
+
+import {
+  createApi,
+  EnricherConfig,
+  Poller,
+  Processor,
+  StorageFetcher,
+  Subscriber,
+} from './index';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -32,7 +38,9 @@ export class Listener extends BaseListener<
   EventKind
 > {
   private readonly _options: ISubstrateListenerOptions;
+
   private _poller: IEventPoller<ApiPromise, Block>;
+
   public discoverReconnectRange: (chain: string) => Promise<IDisconnectedRange>;
 
   constructor(

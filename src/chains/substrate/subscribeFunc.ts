@@ -37,7 +37,7 @@ export async function createApi(
   let unsubscribe: () => void;
 
   for (let i = 0; i < 3; ++i) {
-    let provider = new WsProvider(url, 0);
+    const provider = new WsProvider(url, 0);
     const success = await new Promise<boolean>((resolve) => {
       unsubscribe = provider.on('connected', () => resolve(true));
 

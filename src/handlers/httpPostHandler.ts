@@ -1,5 +1,6 @@
-import { CWEvent, IEventHandler } from '../interfaces';
 import fetch from 'node-fetch';
+
+import { CWEvent, IEventHandler } from '../interfaces';
 import { factory, formatFilename } from '../logging';
 
 const log = factory.getLogger(formatFilename(__filename));

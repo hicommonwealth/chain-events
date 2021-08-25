@@ -1,23 +1,22 @@
 import {
+  chainSupportedBy,
+  CWEvent,
+  EventSupportingChainT,
+} from '../../interfaces';
+import { Listener as BaseListener } from '../../Listener';
+import { factory, formatFilename } from '../../logging';
+
+import {
   ListenerOptions as Erc20ListenerOptions,
   RawEvent,
   EventChains as erc20Chains,
   Api,
   EventKind,
 } from './types';
-
 import { createApi } from './subscribeFunc';
 
-import {
-  chainSupportedBy,
-  CWEvent,
-  EventSupportingChainT,
-} from '../../interfaces';
 import { Processor } from './processor';
 import { Subscriber } from './subscriber';
-import { Listener as BaseListener } from '../../Listener';
-
-import { factory, formatFilename } from '../../logging';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -44,8 +43,8 @@ export class Listener extends BaseListener<
 
     this._options = {
       url: url,
-      tokenAddresses: tokenAddresses,
-      tokenNames: tokenNames,
+      tokenAddresses,
+      tokenNames,
     };
 
     this._subscribed = false;
