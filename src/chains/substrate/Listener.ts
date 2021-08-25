@@ -80,7 +80,7 @@ export class Listener extends BaseListener<
       this._api.on('connected', this.processMissedBlocks);
     } catch (error) {
       log.error(
-        `[${this._chain}]: Fatal error occurred while starting the API`
+        `[Substrate::${this._chain}]: Fatal error occurred while starting the API`
       );
       throw error;
     }
@@ -92,7 +92,7 @@ export class Listener extends BaseListener<
       this._subscriber = await new Subscriber(this._api, this._verbose);
     } catch (error) {
       log.error(
-        `[${this._chain}]: Fatal error occurred while starting the Poller, Processor, Subscriber, and Fetcher`
+        `[Substrate::${this._chain}]: Fatal error occurred while starting the Poller, Processor, Subscriber, and Fetcher`
       );
       throw error;
     }
@@ -101,34 +101,40 @@ export class Listener extends BaseListener<
   public async subscribe(): Promise<void> {
     if (!this._subscriber) {
       log.warn(
-        `[${this._chain}]: Subscriber isn't initialized. Please run init() first!`
+        `[Substrate::${this._chain}]: Subscriber isn't initialized. Please run init() first!`
       );
       return;
     }
 
     // processed blocks missed during downtime
     if (!this.options.skipCatchup) await this.processMissedBlocks();
-    else log.info(`[${this._chain}]: Skipping event catchup on startup!`);
+    else
+      log.info(
+        `[Substrate::${this._chain}]: Skipping event catchup on startup!`
+      );
 
     try {
       log.info(
-        `[${this._chain}]: Subscribing to ${this._chain} on url ${this._options.url}`
+        `[Substrate::${this._chain}]: Subscribing to ${this._chain} on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
-      log.error(`[${this._chain}]: Subscription error`, error.message);
+      log.error(
+        `[Substrate::${this._chain}]: Subscription error`,
+        error.message
+      );
     }
   }
 
   private async processMissedBlocks(): Promise<void> {
     log.info(
-      `[${this._chain}]: Detected offline time, polling missed blocks...`
+      `[Substrate::${this._chain}]: Detected offline time, polling missed blocks...`
     );
 
     if (!this.discoverReconnectRange) {
       log.info(
-        `[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
+        `[Substrate::${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
       );
       return;
     }
@@ -139,13 +145,13 @@ export class Listener extends BaseListener<
       offlineRange = await this.discoverReconnectRange(this._chain);
       if (!offlineRange) {
         log.warn(
-          `[${this._chain}]: No offline range found, skipping event catchup.`
+          `[Substrate::${this._chain}]: No offline range found, skipping event catchup.`
         );
         return;
       }
     } catch (error) {
       log.error(
-        `[${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
+        `[Substrate::${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
       );
       return;
     }
@@ -166,7 +172,9 @@ export class Listener extends BaseListener<
     // do nothing
     // (i.e. don't try and fetch all events from block 0 onward)
     if (!offlineRange || !offlineRange.startBlock) {
-      log.warn(`[${this._chain}]: Unable to determine offline time range.`);
+      log.warn(
+        `[Substrate::${this._chain}]: Unable to determine offline time range.`
+      );
       return;
     }
 
@@ -178,7 +186,7 @@ export class Listener extends BaseListener<
       await Promise.all(blocks.map(this.processBlock, this));
     } catch (error) {
       log.error(
-        `[${this._chain}]: Block polling failed after disconnect at block ${offlineRange.startBlock}`,
+        `[Substrate::${this._chain}]: Block polling failed after disconnect at block ${offlineRange.startBlock}`,
         error
       );
     }

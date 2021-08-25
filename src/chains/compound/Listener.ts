@@ -140,12 +140,12 @@ export class Listener extends BaseListener<
 
   private async processMissedBlocks(): Promise<void> {
     log.info(
-      `[${this._chain}]: Detected offline time, polling missed blocks...`
+      `[Compound::${this._chain}]: Detected offline time, polling missed blocks...`
     );
 
     if (!this.discoverReconnectRange) {
       log.info(
-        `[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
+        `[Compound::${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
       );
       return;
     }
@@ -156,13 +156,13 @@ export class Listener extends BaseListener<
       offlineRange = await this.discoverReconnectRange(this._chain);
       if (!offlineRange) {
         log.warn(
-          `[${this._chain}]: No offline range found, skipping event catchup.`
+          `[Compound::${this._chain}]: No offline range found, skipping event catchup.`
         );
         return;
       }
     } catch (error) {
       log.error(
-        `[${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
+        `[Compound::${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
       );
       return;
     }
@@ -183,7 +183,9 @@ export class Listener extends BaseListener<
     // do nothing
     // (i.e. don't try and fetch all events from block 0 onward)
     if (!offlineRange || !offlineRange.startBlock) {
-      log.warn(`[${this._chain}]: Unable to determine offline time range.`);
+      log.warn(
+        `[Compound::${this._chain}]: Unable to determine offline time range.`
+      );
       return;
     }
 

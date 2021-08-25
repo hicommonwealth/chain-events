@@ -65,7 +65,7 @@ export class Listener extends BaseListener<
       );
     } catch (error) {
       log.error(
-        `[${this._chain}]: Fatal error occurred while starting the API`
+        `[Aave::${this._chain}]: Fatal error occurred while starting the API`
       );
       throw error;
     }
@@ -76,7 +76,7 @@ export class Listener extends BaseListener<
       this.storageFetcher = new StorageFetcher(this._api);
     } catch (error) {
       log.error(
-        `[${this._chain}]: Fatal error occurred while starting the Processor, StorageFetcher and Subscriber`
+        `[Aave::${this._chain}]: Fatal error occurred while starting the Processor, StorageFetcher and Subscriber`
       );
       throw error;
     }
@@ -91,16 +91,16 @@ export class Listener extends BaseListener<
     }
 
     if (!this.options.skipCatchup) await this.processMissedBlocks();
-    else log.info(`[${this._chain}]: Skipping event catchup!`);
+    else log.info(`[Aave::${this._chain}]: Skipping event catchup!`);
 
     try {
       log.info(
-        `[${this._chain}]: Subscribing to Aave contract: ${this._chain}, on url ${this._options.url}`
+        `[Aave::${this._chain}]: Subscribing to Aave contract: ${this._chain}, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
-      log.error(`[${this._chain}]: Subscription error: ${error.message}`);
+      log.error(`[Aave::${this._chain}]: Subscription error: ${error.message}`);
     }
   }
 
@@ -108,12 +108,12 @@ export class Listener extends BaseListener<
 
   private async processMissedBlocks(): Promise<void> {
     log.info(
-      `[${this._chain}]: Detected offline time, polling missed blocks...`
+      `[Aave::${this._chain}]: Detected offline time, polling missed blocks...`
     );
 
     if (!this.discoverReconnectRange) {
       log.info(
-        `[${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
+        `[Aave::${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
       );
     }
 
@@ -122,19 +122,21 @@ export class Listener extends BaseListener<
       offlineRange = await this.discoverReconnectRange(this._chain);
       if (!offlineRange) {
         log.warn(
-          `[${this._chain}]: No offline range found, skipping event catchup.`
+          `[Aave::${this._chain}]: No offline range found, skipping event catchup.`
         );
         return;
       }
     } catch (error) {
       log.error(
-        `[${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
+        `[Aave::${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
       );
       return;
     }
 
     if (!offlineRange || !offlineRange.startBlock) {
-      log.warn(`[${this._chain}]: Unable to determine offline time range.`);
+      log.warn(
+        `[Aave::${this._chain}]: Unable to determine offline time range.`
+      );
       return;
     }
 
@@ -145,7 +147,7 @@ export class Listener extends BaseListener<
       }
     } catch (error) {
       log.error(
-        `[${this._chain}]: Unable to fetch events from storage: ${error.message}`
+        `[Aave::${this._chain}]: Unable to fetch events from storage: ${error.message}`
       );
     }
   }

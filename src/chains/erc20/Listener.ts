@@ -60,7 +60,7 @@ export class Listener extends BaseListener<
       );
     } catch (error) {
       log.error(
-        `[${this._chain}]: Fatal error occurred while starting the API`
+        `[Erc20::${this._chain}]: Fatal error occurred while starting the API`
       );
       throw error;
     }
@@ -70,7 +70,7 @@ export class Listener extends BaseListener<
       this._subscriber = new Subscriber(this._api, this._chain, this._verbose);
     } catch (error) {
       log.error(
-        `[${this._chain}]: Fatal error occurred while starting the Processor and Subscriber`
+        `[Erc20::${this._chain}]: Fatal error occurred while starting the Processor and Subscriber`
       );
       throw error;
     }
@@ -79,21 +79,23 @@ export class Listener extends BaseListener<
   public async subscribe(): Promise<void> {
     if (!this._subscriber) {
       log.info(
-        `[${this._chain}]: Subscriber isn't initialized. Please run init() first!`
+        `[Erc20::${this._chain}]: Subscriber isn't initialized. Please run init() first!`
       );
       return;
     }
 
     try {
       log.info(
-        `[${this._chain}]: Subscribing to the following token(s): ${
+        `[Erc20::${this._chain}]: Subscribing to the following token(s): ${
           this.options.tokenNames || '[token names not given!]'
         }, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
-      log.error(`[${this._chain}]: Subscription error: ${error.message}`);
+      log.error(
+        `[Erc20::${this._chain}]: Subscription error: ${error.message}`
+      );
     }
   }
 

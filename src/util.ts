@@ -22,8 +22,6 @@ import { Listener as AaveListener } from './chains/aave';
 import { Listener } from './Listener';
 import { factory, formatFilename } from './logging';
 
-import { networkUrls } from './index';
-
 const log = factory.getLogger(formatFilename(__filename));
 
 /**
