@@ -16,12 +16,12 @@ import {
   EventSupportingChains,
   AaveEvents,
   Erc20Events,
-} from '../dist/index';
+} from '../src/index';
 
-import { HydraDXSpec } from './specs/hydraDX';
-import { KulupuSpec } from './specs/kulupu';
-import { StafiSpec } from './specs/stafi';
-import { CloverSpec } from './specs/clover';
+import { HydraDXSpec } from '../src/specs/hydraDX';
+import { KulupuSpec } from '../src/specs/kulupu';
+import { StafiSpec } from '../src/specs/stafi';
+import { CloverSpec } from '../src/specs/clover';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
