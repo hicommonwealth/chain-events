@@ -65,13 +65,10 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
       return;
     }
     try {
-      const contract = await ERC20Factory.connect(
-        tokenAddress,
-        this.api.provider
-      );
+      const contract = ERC20Factory.connect(tokenAddress, this.api.provider);
       await contract.deployed();
-      contract.on('*', this._listener);
       this.api.tokens.push(contract);
+      contract.on('*', this._listener);
     } catch (e) {
       await sleep(retryTimeMs);
       if (retries > 0) {

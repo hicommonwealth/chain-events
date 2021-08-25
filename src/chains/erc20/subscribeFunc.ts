@@ -50,7 +50,7 @@ export async function createApi(
               };
             })
             .catch((err) => {
-              log.error('Failed to deploy', err);
+              log.error('Failed to find token', err);
               return {
                 token: o,
                 deployed: false,

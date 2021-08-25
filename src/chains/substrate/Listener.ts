@@ -63,7 +63,7 @@ export class Listener extends BaseListener<
     this._options = {
       archival: !!archival,
       startBlock: startBlock ?? 0,
-      url: url,
+      url,
       spec: spec || {},
       skipCatchup: !!skipCatchup,
       enricherConfig: enricherConfig || {},

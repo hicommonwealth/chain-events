@@ -44,7 +44,7 @@ export class Listener extends BaseListener<
       throw new Error(`${this._chain} is not a Compound contract`);
 
     this._options = {
-      url: url,
+      url,
       skipCatchup: !!skipCatchup,
       contractAddress,
     };
