@@ -1,10 +1,10 @@
 import { TypedEvent } from '../../contractTypes/commons';
-import { GovernorAlpha } from '../../contractTypes';
+import { GovernorBravoDelegate } from '../../contractTypes';
 
 // Used to unwrap promises returned by contract functions
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 export type Proposal = UnPromisify<
-  ReturnType<GovernorAlpha['functions']['proposals']>
+  ReturnType<GovernorBravoDelegate['functions']['proposals']>
 >;
 
 // eslint-disable-next-line no-shadow
@@ -19,10 +19,10 @@ export enum ProposalState {
   Executed = 7,
 }
 
-export type Api = GovernorAlpha;
+export type Api = GovernorBravoDelegate;
 
 // TODO: clarify how this section works
-export const EventChains = ['marlin-local', 'marlin', 'uniswap'] as const;
+export const EventChains = ['compound'] as const;
 
 // options for the listener class
 export interface ListenerOptions {
