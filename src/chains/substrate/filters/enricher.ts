@@ -102,6 +102,10 @@ export async function Enrich(
             .muln(1_000_000)
             .divn(config.balanceTransferThresholdPermill)
             .gte(totalIssuance);
+
+        // skip this event if the transfer value isn't above the threshold
+        if (!shouldEmitToAll) return null;
+
         const includeAddresses = shouldEmitToAll
           ? []
           : [sender.toString(), dest.toString()];

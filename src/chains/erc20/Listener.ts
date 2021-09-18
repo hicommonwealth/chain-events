@@ -16,6 +16,7 @@ import {
 import { createApi } from './subscribeFunc';
 import { Processor } from './processor';
 import { Subscriber } from './subscriber';
+import { EnricherConfig } from "./filters/enricher";
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -33,6 +34,7 @@ export class Listener extends BaseListener<
     tokenAddresses: string[],
     url?: string,
     tokenNames?: string[],
+    enricherConfig?: EnricherConfig,
     verbose?: boolean,
     ignoreChainType?: boolean
   ) {
@@ -44,6 +46,7 @@ export class Listener extends BaseListener<
       url,
       tokenAddresses,
       tokenNames,
+      enricherConfig: enricherConfig || {},
     };
 
     this._subscribed = false;
@@ -65,7 +68,7 @@ export class Listener extends BaseListener<
     }
 
     try {
-      this._processor = new Processor(this._api);
+      this._processor = new Processor(this._api, this._options.enricherConfig);
       this._subscriber = new Subscriber(this._api, this._chain, this._verbose);
     } catch (error) {
       log.error(
