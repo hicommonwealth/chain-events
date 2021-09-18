@@ -1,6 +1,9 @@
 const MPond = artifacts.require('MPond');
 const GovernorAlpha = artifacts.require('GovernorAlpha');
 const Timelock = artifacts.require('Timelock');
+const GovernorBravo = artifacts.require('GovernorBravoDelegate');
+const GovernorBravoDelegator = artifacts.require('GovernorBravoDelegator');
+const Comp = artifacts.require('Comp');
 
 // eslint-disable-next-line func-names
 module.exports = async function (deployer, network, accounts) {
@@ -13,4 +16,15 @@ module.exports = async function (deployer, network, accounts) {
   const timelock = await Timelock.deployed();
   await deployer.deploy(GovernorAlpha, timelock.address, mpond.address, mpondGuardian);
   const governorAlpha = GovernorAlpha.deployed();
+
+  // account[0] is given the total supply of COMP
+  await deployer.deploy(Comp, accounts[0]);
+  const comp = await Comp.deployed();
+
+  await deployer.deploy(GovernorBravo);
+  const governorBravo = GovernorBravo.deployed();
+
+  // deploy and get the Gov Bravo delegator contract
+  await deployer.deploy(GovernorBravoDelegator, timelock.address, comp.address, accounts[0], governorBravo.address);
+  const governorBravoDelegator = GovernorBravoDelegator.deployed();
 };

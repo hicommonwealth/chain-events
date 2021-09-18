@@ -1,5 +1,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 require('hardhat-typechain');
+require("@nomiclabs/hardhat-waffle");
+
+const ALCHEMY_API_KEY = 'Zf2oCtq6es072txPPhJ1vMm8fT66XpNW';
+const ROPSTEN_PRIVATE_KEY = "8299feeb80b1fab8af2c548852911d53bb46f1e3e479a121c6be15c548514c0b";
+
 
 module.exports = {
   solidity: {
@@ -52,4 +57,10 @@ module.exports = {
     outDir: '../src/contractTypes',
     target: 'ethers-v5',
   },
+  networks: {
+    ropsten: {
+      url: `https://eth-ropsten.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+      accounts: [`0x${ROPSTEN_PRIVATE_KEY}`],
+    }
+  }
 };

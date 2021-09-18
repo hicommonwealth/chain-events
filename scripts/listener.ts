@@ -40,6 +40,7 @@ const networkUrls = {
   moloch: 'wss://mainnet.infura.io/ws',
   'moloch-local': 'ws://127.0.0.1:9545',
 
+  compound: 'wss://mainnet.infura.io/ws',
   marlin: 'wss://mainnet.infura.io/ws',
   'marlin-local': 'ws://127.0.0.1:9545',
   uniswap: 'wss://mainnet.infura.io/ws',
@@ -63,6 +64,7 @@ const networkSpecs: { [chain: string]: RegisteredTypes } = {
 };
 
 const contracts = {
+  compound: '0xc0dA01a04C3f3E0be433606045bB7017A7323E38',
   moloch: '0x1fd169A4f5c59ACf79d0Fd5d91D1201EF1Bce9f1',
   'moloch-local': '0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7',
   marlin: '0x777992c2E4EDF704e49680468a9299C6679e37F6',

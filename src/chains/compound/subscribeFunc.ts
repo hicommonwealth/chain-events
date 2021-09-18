@@ -8,7 +8,10 @@ import {
   ISubscribeOptions,
 } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
-import { GovernorAlpha__factory as GovernorAlphaFactory } from '../../contractTypes';
+import {
+  GovernorAlpha__factory as GovernorAlphaFactory,
+  GovernorBravoDelegate__factory as GovernorBravoDelegateFactory,
+} from '../../contractTypes';
 
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
@@ -21,30 +24,34 @@ const log = factory.getLogger(formatFilename(__filename));
  * Attempts to open an API connection, retrying if it cannot be opened.
  * @returns a promise resolving to an ApiPromise once the connection has been established
  * @param ethNetworkUrl
- * @param governorAlphaAddress
+ * @param contractAddress
  * @param retryTimeMs
+ * @param govContractVersion
  */
 export async function createApi(
   ethNetworkUrl: string,
-  governorAlphaAddress: string,
-  retryTimeMs = 10 * 1000
+  contractAddress: string,
+  retryTimeMs = 10 * 1000,
+  govContractVersion: 'alpha' | 'bravo' = 'alpha' // default to alpha for backward compatibility
 ): Promise<Api> {
+  const contractFactory =
+    govContractVersion === 'alpha'
+      ? GovernorAlphaFactory
+      : GovernorBravoDelegateFactory;
+
   for (let i = 0; i < 3; ++i) {
     try {
       const provider = await createProvider(ethNetworkUrl);
 
       // init governance contract
-      const governorAlphaContract = GovernorAlphaFactory.connect(
-        governorAlphaAddress,
-        provider
-      );
-      await governorAlphaContract.deployed();
+      const contract = contractFactory.connect(contractAddress, provider);
+      await contract.deployed();
 
       log.info('Connection successful!');
-      return governorAlphaContract;
+      return contract;
     } catch (err) {
       log.error(
-        `Compound ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
+        `Compound ${contractAddress} at ${ethNetworkUrl} failure: ${err.message}`
       );
       await sleep(retryTimeMs);
       log.error('Retrying connection...');
@@ -52,7 +59,7 @@ export async function createApi(
   }
 
   throw new Error(
-    `Failed to start Compound listener for ${governorAlphaAddress} at ${ethNetworkUrl}`
+    `Failed to start Compound listener for ${contractAddress} at ${ethNetworkUrl}`
   );
 }
 

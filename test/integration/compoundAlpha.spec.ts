@@ -127,7 +127,7 @@ async function setupSubscription(subscribe = true): Promise<ISetupData> {
   // console.log('member: ', member);
   // console.log('timelock admin address: ', await timelock.admin());
   // console.log('governorAlpha guardian:', await governorAlpha.guardian());
-  const api = governorAlpha;
+  const api = <any>governorAlpha;
   const emitter = new EventEmitter();
   const handler = new CompoundEventHandler(emitter);
   if (subscribe) {

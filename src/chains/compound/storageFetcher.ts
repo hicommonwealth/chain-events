@@ -1,5 +1,10 @@
 import { CWEvent, IStorageFetcher, IDisconnectedRange } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
+import {
+  GovernorAlpha,
+  GovernorBravoDelegate,
+  GovernorBravoDelegate__factory as GovernorBravoDelegateFactory,
+} from '../../contractTypes';
 
 import { Enrich } from './filters/enricher';
 import {
@@ -92,8 +97,18 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     proposalCreatedEvents.sort((a, b) => b.blockNumber - a.blockNumber);
     log.info(`Found ${proposalCreatedEvents.length} proposals!`);
 
+    const voteCast =
+      this._api instanceof GovernorBravoDelegateFactory
+        ? (<GovernorBravoDelegate>this._api).filters.VoteCast(
+            null,
+            null,
+            null,
+            null,
+            null
+          )
+        : (<GovernorAlpha>this._api).filters.VoteCast(null, null, null, null);
     const voteCastEvents = await this._api.queryFilter(
-      this._api.filters.VoteCast(null, null, null, null),
+      voteCast,
       range.startBlock,
       range.endBlock || 'latest'
     );
