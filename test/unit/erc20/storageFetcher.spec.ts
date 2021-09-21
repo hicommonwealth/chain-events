@@ -62,4 +62,28 @@ describe.only('Erc20 Storage Fetcher Tests', () => {
       chain: <never>'usdc',
     });
   });
+
+  // this test is time dependent (the balance at the chosen address may change)
+  xit('should fetch the balance of an address', async () => {
+    const api = await createApi(
+      'wss://mainnet.infura.io/ws',
+      ['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'],
+      10000,
+      ['usdc']
+    );
+    const fetcher = new StorageFetcher(api);
+    const fetched = await fetcher.fetchBalances([
+      {
+        address: '0x700fb29ec8ac5b7f4ff981b700b47b57e8350cce',
+        tokenName: 'usdc',
+      },
+    ]);
+    assert.deepEqual(fetched, [
+      {
+        address: '0x700fb29ec8ac5b7f4ff981b700b47b57e8350cce',
+        tokenName: 'usdc',
+        balance: <number>(<unknown>BigNumber.from(55000000000000)),
+      },
+    ]);
+  });
 });

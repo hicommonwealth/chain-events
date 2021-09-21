@@ -1,8 +1,4 @@
-import {
-  CWEvent,
-  IDisconnectedRange,
-  IStorageFetcher,
-} from '../../interfaces';
+import { CWEvent, IDisconnectedRange, IStorageFetcher } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 
 import { Api, EventKind } from './types';
@@ -132,5 +128,32 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       return [];
     }
     return this.fetch({ startBlock: this._currentBlock });
+  }
+
+  public async fetchBalances(
+    data: { address: string; tokenName: string }[]
+  ): Promise<{ address: string; tokenName: string; balance: number }[]> {
+    if (data.length === 0) {
+      log.info('No addresses to fetch balance for');
+      return [];
+    }
+
+    if (!this._api.tokenNames) {
+      log.warn('Token names are required to fetch balances')
+      return [];
+    }
+
+    const result = [];
+    for (const item of data) {
+      const token = this._api.tokens[
+        this._api.tokenNames.indexOf(item.tokenName)
+      ];
+      result.push({
+        address: item.address,
+        tokenName: item.tokenName,
+        balance: await token.balanceOf(item.address),
+      });
+    }
+    return result;
   }
 }
