@@ -3,6 +3,7 @@ export * from './subscribeFunc';
 export * from './subscriber';
 export * from './processor';
 export * from './Listener';
+export * from './storageFetcher';
 
 export * from './filters/enricher';
 export * from './filters/labeler';
