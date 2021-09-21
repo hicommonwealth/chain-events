@@ -1,6 +1,5 @@
 import {
   CWEvent,
-  IChainEntityKind,
   IDisconnectedRange,
   IStorageFetcher,
 } from '../../interfaces';
@@ -125,16 +124,13 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     return cleanedEvents.flat();
   }
 
-  public async fetchOne(
-    id: string,
-    kind: IChainEntityKind | undefined
-  ): Promise<CWEvent[]> {
+  public async fetchOne(): Promise<CWEvent[]> {
     this._currentBlock = +(await this._api.provider.getBlockNumber());
     log.info(`Current block: ${this._currentBlock}.`);
     if (!this._currentBlock) {
       log.error('Failed to fetch current block! Aborting fetch.');
       return [];
     }
-    return this.fetch();
+    return this.fetch({ startBlock: this._currentBlock });
   }
 }
