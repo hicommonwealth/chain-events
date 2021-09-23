@@ -13,6 +13,7 @@
     "compile-contracts": "cd eth && npx hardhat compile",
     "unit-test": "nyc ts-mocha --config ./.mocharc.json ./test/unit/**/*.spec.ts",
     "compound-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/compound.spec.ts",
+    "cb-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/compoundBravo.spec.ts",
     "integration-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts",
     "test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts ./test/unit/**/*.spec.ts",
     "lint": "eslint src/ test/",

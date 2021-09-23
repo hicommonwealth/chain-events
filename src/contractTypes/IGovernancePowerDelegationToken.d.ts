@@ -11,6 +11,7 @@ import {
   PopulatedTransaction,
   Contract,
   ContractTransaction,
+  Overrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -21,20 +22,65 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 interface IGovernancePowerDelegationTokenInterface
   extends ethers.utils.Interface {
   functions: {
+    "delegate(address)": FunctionFragment;
+    "delegateByType(address,uint8)": FunctionFragment;
+    "getDelegateeByType(address,uint8)": FunctionFragment;
     "getPowerAtBlock(address,uint256,uint8)": FunctionFragment;
+    "getPowerCurrent(address,uint8)": FunctionFragment;
+    "totalSupplyAt(uint256)": FunctionFragment;
   };
 
+  encodeFunctionData(functionFragment: "delegate", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "delegateByType",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getDelegateeByType",
+    values: [string, BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "getPowerAtBlock",
     values: [string, BigNumberish, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "getPowerCurrent",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "totalSupplyAt",
+    values: [BigNumberish]
+  ): string;
 
+  decodeFunctionResult(functionFragment: "delegate", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "delegateByType",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getDelegateeByType",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getPowerAtBlock",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "getPowerCurrent",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "totalSupplyAt",
+    data: BytesLike
+  ): Result;
 
-  events: {};
+  events: {
+    "DelegateChanged(address,address,uint8)": EventFragment;
+    "DelegatedPowerChanged(address,uint256,uint8)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "DelegateChanged"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "DelegatedPowerChanged"): EventFragment;
 }
 
 export class IGovernancePowerDelegationToken extends Contract {
@@ -81,6 +127,40 @@ export class IGovernancePowerDelegationToken extends Contract {
   interface: IGovernancePowerDelegationTokenInterface;
 
   functions: {
+    delegate(
+      delegatee: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "delegate(address)"(
+      delegatee: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    delegateByType(
+      delegatee: string,
+      delegationType: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "delegateByType(address,uint8)"(
+      delegatee: string,
+      delegationType: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    getDelegateeByType(
+      delegator: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    "getDelegateeByType(address,uint8)"(
+      delegator: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
     getPowerAtBlock(
       user: string,
       blockNumber: BigNumberish,
@@ -94,7 +174,63 @@ export class IGovernancePowerDelegationToken extends Contract {
       delegationType: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
+
+    getPowerCurrent(
+      user: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "getPowerCurrent(address,uint8)"(
+      user: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    totalSupplyAt(
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    "totalSupplyAt(uint256)"(
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
   };
+
+  delegate(
+    delegatee: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "delegate(address)"(
+    delegatee: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  delegateByType(
+    delegatee: string,
+    delegationType: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "delegateByType(address,uint8)"(
+    delegatee: string,
+    delegationType: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  getDelegateeByType(
+    delegator: string,
+    delegationType: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
+
+  "getDelegateeByType(address,uint8)"(
+    delegator: string,
+    delegationType: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<string>;
 
   getPowerAtBlock(
     user: string,
@@ -110,7 +246,60 @@ export class IGovernancePowerDelegationToken extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  getPowerCurrent(
+    user: string,
+    delegationType: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "getPowerCurrent(address,uint8)"(
+    user: string,
+    delegationType: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  totalSupplyAt(
+    blockNumber: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  "totalSupplyAt(uint256)"(
+    blockNumber: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   callStatic: {
+    delegate(delegatee: string, overrides?: CallOverrides): Promise<void>;
+
+    "delegate(address)"(
+      delegatee: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    delegateByType(
+      delegatee: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "delegateByType(address,uint8)"(
+      delegatee: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    getDelegateeByType(
+      delegator: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    "getDelegateeByType(address,uint8)"(
+      delegator: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
     getPowerAtBlock(
       user: string,
       blockNumber: BigNumberish,
@@ -122,13 +311,87 @@ export class IGovernancePowerDelegationToken extends Contract {
       user: string,
       blockNumber: BigNumberish,
       delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getPowerCurrent(
+      user: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getPowerCurrent(address,uint8)"(
+      user: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalSupplyAt(
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalSupplyAt(uint256)"(
+      blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
-  filters: {};
+  filters: {
+    DelegateChanged(
+      delegator: string | null,
+      delegatee: string | null,
+      delegationType: null
+    ): TypedEventFilter<
+      [string, string, number],
+      { delegator: string; delegatee: string; delegationType: number }
+    >;
+
+    DelegatedPowerChanged(
+      user: string | null,
+      amount: null,
+      delegationType: null
+    ): TypedEventFilter<
+      [string, BigNumber, number],
+      { user: string; amount: BigNumber; delegationType: number }
+    >;
+  };
 
   estimateGas: {
+    delegate(
+      delegatee: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "delegate(address)"(
+      delegatee: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    delegateByType(
+      delegatee: string,
+      delegationType: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "delegateByType(address,uint8)"(
+      delegatee: string,
+      delegationType: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    getDelegateeByType(
+      delegator: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getDelegateeByType(address,uint8)"(
+      delegator: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getPowerAtBlock(
       user: string,
       blockNumber: BigNumberish,
@@ -140,11 +403,67 @@ export class IGovernancePowerDelegationToken extends Contract {
       user: string,
       blockNumber: BigNumberish,
       delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getPowerCurrent(
+      user: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getPowerCurrent(address,uint8)"(
+      user: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    totalSupplyAt(
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "totalSupplyAt(uint256)"(
+      blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    delegate(
+      delegatee: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "delegate(address)"(
+      delegatee: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    delegateByType(
+      delegatee: string,
+      delegationType: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "delegateByType(address,uint8)"(
+      delegatee: string,
+      delegationType: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getDelegateeByType(
+      delegator: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getDelegateeByType(address,uint8)"(
+      delegator: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getPowerAtBlock(
       user: string,
       blockNumber: BigNumberish,
@@ -156,6 +475,28 @@ export class IGovernancePowerDelegationToken extends Contract {
       user: string,
       blockNumber: BigNumberish,
       delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getPowerCurrent(
+      user: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getPowerCurrent(address,uint8)"(
+      user: string,
+      delegationType: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    totalSupplyAt(
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "totalSupplyAt(uint256)"(
+      blockNumber: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

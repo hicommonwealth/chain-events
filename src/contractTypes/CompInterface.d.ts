@@ -11,7 +11,6 @@ import {
   PopulatedTransaction,
   Contract,
   ContractTransaction,
-  Overrides,
   CallOverrides,
 } from "ethers";
 import { BytesLike } from "@ethersproject/bytes";
@@ -19,25 +18,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface GovernorAlphaInterface extends ethers.utils.Interface {
+interface CompInterfaceInterface extends ethers.utils.Interface {
   functions: {
-    "proposalCount()": FunctionFragment;
+    "getPriorVotes(address,uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "proposalCount",
-    values?: undefined
+    functionFragment: "getPriorVotes",
+    values: [string, BigNumberish]
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "proposalCount",
+    functionFragment: "getPriorVotes",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export class GovernorAlpha extends Contract {
+export class CompInterface extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -78,51 +77,75 @@ export class GovernorAlpha extends Contract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: GovernorAlphaInterface;
+  interface: CompInterfaceInterface;
 
   functions: {
-    proposalCount(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    getPriorVotes(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
-    "proposalCount()"(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
   };
 
-  proposalCount(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  getPriorVotes(
+    account: string,
+    blockNumber: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
-  "proposalCount()"(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
+  "getPriorVotes(address,uint256)"(
+    account: string,
+    blockNumber: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   callStatic: {
-    proposalCount(overrides?: CallOverrides): Promise<BigNumber>;
+    getPriorVotes(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
-    "proposalCount()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
   };
 
   filters: {};
 
   estimateGas: {
-    proposalCount(
-      overrides?: Overrides & { from?: string | Promise<string> }
+    getPriorVotes(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "proposalCount()"(
-      overrides?: Overrides & { from?: string | Promise<string> }
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    proposalCount(
-      overrides?: Overrides & { from?: string | Promise<string> }
+    getPriorVotes(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "proposalCount()"(
-      overrides?: Overrides & { from?: string | Promise<string> }
+    "getPriorVotes(address,uint256)"(
+      account: string,
+      blockNumber: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };
 }

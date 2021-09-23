@@ -67,11 +67,7 @@ export async function createApi(
  * @param discoverReconnectRange A function to determine how long we were offline upon reconnection.
  * @returns An active block subscriber.
  */
-export const subscribeEvents: SubscribeFunc<
-  Api,
-  RawEvent,
-  ISubscribeOptions<Api>
-> = async (options) => {
+export const subscribeEvents: SubscribeFunc<Api, RawEvent, ISubscribeOptions<Api>> = async (options) => {
   const {
     chain,
     api,
