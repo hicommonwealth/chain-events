@@ -14,9 +14,7 @@ import chai, { expect } from 'chai';
 
 import {
   GovernorBravoDelegateMock as GovernorBravoContract,
-  GovernorBravoDelegateMock__factory,
   GovernorBravoDelegateMock__factory as GovernorBravoFactory,
-  GovernorBravoDelegate__factory,
   GovernorBravoDelegator,
   GovernorBravoDelegator__factory as GovernorBravoDelegatorFactory,
   MPond,
@@ -57,40 +55,6 @@ async function deployMPond(
   const factory = new MPondFactory(signer);
   const comp = await factory.deploy(account, bridge);
   return comp;
-}
-
-// TODO: the mock contract currently implements a fake method to change initialProposalId
-async function deployGovernorBravo(
-  signer: Signer | providers.JsonRpcSigner,
-  timelock: string,
-  comp: string,
-  guardian: string
-): Promise<GovernorBravoContract> {
-  // deploy governorAlpha to initiate governorBravo
-  // const factory = new GovernorAlphaFactory(signer);
-  // const governorAlpha = await factory.deploy(timelock, comp, guardian);
-
-  // deploy mock governor bravo delegate contract
-  const bravoFactory = new GovernorBravoFactory(signer);
-  const GovernorBravoInstance = await bravoFactory.deploy();
-
-  // deploy delegator factory
-  const bravoDelegatorFactory = new GovernorBravoDelegatorFactory(signer);
-  const GovBravoDelegatorInstance = await bravoDelegatorFactory.deploy(
-    timelock,
-    comp,
-    await signer.getAddress(),
-    GovernorBravoInstance.address,
-    BigNumber.from(5760),
-    BigNumber.from(1),
-    BigNumber.from(1)
-  );
-
-  // await GovBravoDelegatorInstance._initiate(governorAlpha.address);
-  await GovernorBravoInstance.setInitialProposalId();
-  console.log(await GovernorBravoInstance.initialProposalId());
-
-  return GovernorBravoInstance;
 }
 
 async function deployTimelock(
@@ -154,7 +118,7 @@ async function setupSubscription(): Promise<ISetupData> {
   const comp = await deployMPond(signer, member, bridge);
 
   // deploy delegate
-  const bravoDelegateFactory = new GovernorBravoDelegate__factory(signer);
+  const bravoDelegateFactory = new GovernorBravoFactory(signer);
   const bravoDelegate = await bravoDelegateFactory.deploy();
 
   // deploy delegator
@@ -162,12 +126,12 @@ async function setupSubscription(): Promise<ISetupData> {
   const bravoDelegator = await bravoDelegatorFactory.deploy(
     timelock.address,
     comp.address,
-    signer._address, // or member?
+    member,
     bravoDelegate.address,
     17280,
     1,
-    "100000000000000000000000",
-  )
+    '100000000000000000000000'
+  );
 
   // Call our custom function to set initial proposal id.
   // This is necessary for our integration tests.
@@ -258,14 +222,18 @@ async function createProposal(
   const targets = ['0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b'];
   const values = [BigNumber.from(0)];
   const signatures = ['_setCollateralFactor(address,uint256)'];
-  const calldatas = ['0x000000000000000000000000C11B1268C1A384E55C48C2391D8D480264A3A7F40000000000000000000000000000000000000000000000000853A0D2313C0000'];
+  const calldatas = [
+    '0x000000000000000000000000C11B1268C1A384E55C48C2391D8D480264A3A7F40000000000000000000000000000000000000000000000000853A0D2313C0000',
+  ];
   const description = 'test description';
 
   // Make the proposal.
   try {
-    await gov.propose(targets, values, signatures, calldatas, description);
+    await gov.propose(targets, values, signatures, calldatas, description, {
+      from,
+    });
   } catch (e) {
-    console.log("error proposing!")
+    console.log('error proposing!');
     console.log(e);
   }
 
@@ -413,14 +381,17 @@ describe('Compound Event Integration Tests', () => {
   describe('GovernorBravo contract function events', () => {
     it.only('should create a proposal', async () => {
       try {
-        
-        const { GovernorBravo, comp, addresses, handler, } = await setupSubscription();
-        
-        console.log('creating proposal')
+        const {
+          GovernorBravo,
+          comp,
+          addresses,
+          handler,
+        } = await setupSubscription();
+
+        console.log('creating proposal');
         await createProposal(handler, GovernorBravo, comp, addresses[0]);
-      
       } catch (error) {
-        console.log("should create a proposal", error)
+        console.log('should create a proposal', error);
       }
     });
 
