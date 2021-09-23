@@ -17,10 +17,8 @@ import { BigNumber } from 'ethers';
 import type { Signer, providers, BigNumberish } from 'ethers';
 
 import {
-  GovernorBravoDelegateMock as GovernorBravoContract,
-  GovernorBravoDelegateMock__factory as GovernorBravoFactory,
-  GovernorBravoDelegator,
-  GovernorBravoDelegator__factory as GovernorBravoDelegatorFactory,
+  GovernorBravoImmutable,
+  GovernorBravoImmutable__factory as GovernorBravoImmutableFactory,
   MPond,
   MPond__factory as MPondFactory,
   TimelockMock as Timelock,
@@ -88,10 +86,10 @@ function assertEvent<T extends IEventData>(
 }
 
 interface ISetupData {
-  api: GovernorBravoDelegator;
+  api: GovernorBravoImmutable;
   comp: MPond;
   timelock: Timelock;
-  GovernorBravo: GovernorBravoContract;
+  GovernorBravo: GovernorBravoImmutable;
   addresses: string[];
   provider: providers.JsonRpcProvider;
   handler: CompoundEventHandler;
@@ -112,33 +110,28 @@ async function setupSubscription(): Promise<ISetupData> {
   const comp = await deployMPond(signer, member, bridge);
 
   // deploy delegate
-  const bravoDelegateFactory = new GovernorBravoFactory(signer);
-  const bravoDelegate = await bravoDelegateFactory.deploy();
-
-  // deploy delegator
-  const bravoDelegatorFactory = new GovernorBravoDelegatorFactory(signer);
-  const bravoDelegator = await bravoDelegatorFactory.deploy(
+  const factory = new GovernorBravoImmutableFactory(signer);
+  const bravo = await factory.deploy(
     timelock.address,
     comp.address,
     member,
-    bravoDelegate.address,
     17280,
     1,
-    '100000000000000000000000'
+    '1'
   );
 
   // Call our custom function to set initial proposal id.
   // This is necessary for our integration tests.
-  await bravoDelegate.setInitialProposalId();
+  await bravo.setInitialProposalId();
 
-  console.log(await bravoDelegate.initialProposalId());
+  console.log(await bravo.initialProposalId());
 
   // TODO: Adminship seems messed up, can't do queue() calls
   // await GovernorBravo.__executeSetTimelockPendingAdmin(member, 0);
   // console.log('member: ', member);
   // console.log('timelock admin address: ', await timelock.admin());
   // console.log('GovernorBravo guardian:', await GovernorBravo.guardian());
-  const api = <any>bravoDelegator;
+  const api = <any>bravo;
   const emitter = new EventEmitter();
   const handler = new CompoundEventHandler(emitter);
 
@@ -153,7 +146,7 @@ async function setupSubscription(): Promise<ISetupData> {
     api,
     comp,
     timelock,
-    GovernorBravo: <any>bravoDelegate,
+    GovernorBravo: bravo,
     addresses,
     provider,
     handler,
@@ -205,13 +198,14 @@ async function performDelegation(
 
 async function createProposal(
   handler: CompoundEventHandler,
-  gov: GovernorBravoContract,
+  gov: GovernorBravoImmutable,
   comp: MPond,
   from: string
 ): Promise<void> {
   const proposalMinimum = await gov.proposalThreshold();
   const delegateAmount = proposalMinimum.mul(3);
   await performDelegation(handler, comp, from, from, delegateAmount);
+  console.log('delegate address', gov.address);
 
   const targets = ['0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b'];
   const values = [BigNumber.from(0)];
@@ -253,7 +247,7 @@ async function createProposal(
 async function proposeAndVote(
   handler: CompoundEventHandler,
   provider: providers.JsonRpcProvider,
-  gov: GovernorBravoContract,
+  gov: GovernorBravoImmutable,
   comp: MPond,
   from: string,
   voteYes: boolean
@@ -291,7 +285,7 @@ async function proposeAndVote(
 async function proposeAndWait(
   handler: CompoundEventHandler,
   provider: providers.JsonRpcProvider,
-  gov: GovernorBravoContract,
+  gov: GovernorBravoImmutable,
   comp: MPond,
   from: string,
   voteYes: boolean
@@ -315,7 +309,7 @@ async function proposeAndWait(
 async function proposeAndQueue(
   handler: CompoundEventHandler,
   provider: providers.JsonRpcProvider,
-  gov: GovernorBravoContract,
+  gov: GovernorBravoImmutable,
   comp: MPond,
   from: string
 ) {

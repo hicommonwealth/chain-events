@@ -47,6 +47,7 @@ export type { GovernorAlphaMock } from "./GovernorAlphaMock";
 export type { GovernorBravoDelegate } from "./GovernorBravoDelegate";
 export type { GovernorBravoDelegateMock } from "./GovernorBravoDelegateMock";
 export type { GovernorBravoDelegator } from "./GovernorBravoDelegator";
+export type { GovernorBravoImmutable } from "./GovernorBravoImmutable";
 export type { CompInterface } from "./CompInterface";
 export type { GovernorBravoDelegateStorageV1 } from "./GovernorBravoDelegateStorageV1";
 export type { GovernorBravoDelegatorStorage } from "./GovernorBravoDelegatorStorage";
@@ -108,6 +109,7 @@ export { GovernorAlphaMock__factory } from "./factories/GovernorAlphaMock__facto
 export { GovernorBravoDelegate__factory } from "./factories/GovernorBravoDelegate__factory";
 export { GovernorBravoDelegateMock__factory } from "./factories/GovernorBravoDelegateMock__factory";
 export { GovernorBravoDelegator__factory } from "./factories/GovernorBravoDelegator__factory";
+export { GovernorBravoImmutable__factory } from "./factories/GovernorBravoImmutable__factory";
 export { CompInterface__factory } from "./factories/CompInterface__factory";
 export { GovernorBravoDelegateStorageV1__factory } from "./factories/GovernorBravoDelegateStorageV1__factory";
 export { GovernorBravoDelegatorStorage__factory } from "./factories/GovernorBravoDelegatorStorage__factory";

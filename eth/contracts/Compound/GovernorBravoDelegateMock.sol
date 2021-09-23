@@ -2,7 +2,6 @@ pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 import "./GovernorBravoInterfaces.sol";
-import "hardhat/console.sol";
 
 // TODO fill out modifications to this contract
 contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBravoEvents {
@@ -75,7 +74,6 @@ contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBr
       */
     function propose(address[] memory targets, uint[] memory values, string[] memory signatures, bytes[] memory calldatas, string memory description) public returns (uint) {
         // Reject proposals before initiating as Governor
-        console.log("comp: %s", address(comp));
         require(address(comp) != address(0), "GovernorBravo::propose: Governor Bravo not initialized");
         require(initialProposalId != 0, "GovernorBravo::propose: Governor Bravo not active");
         require(comp.getPriorVotes(msg.sender, sub256(block.number, 1)) > proposalThreshold, "GovernorBravo::propose: proposer votes below proposal threshold");
