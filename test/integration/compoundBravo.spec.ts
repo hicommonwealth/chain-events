@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable global-require */
 /* eslint-disable no-unused-expressions */
+import '@nomiclabs/hardhat-ethers';
 import { EventEmitter } from 'events';
 
 // TODO: How to set admin in GovernorBravo Delegate
@@ -9,8 +11,10 @@ import { EventEmitter } from 'events';
 // TODO: What are the truffle migrations for if we are using hardhat (can we use
 // TODO: those migrations to deploy with hardhat?)
 
-import { BigNumber, BigNumberish, providers, Signer } from 'ethers';
 import chai, { expect } from 'chai';
+import { ethers } from 'hardhat';
+import { BigNumber } from 'ethers';
+import type { Signer, providers, BigNumberish } from 'ethers';
 
 import {
   GovernorBravoDelegateMock as GovernorBravoContract,
@@ -35,17 +39,6 @@ import { subscribeEvents } from '../../src/chains/compound';
 import { CWEvent, IChainEventData, IEventHandler } from '../../src';
 
 const { assert } = chai;
-
-function getProvider(): providers.Web3Provider {
-  const web3Provider = require('ganache-cli').provider({
-    allowUnlimitedContractSize: true,
-    gasLimit: 1000000000,
-    time: new Date(1000),
-    mnemonic: 'Alice',
-    logger: console,
-  });
-  return new providers.Web3Provider(web3Provider);
-}
 
 async function deployMPond(
   signer: Signer | providers.JsonRpcSigner,
@@ -100,12 +93,13 @@ interface ISetupData {
   timelock: Timelock;
   GovernorBravo: GovernorBravoContract;
   addresses: string[];
-  provider: providers.Web3Provider;
+  provider: providers.JsonRpcProvider;
   handler: CompoundEventHandler;
 }
 
 async function setupSubscription(): Promise<ISetupData> {
-  const provider = getProvider();
+  // eslint-disable-next-line prefer-destructuring
+  const provider = ethers.provider;
   const addresses: string[] = await provider.listAccounts();
   const [member, bridge] = addresses;
   const signer = provider.getSigner(member);
@@ -173,7 +167,7 @@ async function performDelegation(
   to: string,
   amount: BigNumberish
 ): Promise<void> {
-  await comp.delegate(to, amount);
+  await comp.delegate(to, amount, { from });
   /*
   await Promise.all([
     assertEvent(handler, EventKind.DelegateChanged, (evt) => {
@@ -258,7 +252,7 @@ async function createProposal(
 
 async function proposeAndVote(
   handler: CompoundEventHandler,
-  provider: providers.Web3Provider,
+  provider: providers.JsonRpcProvider,
   gov: GovernorBravoContract,
   comp: MPond,
   from: string,
@@ -296,7 +290,7 @@ async function proposeAndVote(
 
 async function proposeAndWait(
   handler: CompoundEventHandler,
-  provider: providers.Web3Provider,
+  provider: providers.JsonRpcProvider,
   gov: GovernorBravoContract,
   comp: MPond,
   from: string,
@@ -320,7 +314,7 @@ async function proposeAndWait(
 
 async function proposeAndQueue(
   handler: CompoundEventHandler,
-  provider: providers.Web3Provider,
+  provider: providers.JsonRpcProvider,
   gov: GovernorBravoContract,
   comp: MPond,
   from: string

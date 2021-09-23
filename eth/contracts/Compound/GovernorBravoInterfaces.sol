@@ -176,7 +176,9 @@ interface CompInterface {
     function getPriorVotes(address account, uint blockNumber) external view returns (uint96);
 }
 
+/*
 interface GovernorAlpha {
     /// @notice The total number of proposals
     function proposalCount() external returns (uint);
 }
+*/

@@ -31,7 +31,6 @@ interface GovernorBravoDelegateInterface extends ethers.utils.Interface {
     "MIN_VOTING_DELAY()": FunctionFragment;
     "MIN_VOTING_PERIOD()": FunctionFragment;
     "_acceptAdmin()": FunctionFragment;
-    "_initiate(address)": FunctionFragment;
     "_setPendingAdmin(address)": FunctionFragment;
     "_setProposalThreshold(uint256)": FunctionFragment;
     "_setVotingDelay(uint256)": FunctionFragment;
@@ -101,7 +100,6 @@ interface GovernorBravoDelegateInterface extends ethers.utils.Interface {
     functionFragment: "_acceptAdmin",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "_initiate", values: [string]): string;
   encodeFunctionData(
     functionFragment: "_setPendingAdmin",
     values: [string]
@@ -245,7 +243,6 @@ interface GovernorBravoDelegateInterface extends ethers.utils.Interface {
     functionFragment: "_acceptAdmin",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "_initiate", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "_setPendingAdmin",
     data: BytesLike
@@ -437,16 +434,6 @@ export class GovernorBravoDelegate extends Contract {
     ): Promise<ContractTransaction>;
 
     "_acceptAdmin()"(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    _initiate(
-      governorAlpha: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    "_initiate(address)"(
-      governorAlpha: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -831,16 +818,6 @@ export class GovernorBravoDelegate extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  _initiate(
-    governorAlpha: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  "_initiate(address)"(
-    governorAlpha: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   _setPendingAdmin(
     newPendingAdmin: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -1210,13 +1187,6 @@ export class GovernorBravoDelegate extends Contract {
     _acceptAdmin(overrides?: CallOverrides): Promise<void>;
 
     "_acceptAdmin()"(overrides?: CallOverrides): Promise<void>;
-
-    _initiate(governorAlpha: string, overrides?: CallOverrides): Promise<void>;
-
-    "_initiate(address)"(
-      governorAlpha: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     _setPendingAdmin(
       newPendingAdmin: string,
@@ -1698,16 +1668,6 @@ export class GovernorBravoDelegate extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    _initiate(
-      governorAlpha: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    "_initiate(address)"(
-      governorAlpha: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     _setPendingAdmin(
       newPendingAdmin: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -2029,16 +1989,6 @@ export class GovernorBravoDelegate extends Contract {
     ): Promise<PopulatedTransaction>;
 
     "_acceptAdmin()"(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    _initiate(
-      governorAlpha: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "_initiate(address)"(
-      governorAlpha: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

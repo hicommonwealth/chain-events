@@ -1,10 +1,10 @@
 import { TypedEvent } from '../../contractTypes/commons';
-import { GovernorAlpha, GovernorBravoDelegate } from '../../contractTypes';
+import { GovernorAlpha } from '../../contractTypes';
 
 // Used to unwrap promises returned by contract functions
 type UnPromisify<T> = T extends Promise<infer U> ? U : T;
 export type Proposal = UnPromisify<
-  ReturnType<GovernorAlpha['functions']>
+  ReturnType<GovernorAlpha['functions']['proposals']>
 >;
 
 // eslint-disable-next-line no-shadow
@@ -19,7 +19,7 @@ export enum ProposalState {
   Executed = 7,
 }
 
-export type Api = GovernorAlpha | GovernorBravoDelegate;
+export type Api = GovernorAlpha;
 
 // TODO: clarify how this section works
 export const EventChains = [
