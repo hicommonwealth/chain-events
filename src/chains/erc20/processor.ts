@@ -35,7 +35,7 @@ export class Processor extends IEventProcessor<Api, RawEvent> {
         event,
         this._enricherConfig
       );
-      return [cwEvent];
+      return cwEvent ? [cwEvent] : [];
     } catch (e) {
       log.error(`Failed to enrich event: ${e.message}`);
       return [];

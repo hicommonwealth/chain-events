@@ -16,13 +16,13 @@ import {
 import { createApi } from './subscribeFunc';
 import { Processor } from './processor';
 import { Subscriber } from './subscriber';
-import { EnricherConfig } from "./filters/enricher";
+import { EnricherConfig } from './filters/enricher';
 
 const log = factory.getLogger(formatFilename(__filename));
 
 export class Listener extends BaseListener<
   Api,
-  any,
+  never,
   Processor,
   Subscriber,
   EventKind
@@ -110,15 +110,17 @@ export class Listener extends BaseListener<
   // override handleEvent to stop the chain from being added to event data
   // since the chain/token name is added to event data in the subscriber.ts
   // (since there are multiple tokens)
-  protected async handleEvent(event: CWEvent) {
+  protected async handleEvent(event: CWEvent): Promise<void> {
     let prevResult;
 
+    // eslint-disable-next-line guard-for-in
     for (const key in this.eventHandlers) {
       const eventHandler = this.eventHandlers[key];
       if (
         this.globalExcludedEvents.includes(event.data.kind as EventKind) ||
         eventHandler.excludedEvents?.includes(event.data.kind as EventKind)
       )
+        // eslint-disable-next-line no-continue
         continue;
 
       try {
@@ -137,9 +139,9 @@ export class Listener extends BaseListener<
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
-    for (const event of cwEvents) {
-      event.chain = tokenName as any;
-      await this.handleEvent(event as CWEvent);
+    for (const e of cwEvents) {
+      e.chain = tokenName as never;
+      await this.handleEvent(e as CWEvent);
     }
   }
 
