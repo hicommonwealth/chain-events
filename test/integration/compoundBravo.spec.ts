@@ -124,13 +124,6 @@ async function setupSubscription(): Promise<ISetupData> {
   // This is necessary for our integration tests.
   await bravo.setInitialProposalId();
 
-  console.log(await bravo.initialProposalId());
-
-  // TODO: Adminship seems messed up, can't do queue() calls
-  // await GovernorBravo.__executeSetTimelockPendingAdmin(member, 0);
-  // console.log('member: ', member);
-  // console.log('timelock admin address: ', await timelock.admin());
-  // console.log('GovernorBravo guardian:', await GovernorBravo.guardian());
   const api = <any>bravo;
   const emitter = new EventEmitter();
   const handler = new CompoundEventHandler(emitter);
@@ -161,39 +154,6 @@ async function performDelegation(
   amount: BigNumberish
 ): Promise<void> {
   await comp.delegate(to, amount, { from });
-  /*
-  await Promise.all([
-    assertEvent(handler, EventKind.DelegateChanged, (evt) => {
-      assert.deepEqual(evt.data, {
-        kind: EventKind.DelegateChanged,
-        delegator: from,
-        toDelegate: to,
-        fromDelegate: '0x0000000000000000000000000000000000000000',
-      });
-    }),
-    assertEvent(
-      handler,
-      EventKind.DelegateVotesChanged,
-      (evt: CWEvent<IDelegateVotesChanged>) => {
-        const { kind, delegate, previousBalance, newBalance } = evt.data;
-        assert.deepEqual(
-          {
-            kind,
-            delegate,
-            previousBalance: previousBalance.toString(),
-            newBalance: newBalance.toString(),
-          },
-          {
-            kind: EventKind.DelegateVotesChanged,
-            delegate: to,
-            previousBalance: '0',
-            newBalance: amount.toString(),
-          }
-        );
-      }
-    ),
-  ]);
-  */
 }
 
 async function createProposal(
