@@ -7,31 +7,36 @@ import * as MolochTypes from './chains/moloch/types';
 import * as CompoundTypes from './chains/compound/types';
 import * as Erc20Types from './chains/erc20/types';
 import * as AaveTypes from './chains/aave/types';
+import * as ZepplinTypes from './chains/openZepplin/types';
 
 // add other events here as union types
 export type IChainEntityKind =
   | SubstrateTypes.EntityKind
   | MolochTypes.EntityKind
   | CompoundTypes.EntityKind
-  | AaveTypes.EntityKind;
+  | AaveTypes.EntityKind
+  | ZepplinTypes.EntityKind;
 export type IChainEventData =
   | SubstrateTypes.IEventData
   | MolochTypes.IEventData
   | CompoundTypes.IEventData
   | AaveTypes.IEventData
-  | Erc20Types.IEventData;
+  | Erc20Types.IEventData
+  | ZepplinTypes.IEventData;
 export type IChainEventKind =
   | SubstrateTypes.EventKind
   | MolochTypes.EventKind
   | CompoundTypes.EventKind
   | AaveTypes.EventKind
-  | Erc20Types.EventKind;
+  | Erc20Types.EventKind
+  | ZepplinTypes.EventKind;
 export const ChainEventKinds = [
   ...SubstrateTypes.EventKinds,
   ...MolochTypes.EventKinds,
   ...CompoundTypes.EventKinds,
   ...AaveTypes.EventKinds,
   ...Erc20Types.EventKinds,
+  ...ZepplinTypes.EventKinds,
 ];
 export const EventSupportingChains = [
   ...SubstrateTypes.EventChains,
@@ -39,6 +44,7 @@ export const EventSupportingChains = [
   ...CompoundTypes.EventChains,
   ...AaveTypes.EventChains,
   ...Erc20Types.EventChains,
+  ...ZepplinTypes.EventChains,
 ] as const;
 export type EventSupportingChainT = typeof EventSupportingChains[number];
 
@@ -285,6 +291,28 @@ export function eventToEntity(
       case AaveTypes.EventKind.ProposalExecuted:
       case AaveTypes.EventKind.ProposalCanceled: {
         return [AaveTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      default: {
+        return null;
+      }
+    }
+  }
+  if (ZepplinTypes.EventChains.find((c) => c === chain)) {
+    switch (event) {
+      case ZepplinTypes.EventKind.ProposalCanceled: {
+        return [ZepplinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      case ZepplinTypes.EventKind.ProposalCreated: {
+        return [ZepplinTypes.EntityKind.Proposal, EntityEventKind.Create];
+      }
+      case ZepplinTypes.EventKind.ProposalExecuted: {
+        return [ZepplinTypes.EntityKind.Proposal, EntityEventKind.Complete];
+      }
+      case ZepplinTypes.EventKind.ProposalQueued: {
+        return [ZepplinTypes.EntityKind.Proposal, EntityEventKind.Update];
+      }
+      case ZepplinTypes.EventKind.VoteCast: {
+        return [ZepplinTypes.EntityKind.Proposal, EntityEventKind.Vote];
       }
       default: {
         return null;

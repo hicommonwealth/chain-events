@@ -134,8 +134,7 @@ export class Listener extends BaseListener<
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
-    for (const event of cwEvents)
-      await this.handleEvent(event as CWEvent<IEventData>);
+    for (const e of cwEvents) await this.handleEvent(e as CWEvent<IEventData>);
   }
 
   private async processMissedBlocks(): Promise<void> {
