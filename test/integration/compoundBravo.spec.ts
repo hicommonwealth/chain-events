@@ -223,7 +223,7 @@ async function proposeAndVote(
   let state: number;
   try {
     console.log(activeProposals);
-    state = await gov.state(0);
+    state = await gov.state(activeProposals);
     console.log('state', state);
   } catch (error) {
     console.error(error);
@@ -329,18 +329,19 @@ describe('Compound Event Integration Tests', () => {
   */
 
   describe('GovernorBravo contract function events', () => {
-    // it('should create a proposal', async () => {
-    //   const {
-    //     GovernorBravo,
-    //     comp,
-    //     addresses,
-    //     handler,
-    //   } = await setupSubscription();
-    //   await createProposal(handler, GovernorBravo, comp, addresses[0]);
-    //   // await createProposal(handler, GovernorBravo, comp, addresses[0]);
-    // });
+    /*
 
-    it('proposal castvote', async () => {
+    it('should create a proposal', async () => {
+      const {
+        GovernorBravo,
+        comp,
+        addresses,
+        handler,
+      } = await setupSubscription();
+      await createProposal(handler, GovernorBravo, comp, addresses[0]);
+    });
+
+    it('proposal castvote for', async () => {
       const {
         GovernorBravo,
         comp,
@@ -348,6 +349,7 @@ describe('Compound Event Integration Tests', () => {
         handler,
         provider,
       } = await setupSubscription();
+
       const from = addresses[0];
 
       // Create proposal
@@ -364,21 +366,14 @@ describe('Compound Event Integration Tests', () => {
         await provider.send('evm_mine', []);
       }
 
-      // Get the state of the proposal and make sure it's active
-      console.log('before state');
-      let state: number;
-      try {
-        console.log(activeProposals);
-        state = await GovernorBravo.state(activeProposals);
-        console.log('state', state);
-      } catch (error) {
-        console.error(error);
-      }
+      // Get the state of the proposal and make sure it is active
+      const state = await GovernorBravo.state(activeProposals);
       expect(state).to.be.equal(ProposalState.Active);
 
       // VoteCast Event
+      const voteDirection = 0;
       const voteWeight = await comp.getPriorVotes(from, startBlock);
-      await GovernorBravo.castVote(activeProposals, BigNumber.from(1));
+      await GovernorBravo.castVote(activeProposals, voteDirection);
 
       await assertEvent(
         handler,
@@ -388,14 +383,113 @@ describe('Compound Event Integration Tests', () => {
             kind: EventKind.VoteCast,
             id: +activeProposals,
             voter: from,
-            support: true,
+            support: voteDirection,
             votes: voteWeight.toString(),
           });
         }
       );
     });
 
-    return;
+    it('proposal castvote against', async () => {
+      const {
+        GovernorBravo,
+        comp,
+        addresses,
+        handler,
+        provider,
+      } = await setupSubscription();
+
+      const from = addresses[0];
+
+      // Create proposal
+      await createProposal(handler, GovernorBravo, comp, from);
+
+      // Wait for proposal to activate (by mining blocks?)
+      const activeProposals = await GovernorBravo.latestProposalIds(from);
+      const { startBlock } = await GovernorBravo.proposals(activeProposals);
+      const currentBlock = await provider.getBlockNumber();
+      const blockDelta = startBlock.sub(currentBlock).add(1);
+      const timeDelta = blockDelta.mul(15);
+      await provider.send('evm_increaseTime', [+timeDelta]);
+      for (let i = 0; i < +blockDelta; ++i) {
+        await provider.send('evm_mine', []);
+      }
+
+      // Get the state of the proposal and make sure it is active
+      const state = await GovernorBravo.state(activeProposals);
+      expect(state).to.be.equal(ProposalState.Active);
+
+      // VoteCast Event
+      const voteDirection = 1;
+      const voteWeight = await comp.getPriorVotes(from, startBlock);
+      await GovernorBravo.castVote(activeProposals, voteDirection);
+
+      await assertEvent(
+        handler,
+        EventKind.VoteCast,
+        (evt: CWEvent<IVoteCast>) => {
+          assert.deepEqual(evt.data, {
+            kind: EventKind.VoteCast,
+            id: +activeProposals,
+            voter: from,
+            support: voteDirection,
+            votes: voteWeight.toString(),
+          });
+        }
+      );
+    });
+
+    it('proposal castvote abstain', async () => {
+      const {
+        GovernorBravo,
+        comp,
+        addresses,
+        handler,
+        provider,
+      } = await setupSubscription();
+
+      const from = addresses[0];
+
+      // Create proposal
+      await createProposal(handler, GovernorBravo, comp, from);
+
+      // Wait for proposal to activate (by mining blocks?)
+      const activeProposals = await GovernorBravo.latestProposalIds(from);
+      const { startBlock } = await GovernorBravo.proposals(activeProposals);
+      const currentBlock = await provider.getBlockNumber();
+      const blockDelta = startBlock.sub(currentBlock).add(1);
+      const timeDelta = blockDelta.mul(15);
+      await provider.send('evm_increaseTime', [+timeDelta]);
+      for (let i = 0; i < +blockDelta; ++i) {
+        await provider.send('evm_mine', []);
+      }
+
+      // Get the state of the proposal and make sure it is active
+      const state = await GovernorBravo.state(activeProposals);
+      expect(state).to.be.equal(ProposalState.Active);
+
+      // VoteCast Event
+      const voteDirection = 2;
+      const voteWeight = await comp.getPriorVotes(from, startBlock);
+      await GovernorBravo.castVote(activeProposals, voteDirection);
+
+      await assertEvent(
+        handler,
+        EventKind.VoteCast,
+        (evt: CWEvent<IVoteCast>) => {
+          assert.deepEqual(evt.data, {
+            kind: EventKind.VoteCast,
+            id: +activeProposals,
+            voter: from,
+            support: voteDirection,
+            votes: voteWeight.toString(),
+          });
+        }
+      );
+    });
+
+    */
+    // return;
 
     it('should fail once not active', async () => {
       const {
@@ -405,15 +499,45 @@ describe('Compound Event Integration Tests', () => {
         handler,
         provider,
       } = await setupSubscription();
-      await proposeAndWait(
-        handler,
-        provider,
-        GovernorBravo,
-        comp,
-        addresses[0],
-        false
-      );
+
+      const from = addresses[0];
+
+      // Create proposal
+      await createProposal(handler, GovernorBravo, comp, from);
+
+      // Wait for proposal to activate (by mining blocks?)
+      let activeProposals = await GovernorBravo.latestProposalIds(from);
+      const { startBlock } = await GovernorBravo.proposals(activeProposals);
+      const currentBlock = await provider.getBlockNumber();
+      const blockDelta = startBlock.sub(currentBlock).add(1);
+      const timeDelta = blockDelta.mul(15);
+      await provider.send('evm_increaseTime', [+timeDelta]);
+      for (let i = 0; i < +blockDelta; ++i) {
+        await provider.send('evm_mine', []);
+      }
+
+      // Get the state of the proposal and make sure it is active
+      let state = await GovernorBravo.state(activeProposals);
+      expect(state).to.be.equal(ProposalState.Active);
+
+      // Cast against vote
+      const voteDirection = 1;
+      await GovernorBravo.castVote(activeProposals, voteDirection);
+
+      // Increment time
+      const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
+      await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
+      for (let i = 0; i < votingPeriodInBlocks; i++) {
+        await provider.send('evm_mine', []);
+      }
+
+      // We have voted no, so proposal should fail
+      activeProposals = await GovernorBravo.latestProposalIds(from);
+      state = await GovernorBravo.state(activeProposals);
+      expect(state).to.be.equal(ProposalState.Defeated);
     });
+
+    return;
 
     it('should succeed once not active', async () => {
       const {

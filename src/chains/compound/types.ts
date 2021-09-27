@@ -61,6 +61,13 @@ interface IEvent {
 
 type Address = string;
 type Balance = string; // queried as BigNumber
+type BravoVoteDirection = 0 | 1 | 2;
+
+enum BravoVoteDirections {
+  For = 0,
+  Against = 1,
+  Abstain = 2,
+}
 
 export interface IProposalCanceled extends IEvent {
   kind: EventKind.ProposalCanceled;
@@ -95,7 +102,7 @@ export interface IVoteCast extends IEvent {
   kind: EventKind.VoteCast;
   voter: Address;
   id: number;
-  support: boolean;
+  support: boolean | BravoVoteDirection; // handle alpha and bravo support types
   votes: Balance;
 }
 
