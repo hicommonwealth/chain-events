@@ -26,6 +26,7 @@ import {
   TimelockMock__factory as TimelockFactory,
 } from '../../src/contractTypes';
 import {
+  BravoSupport,
   EventKind,
   IEventData,
   IProposalCreated,
@@ -491,7 +492,60 @@ describe('Compound Event Integration Tests', () => {
     */
     // return;
 
-    it('should fail once not active', async () => {
+
+    it('should succeed once voting period has expired', async () => {
+      const {
+        GovernorBravo,
+        comp,
+        addresses,
+        handler,
+        provider,
+      } = await setupSubscription();
+
+      const from = addresses[0];
+
+      // Create proposal
+      await createProposal(handler, GovernorBravo, comp, from);
+
+      // Wait for proposal to activate (by mining blocks?)
+      let activeProposals = await GovernorBravo.latestProposalIds(from);
+      console.log(await GovernorBravo.proposals(activeProposals));
+      const { startBlock } = await GovernorBravo.proposals(activeProposals);
+      const currentBlock = await provider.getBlockNumber();
+      const blockDelta = startBlock.sub(currentBlock).add(1);
+      const timeDelta = blockDelta.mul(15);
+      await provider.send('evm_increaseTime', [+timeDelta]);
+      for (let i = 0; i < +blockDelta; ++i) {
+        await provider.send('evm_mine', []);
+      }
+
+      // Get the state of the proposal and make sure it is active
+      let state = await GovernorBravo.state(activeProposals);
+      expect(state).to.be.equal(ProposalState.Active);
+
+      // Cast vote for
+      const voteDirection = BravoSupport.For;
+      await GovernorBravo.castVote(activeProposals, voteDirection);
+
+      // Increment time
+      const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
+      await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
+      for (let i = 0; i < votingPeriodInBlocks; i++) {
+        await provider.send('evm_mine', []);
+      }
+
+      // We have voted yes, so proposal should succeed
+      activeProposals = await GovernorBravo.latestProposalIds(from);
+      state = await GovernorBravo.state(activeProposals);
+      console.log('proposal state', state);
+      console.log(await GovernorBravo.proposals(activeProposals));
+
+      expect(state).to.be.equal(ProposalState.Succeeded);
+    });
+
+    // return;
+
+    it('should fail once voting period has expired', async () => {
       const {
         GovernorBravo,
         comp,
@@ -521,8 +575,7 @@ describe('Compound Event Integration Tests', () => {
       expect(state).to.be.equal(ProposalState.Active);
 
       // Cast against vote
-      const voteDirection = 1;
-      await GovernorBravo.castVote(activeProposals, voteDirection);
+      await GovernorBravo.castVote(activeProposals, BravoSupport.Against);
 
       // Increment time
       const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());

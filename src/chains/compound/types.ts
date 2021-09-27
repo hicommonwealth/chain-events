@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 import { TypedEvent } from '../../contractTypes/commons';
 import { GovernorAlpha } from '../../contractTypes';
 
@@ -7,7 +8,6 @@ export type Proposal = UnPromisify<
   ReturnType<GovernorAlpha['functions']['proposals']>
 >;
 
-// eslint-disable-next-line no-shadow
 export enum ProposalState {
   Pending = 0,
   Active = 1,
@@ -17,6 +17,12 @@ export enum ProposalState {
   Queued = 5,
   Expired = 6,
   Executed = 7,
+}
+
+export enum BravoSupport {
+  Against = 0,
+  For = 1,
+  Abstain = 2,
 }
 
 export type Api = GovernorAlpha;

@@ -29,7 +29,7 @@ contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBr
     uint public constant MAX_VOTING_DELAY = 40320; // About 1 week
 
     /// @notice The number of votes in support of a proposal required in order for a quorum to be reached and for a vote to succeed
-    uint public constant quorumVotes = 2e18; // 400,000 = 4% of Comp
+    uint public constant quorumVotes = 1; // Changed from 400k to 1
 
     /// @notice The maximum number of actions that can be included in a proposal
     uint public constant proposalMaxOperations = 10; // 10 actions
@@ -200,8 +200,13 @@ contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBr
         console.log("contract: state: proposalId", proposalId);
         console.log("contract: state: proposalCount",proposalCount);
         console.log("contract: state: initialProposalId",initialProposalId);
+
         require(proposalCount >= proposalId && proposalId > initialProposalId, "GovernorBravo::state: invalid proposal id");
         Proposal storage proposal = proposals[proposalId];
+        console.log("contract: state: proposal.eta",proposal.eta);
+        console.log("contract: state: proposal.forVotes",proposal.forVotes);
+        console.log("contract: state: proposal.againstVotes",proposal.againstVotes);
+        console.log("contract: state: quorumVotes",quorumVotes);
         if (proposal.canceled) {
             return ProposalState.Canceled;
         } else if (block.number <= proposal.startBlock) {
