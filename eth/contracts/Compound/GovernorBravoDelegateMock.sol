@@ -197,9 +197,9 @@ contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBr
       * @return Proposal state
       */
     function state(uint proposalId) public view returns (ProposalState) {
-        console.log("proposal id from mock", proposalId);
-        console.log("proposal count from mock", proposalCount);
-        console.log("initi proposal count from mock", initialProposalId);
+        console.log("contract: state: proposalId", proposalId);
+        console.log("contract: state: proposalCount",proposalCount);
+        console.log("contract: state: initialProposalId",initialProposalId);
         require(proposalCount >= proposalId && proposalId > initialProposalId, "GovernorBravo::state: invalid proposal id");
         Proposal storage proposal = proposals[proposalId];
         if (proposal.canceled) {
@@ -325,6 +325,7 @@ contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBr
 
     function setInitialProposalId() external {
         initialProposalId = 1;
+        proposalCount = 1;
     }
 
     /**

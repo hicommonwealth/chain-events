@@ -165,7 +165,6 @@ async function createProposal(
   const proposalMinimum = await gov.proposalThreshold();
   const delegateAmount = proposalMinimum.mul(3);
   await performDelegation(handler, comp, from, from, delegateAmount);
-  console.log('delegate address', gov.address);
 
   const targets = ['0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b'];
   const values = [BigNumber.from(0)];
@@ -370,7 +369,7 @@ describe('Compound Event Integration Tests', () => {
       let state: number;
       try {
         console.log(activeProposals);
-        state = await GovernorBravo.state(0);
+        state = await GovernorBravo.state(activeProposals);
         console.log('state', state);
       } catch (error) {
         console.error(error);
@@ -379,7 +378,7 @@ describe('Compound Event Integration Tests', () => {
 
       // VoteCast Event
       const voteWeight = await comp.getPriorVotes(from, startBlock);
-      await GovernorBravo.castVote(activeProposals, BigNumber.from(0));
+      await GovernorBravo.castVote(activeProposals, BigNumber.from(1));
 
       await assertEvent(
         handler,

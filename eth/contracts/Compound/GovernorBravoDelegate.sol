@@ -315,10 +315,10 @@ contract GovernorBravoDelegate is GovernorBravoDelegateStorageV1, GovernorBravoE
         emit ProposalThresholdSet(oldProposalThreshold, proposalThreshold);
     }
 
-    // Our own helper function to enable our integrationt tests.
-    function setInitialProposalId() external {
-        initialProposalId = 9;
-    }
+    // function setInitialProposalId() external {
+    //     initialProposalId = 1;
+    //     proposalCount = 1;
+    // }
 
     /**
       * @notice Begins transfer of admin rights. The newPendingAdmin must call `_acceptAdmin` to finalize the transfer.
