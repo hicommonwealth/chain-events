@@ -2,6 +2,7 @@ pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 import "./GovernorBravoInterfaces.sol";
+import "hardhat/console.sol";
 
 // TODO fill out modifications to this contract
 contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBravoEvents {
@@ -91,7 +92,9 @@ contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBr
         uint startBlock = add256(block.number, votingDelay);
         uint endBlock = add256(startBlock, votingPeriod);
 
+        console.log('propose: proposalCount', proposalCount);
         proposalCount++;
+        console.log('propose: proposalCount', proposalCount);
         Proposal memory newProposal = Proposal({
         id: proposalCount,
         proposer: msg.sender,
@@ -194,6 +197,9 @@ contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBr
       * @return Proposal state
       */
     function state(uint proposalId) public view returns (ProposalState) {
+        console.log("proposal id from mock", proposalId);
+        console.log("proposal count from mock", proposalCount);
+        console.log("initi proposal count from mock", initialProposalId);
         require(proposalCount >= proposalId && proposalId > initialProposalId, "GovernorBravo::state: invalid proposal id");
         Proposal storage proposal = proposals[proposalId];
         if (proposal.canceled) {
@@ -318,7 +324,7 @@ contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBr
     }
 
     function setInitialProposalId() external {
-        initialProposalId = 9;
+        initialProposalId = 1;
     }
 
     /**
