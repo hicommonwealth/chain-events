@@ -643,7 +643,8 @@ describe('Compound Event Integration Tests', () => {
     });
   });
 
-  it('should expire in queue', async () => {
+  it('should expire in queue', async function () {
+    this.timeout(0);
     const {
       GovernorBravo,
       comp,
@@ -652,10 +653,70 @@ describe('Compound Event Integration Tests', () => {
       handler,
       provider,
     } = await setupSubscription();
-    await proposeAndQueue(handler, provider, GovernorBravo, comp, addresses[0]);
+    const from = addresses[0];
+
+    // Wait for proposal to activate
+    await createProposal(handler, GovernorBravo, comp, from);
+    await increaseTime(provider, GovernorBravo, from);
+
+    // Ensure that proposal is active.
+    let activeProposals = await GovernorBravo.latestProposalIds(from);
+    let state = await GovernorBravo.state(activeProposals);
+    expect(state).to.be.equal(ProposalState.Active);
+
+    // VoteCast Event
+    const { startBlock } = await GovernorBravo.proposals(activeProposals);
+    const voteWeight = await comp.getPriorVotes(from, startBlock);
+    await GovernorBravo.castVote(activeProposals, BravoSupport.For);
+    await assertEvent(
+      handler,
+      EventKind.VoteCast,
+      (evt: CWEvent<IVoteCast>) => {
+        assert.deepEqual(evt.data, {
+          kind: EventKind.VoteCast,
+          id: +activeProposals,
+          voter: from,
+          support: BravoSupport.For,
+          votes: voteWeight.toString(),
+        });
+      }
+    );
+
+    // Increase time until end of voting period
+    const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
+    await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
+    for (let i = 0; i < votingPeriodInBlocks; i++) {
+      await provider.send('evm_mine', []);
+    }
+
+    activeProposals = await GovernorBravo.latestProposalIds(from);
+    state = await GovernorBravo.state(activeProposals);
+    expect(state).to.be.equal(ProposalState.Succeeded);
+
+    activeProposals = await GovernorBravo.latestProposalIds(from);
+    await GovernorBravo.queue(activeProposals);
+    await Promise.all([
+      assertEvent(
+        handler,
+        EventKind.ProposalQueued,
+        (evt: CWEvent<IProposalQueued>) => {
+          const { kind, id } = evt.data;
+          assert.deepEqual(
+            {
+              kind,
+              id,
+            },
+            {
+              kind: EventKind.ProposalQueued,
+              id: activeProposals.toNumber(),
+            }
+          );
+        }
+      ),
+    ]);
 
     // advance beyond grace period so it expires despite successful votes
-    const activeProposals = await GovernorBravo.latestProposalIds(addresses[0]);
+    activeProposals = await GovernorBravo.latestProposalIds(addresses[0]);
     const gracePeriod = await timelock.GRACE_PERIOD();
     const proposal = await GovernorBravo.proposals(activeProposals);
     const expirationTime = +gracePeriod.add(proposal.eta);
@@ -670,7 +731,7 @@ describe('Compound Event Integration Tests', () => {
     }
 
     // ensure state is set to expired
-    const state = await GovernorBravo.state(activeProposals);
+    state = await GovernorBravo.state(activeProposals);
     expect(state).to.be.equal(ProposalState.Expired);
   });
 });
