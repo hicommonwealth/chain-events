@@ -132,10 +132,11 @@ contract TimelockMock {
         bytes memory data,
         uint256 eta
     ) public {
-        require(
-            msg.sender == admin,
-            "TimelockMock::cancelTransaction: Call must come from admin."
-        );
+        // Remove requirement for testing purposes.
+        // require(
+        //     msg.sender == admin,
+        //     "TimelockMock::cancelTransaction: Call must come from admin."
+        // );
 
         bytes32 txHash = keccak256(
             abi.encode(target, value, signature, data, eta)

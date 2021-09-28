@@ -19,6 +19,7 @@ import {
   BravoSupport,
   EventKind,
   IEventData,
+  IProposalCanceled,
   IProposalCreated,
   IProposalExecuted,
   IProposalQueued,
@@ -263,7 +264,7 @@ describe('Compound Event Integration Tests', () => {
       await createProposal(handler, GovernorBravo, comp, addresses[0]);
     });
 
-    it('proposal castvote for', async () => {
+    it('proposal castvote against', async () => {
       const {
         GovernorBravo,
         comp,
@@ -303,7 +304,7 @@ describe('Compound Event Integration Tests', () => {
       );
     });
 
-    it('proposal castvote against', async () => {
+    it('proposal castvote for', async () => {
       const {
         GovernorBravo,
         comp,
@@ -338,6 +339,40 @@ describe('Compound Event Integration Tests', () => {
             voter: from,
             support: BravoSupport.For,
             votes: voteWeight.toString(),
+          });
+        }
+      );
+    });
+
+    it('proposal cancel', async () => {
+      const {
+        GovernorBravo,
+        comp,
+        addresses,
+        handler,
+        provider,
+      } = await setupSubscription();
+
+      const from = addresses[0];
+
+      const activeProposals = await createActiveProposal(
+        handler,
+        GovernorBravo,
+        comp,
+        from,
+        provider
+      );
+
+      // Cancel Event
+      await GovernorBravo.cancel(activeProposals);
+
+      await assertEvent(
+        handler,
+        EventKind.ProposalCanceled,
+        (evt: CWEvent<IProposalCanceled>) => {
+          assert.deepEqual(evt.data, {
+            kind: EventKind.ProposalCanceled,
+            id: +activeProposals,
           });
         }
       );
