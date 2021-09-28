@@ -1,17 +1,6 @@
 /* eslint-disable func-names */
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable global-require */
-/* eslint-disable no-unused-expressions */
 import '@nomiclabs/hardhat-ethers';
 import { EventEmitter } from 'events';
-
-// TODO: How to set admin in GovernorBravo Delegate
-// TODO: what are the argument defaults in createProposal/Propose()
-// TODO: How do I deploy Gov Bravo to a testnet -> done with deploy script
-// TODO: What are the truffle migrations for if we are using hardhat (can we use
-// TODO: those migrations to deploy with hardhat?)
 
 import chai, { expect } from 'chai';
 import { ethers } from 'hardhat';
