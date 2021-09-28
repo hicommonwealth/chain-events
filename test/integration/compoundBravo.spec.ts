@@ -149,7 +149,6 @@ async function setupSubscription(): Promise<ISetupData> {
 }
 
 async function performDelegation(
-  handler: CompoundEventHandler,
   comp: MPond,
   from: string,
   to: string,
@@ -166,7 +165,7 @@ async function createProposal(
 ): Promise<void> {
   const proposalMinimum = await gov.proposalThreshold();
   const delegateAmount = proposalMinimum.mul(3);
-  await performDelegation(handler, comp, from, from, delegateAmount);
+  await performDelegation(comp, from, from, delegateAmount);
 
   const targets = ['0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b'];
   const values = [BigNumber.from(0)];
@@ -200,101 +199,6 @@ async function createProposal(
   );
 }
 
-async function proposeAndVote(
-  handler: CompoundEventHandler,
-  provider: providers.JsonRpcProvider,
-  gov: GovernorBravoImmutable,
-  comp: MPond,
-  from: string,
-  voteYes: boolean
-) {
-  await createProposal(handler, gov, comp, from);
-
-  // Wait for proposal to activate
-  const activeProposals = await gov.latestProposalIds(from);
-  const { startBlock } = await gov.proposals(activeProposals);
-  const currentBlock = await provider.getBlockNumber();
-  const blockDelta = startBlock.sub(currentBlock).add(1);
-  const timeDelta = blockDelta.mul(15);
-  await provider.send('evm_increaseTime', [+timeDelta]);
-  for (let i = 0; i < +blockDelta; ++i) {
-    await provider.send('evm_mine', []);
-  }
-
-  // Ensure that proposal is active.
-  const state = await gov.state(activeProposals);
-  expect(state).to.be.equal(ProposalState.Active);
-
-  // VoteCast Event
-  const voteWeight = await comp.getPriorVotes(from, startBlock);
-  await gov.castVote(activeProposals, BravoSupport.Against);
-  await assertEvent(handler, EventKind.VoteCast, (evt: CWEvent<IVoteCast>) => {
-    assert.deepEqual(evt.data, {
-      kind: EventKind.VoteCast,
-      id: +activeProposals,
-      voter: from,
-      support: BravoSupport.Against,
-      votes: voteWeight.toString(),
-    });
-  });
-}
-
-async function proposeAndWait(
-  handler: CompoundEventHandler,
-  provider: providers.JsonRpcProvider,
-  gov: GovernorBravoImmutable,
-  comp: MPond,
-  from: string,
-  voteYes: boolean
-) {
-  await proposeAndVote(handler, provider, gov, comp, from, voteYes);
-  const activeProposals = await gov.latestProposalIds(from);
-
-  const votingPeriodInBlocks = +(await gov.votingPeriod());
-  await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
-  for (let i = 0; i < votingPeriodInBlocks; i++) {
-    await provider.send('evm_mine', []);
-  }
-  const state = await gov.state(activeProposals);
-  if (voteYes) {
-    expect(state).to.be.equal(ProposalState.Succeeded);
-  } else {
-    expect(state).to.be.equal(ProposalState.Defeated); // 3 is 'Defeated'
-  }
-}
-
-async function proposeAndQueue(
-  handler: CompoundEventHandler,
-  provider: providers.JsonRpcProvider,
-  gov: GovernorBravoImmutable,
-  comp: MPond,
-  from: string
-) {
-  await proposeAndWait(handler, provider, gov, comp, from, true);
-
-  const activeProposals = await gov.latestProposalIds(from);
-  await gov.queue(activeProposals);
-  await Promise.all([
-    assertEvent(
-      handler,
-      EventKind.ProposalQueued,
-      (evt: CWEvent<IProposalQueued>) => {
-        const { kind, id } = evt.data;
-        assert.deepEqual(
-          {
-            kind,
-            id,
-          },
-          {
-            kind: EventKind.ProposalQueued,
-            id: activeProposals,
-          }
-        );
-      }
-    ),
-  ]);
-}
-
 // Helper function to artificially increase time according to proposal
 async function increaseTime(
   provider: providers.JsonRpcProvider,
@@ -316,7 +220,7 @@ async function increaseTime(
 describe('Compound Event Integration Tests', () => {
   describe('COMP contract function events', () => {
     it('initial address should transfer tokens to an address', async () => {
-      const { comp, addresses, handler } = await setupSubscription();
+      const { comp, addresses } = await setupSubscription();
       // test volume
       const initialBalance = await comp.balanceOf(addresses[0]);
       expect(+initialBalance).to.not.be.equal(0);
@@ -329,13 +233,13 @@ describe('Compound Event Integration Tests', () => {
     });
 
     it('initial address should delegate to address 2', async () => {
-      const { comp, addresses, handler } = await setupSubscription();
-      await performDelegation(handler, comp, addresses[0], addresses[2], 1000);
+      const { comp, addresses } = await setupSubscription();
+      await performDelegation(comp, addresses[0], addresses[2], 1000);
     });
 
     it('initial address should delegate to itself', async () => {
-      const { comp, addresses, handler } = await setupSubscription();
-      await performDelegation(handler, comp, addresses[0], addresses[0], 1000);
+      const { comp, addresses } = await setupSubscription();
+      await performDelegation(comp, addresses[0], addresses[0], 1000);
     });
   });
 
