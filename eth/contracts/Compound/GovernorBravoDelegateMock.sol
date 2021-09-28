@@ -92,9 +92,7 @@ contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBr
         uint startBlock = add256(block.number, votingDelay);
         uint endBlock = add256(startBlock, votingPeriod);
 
-        console.log('propose: proposalCount', proposalCount);
         proposalCount++;
-        console.log('propose: proposalCount', proposalCount);
         Proposal memory newProposal = Proposal({
         id: proposalCount,
         proposer: msg.sender,
@@ -197,16 +195,8 @@ contract GovernorBravoDelegateMock is GovernorBravoDelegateStorageV1, GovernorBr
       * @return Proposal state
       */
     function state(uint proposalId) public view returns (ProposalState) {
-        console.log("contract: state: proposalId", proposalId);
-        console.log("contract: state: proposalCount",proposalCount);
-        console.log("contract: state: initialProposalId",initialProposalId);
-
         require(proposalCount >= proposalId && proposalId > initialProposalId, "GovernorBravo::state: invalid proposal id");
         Proposal storage proposal = proposals[proposalId];
-        console.log("contract: state: proposal.eta",proposal.eta);
-        console.log("contract: state: proposal.forVotes",proposal.forVotes);
-        console.log("contract: state: proposal.againstVotes",proposal.againstVotes);
-        console.log("contract: state: quorumVotes",quorumVotes);
         if (proposal.canceled) {
             return ProposalState.Canceled;
         } else if (block.number <= proposal.startBlock) {
