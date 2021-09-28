@@ -37,8 +37,12 @@ export async function Enrich(
       // skip this event if the approval value isn't above the threshold
       if (!shouldEmitToAll) return null;
 
+      // should not notify sender or recipient
+      const excludeAddresses = [owner.toString(), spender.toString()];
+
       return {
         blockNumber,
+        excludeAddresses,
         data: {
           kind,
           owner,
@@ -60,14 +64,12 @@ export async function Enrich(
       // skip this event if the transfer value isn't above the threshold
       if (!shouldEmitToAll) return null;
 
-      const includeAddresses = shouldEmitToAll
-        ? []
-        : [from.toString(), to.toString()];
+      // should not notify sender or recipient
+      const excludeAddresses = [from.toString(), to.toString()];
 
       return {
-        // should not notify sender or recipient
         blockNumber,
-        includeAddresses,
+        excludeAddresses,
         data: {
           kind,
           from,

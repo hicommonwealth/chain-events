@@ -106,13 +106,11 @@ export async function Enrich(
         // skip this event if the transfer value isn't above the threshold
         if (!shouldEmitToAll) return null;
 
-        const includeAddresses = shouldEmitToAll
-          ? []
-          : [sender.toString(), dest.toString()];
+        // should not notify sender or recipient
+        const excludeAddresses = [sender.toString(), dest.toString()];
 
         return {
-          // should not notify sender or recipient
-          includeAddresses,
+          excludeAddresses,
           data: {
             kind,
             sender: sender.toString(),
