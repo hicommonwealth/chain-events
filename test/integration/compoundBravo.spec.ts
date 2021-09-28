@@ -217,6 +217,26 @@ async function increaseTime(
   }
 }
 
+// Helper function that creates and then waits for a proposal to be active.
+async function createActiveProposal(
+  handler: CompoundEventHandler,
+  governorBravo: GovernorBravoImmutable,
+  comp: MPond,
+  from: string,
+  provider: providers.JsonRpcProvider
+) {
+  // Create proposal and wait for it to activate
+  await createProposal(handler, governorBravo, comp, from);
+  await increaseTime(provider, governorBravo, from);
+
+  // Get the state of the proposal and make sure it is active
+  const activeProposals = await governorBravo.latestProposalIds(from);
+  const state = await governorBravo.state(activeProposals);
+  expect(state).to.be.equal(ProposalState.Active);
+
+  return activeProposals;
+}
+
 describe('Compound Event Integration Tests', () => {
   describe('COMP contract function events', () => {
     it('initial address should transfer tokens to an address', async () => {
@@ -265,14 +285,13 @@ describe('Compound Event Integration Tests', () => {
 
       const from = addresses[0];
 
-      // Create proposal and wait for it to activate
-      await createProposal(handler, GovernorBravo, comp, from);
-      await increaseTime(provider, GovernorBravo, from);
-
-      // Get the state of the proposal and make sure it is active
-      const activeProposals = await GovernorBravo.latestProposalIds(from);
-      const state = await GovernorBravo.state(activeProposals);
-      expect(state).to.be.equal(ProposalState.Active);
+      const activeProposals = await createActiveProposal(
+        handler,
+        GovernorBravo,
+        comp,
+        from,
+        provider
+      );
 
       // VoteCast Event
       await GovernorBravo.castVote(activeProposals, BravoSupport.Against);
@@ -306,14 +325,13 @@ describe('Compound Event Integration Tests', () => {
 
       const from = addresses[0];
 
-      // Create proposal and wait for it to activate
-      await createProposal(handler, GovernorBravo, comp, from);
-      await increaseTime(provider, GovernorBravo, from);
-
-      // Get the state of the proposal and make sure it is active
-      const activeProposals = await GovernorBravo.latestProposalIds(from);
-      const state = await GovernorBravo.state(activeProposals);
-      expect(state).to.be.equal(ProposalState.Active);
+      const activeProposals = await createActiveProposal(
+        handler,
+        GovernorBravo,
+        comp,
+        from,
+        provider
+      );
 
       // VoteCast Event
       await GovernorBravo.castVote(activeProposals, BravoSupport.For);
@@ -347,14 +365,13 @@ describe('Compound Event Integration Tests', () => {
 
       const from = addresses[0];
 
-      // Create proposal and wait for it to activate
-      await createProposal(handler, GovernorBravo, comp, from);
-      await increaseTime(provider, GovernorBravo, from);
-
-      // Get the state of the proposal and make sure it is active
-      const activeProposals = await GovernorBravo.latestProposalIds(from);
-      const state = await GovernorBravo.state(activeProposals);
-      expect(state).to.be.equal(ProposalState.Active);
+      const activeProposals = await createActiveProposal(
+        handler,
+        GovernorBravo,
+        comp,
+        from,
+        provider
+      );
 
       // VoteCast Event
       await GovernorBravo.castVote(activeProposals, BravoSupport.Abstain);
@@ -388,14 +405,13 @@ describe('Compound Event Integration Tests', () => {
 
       const from = addresses[0];
 
-      // Create proposal and wait for it to activate
-      await createProposal(handler, GovernorBravo, comp, from);
-      await increaseTime(provider, GovernorBravo, from);
-
-      // Get the state of the proposal and make sure it is active
-      let activeProposals = await GovernorBravo.latestProposalIds(from);
-      let state = await GovernorBravo.state(activeProposals);
-      expect(state).to.be.equal(ProposalState.Active);
+      let activeProposals = await createActiveProposal(
+        handler,
+        GovernorBravo,
+        comp,
+        from,
+        provider
+      );
 
       // Cast vote for
       await GovernorBravo.castVote(activeProposals, BravoSupport.For);
@@ -409,7 +425,7 @@ describe('Compound Event Integration Tests', () => {
 
       // We have voted yes, so proposal should succeed
       activeProposals = await GovernorBravo.latestProposalIds(from);
-      state = await GovernorBravo.state(activeProposals);
+      const state = await GovernorBravo.state(activeProposals);
       expect(state).to.be.equal(ProposalState.Succeeded);
     });
 
@@ -424,15 +440,13 @@ describe('Compound Event Integration Tests', () => {
 
       const from = addresses[0];
 
-      // Create proposal and wait for it to activate
-      await createProposal(handler, GovernorBravo, comp, from);
-      await increaseTime(provider, GovernorBravo, from);
-
-      let activeProposals = await GovernorBravo.latestProposalIds(from);
-
-      // Get the state of the proposal and make sure it is active
-      let state = await GovernorBravo.state(activeProposals);
-      expect(state).to.be.equal(ProposalState.Active);
+      let activeProposals = await createActiveProposal(
+        handler,
+        GovernorBravo,
+        comp,
+        from,
+        provider
+      );
 
       // Cast against vote
       await GovernorBravo.castVote(activeProposals, BravoSupport.Against);
@@ -446,7 +460,7 @@ describe('Compound Event Integration Tests', () => {
 
       // We have voted no, so proposal should fail
       activeProposals = await GovernorBravo.latestProposalIds(from);
-      state = await GovernorBravo.state(activeProposals);
+      const state = await GovernorBravo.state(activeProposals);
       expect(state).to.be.equal(ProposalState.Defeated);
     });
 
@@ -462,14 +476,13 @@ describe('Compound Event Integration Tests', () => {
 
       const from = addresses[0];
 
-      // Wait for proposal to activate
-      await createProposal(handler, GovernorBravo, comp, from);
-      await increaseTime(provider, GovernorBravo, from);
-
-      // Ensure that proposal is active.
-      let activeProposals = await GovernorBravo.latestProposalIds(from);
-      let state = await GovernorBravo.state(activeProposals);
-      expect(state).to.be.equal(ProposalState.Active);
+      let activeProposals = await createActiveProposal(
+        handler,
+        GovernorBravo,
+        comp,
+        from,
+        provider
+      );
 
       // VoteCast Event
       const { startBlock } = await GovernorBravo.proposals(activeProposals);
@@ -497,7 +510,7 @@ describe('Compound Event Integration Tests', () => {
       }
 
       activeProposals = await GovernorBravo.latestProposalIds(from);
-      state = await GovernorBravo.state(activeProposals);
+      const state = await GovernorBravo.state(activeProposals);
       expect(state).to.be.equal(ProposalState.Succeeded);
 
       activeProposals = await GovernorBravo.latestProposalIds(from);
@@ -557,16 +570,16 @@ describe('Compound Event Integration Tests', () => {
       handler,
       provider,
     } = await setupSubscription();
+
     const from = addresses[0];
 
-    // Wait for proposal to activate
-    await createProposal(handler, GovernorBravo, comp, from);
-    await increaseTime(provider, GovernorBravo, from);
-
-    // Ensure that proposal is active.
-    let activeProposals = await GovernorBravo.latestProposalIds(from);
-    let state = await GovernorBravo.state(activeProposals);
-    expect(state).to.be.equal(ProposalState.Active);
+    let activeProposals = await createActiveProposal(
+      handler,
+      GovernorBravo,
+      comp,
+      from,
+      provider
+    );
 
     // VoteCast Event
     const { startBlock } = await GovernorBravo.proposals(activeProposals);
@@ -594,7 +607,7 @@ describe('Compound Event Integration Tests', () => {
     }
 
     activeProposals = await GovernorBravo.latestProposalIds(from);
-    state = await GovernorBravo.state(activeProposals);
+    let state = await GovernorBravo.state(activeProposals);
     expect(state).to.be.equal(ProposalState.Succeeded);
 
     activeProposals = await GovernorBravo.latestProposalIds(from);
