@@ -24,6 +24,7 @@ import {
   IProposalExecuted,
   IProposalQueued,
   IVoteCast,
+  IVoteCastBravo,
   ProposalState,
 } from '../../src/chains/compound/types';
 import { subscribeEvents } from '../../src/chains/compound';
@@ -228,43 +229,43 @@ async function createActiveProposal(
 }
 
 describe('Compound Event Integration Tests', () => {
-  describe('COMP contract function events', () => {
-    it('initial address should transfer tokens to an address', async () => {
-      const { comp, addresses } = await setupSubscription();
-      // test volume
-      const initialBalance = await comp.balanceOf(addresses[0]);
-      expect(+initialBalance).to.not.be.equal(0);
-      const newUser = await comp.balanceOf(addresses[2]);
-      assert.isAtMost(+newUser, 0);
-      assert.isAtLeast(+initialBalance, 100000);
-      await comp.transfer(addresses[2], 100);
-      const newUserNewBalance = await comp.balanceOf(addresses[2]);
-      assert.isAtLeast(+newUserNewBalance, 100);
-    });
+  // describe('COMP contract function events', () => {
+  //   it('initial address should transfer tokens to an address', async () => {
+  //     const { comp, addresses } = await setupSubscription();
+  //     // test volume
+  //     const initialBalance = await comp.balanceOf(addresses[0]);
+  //     expect(+initialBalance).to.not.be.equal(0);
+  //     const newUser = await comp.balanceOf(addresses[2]);
+  //     assert.isAtMost(+newUser, 0);
+  //     assert.isAtLeast(+initialBalance, 100000);
+  //     await comp.transfer(addresses[2], 100);
+  //     const newUserNewBalance = await comp.balanceOf(addresses[2]);
+  //     assert.isAtLeast(+newUserNewBalance, 100);
+  //   });
 
-    it('initial address should delegate to address 2', async () => {
-      const { comp, addresses } = await setupSubscription();
-      await performDelegation(comp, addresses[0], addresses[2], 1000);
-    });
+  //   it('initial address should delegate to address 2', async () => {
+  //     const { comp, addresses } = await setupSubscription();
+  //     await performDelegation(comp, addresses[0], addresses[2], 1000);
+  //   });
 
-    it('initial address should delegate to itself', async () => {
-      const { comp, addresses } = await setupSubscription();
-      await performDelegation(comp, addresses[0], addresses[0], 1000);
-    });
-  });
+  //   it('initial address should delegate to itself', async () => {
+  //     const { comp, addresses } = await setupSubscription();
+  //     await performDelegation(comp, addresses[0], addresses[0], 1000);
+  //   });
+  // });
 
   describe('GovernorBravo contract function events', () => {
-    it('should create a proposal', async () => {
-      const {
-        GovernorBravo,
-        comp,
-        addresses,
-        handler,
-      } = await setupSubscription();
-      await createProposal(handler, GovernorBravo, comp, addresses[0]);
-    });
+    // it('should create a proposal', async () => {
+    //   const {
+    //     GovernorBravo,
+    //     comp,
+    //     addresses,
+    //     handler,
+    //   } = await setupSubscription();
+    //   await createProposal(handler, GovernorBravo, comp, addresses[0]);
+    // });
 
-    it('proposal castvote against', async () => {
+    it('proposal castvote against with reason', async () => {
       const {
         GovernorBravo,
         comp,
@@ -284,7 +285,16 @@ describe('Compound Event Integration Tests', () => {
       );
 
       // VoteCast Event
-      await GovernorBravo.castVote(activeProposals, BravoSupport.Against);
+      // await GovernorBravo.castVote(activeProposals, BravoSupport.Against);
+      await GovernorBravo.castVoteWithReason(
+        activeProposals,
+        BravoSupport.Against,
+        'i dont like it'
+      );
+
+      handler.emitter.on(EventKind.VoteCast, (evt: CWEvent<IVoteCastBravo>) => {
+        console.log('GOT THE EVENT', evt);
+      });
 
       const { startBlock } = await GovernorBravo.proposals(activeProposals);
       const voteWeight = await comp.getPriorVotes(from, startBlock);
@@ -292,387 +302,388 @@ describe('Compound Event Integration Tests', () => {
       await assertEvent(
         handler,
         EventKind.VoteCast,
-        (evt: CWEvent<IVoteCast>) => {
+        (evt: CWEvent<IVoteCastBravo>) => {
           assert.deepEqual(evt.data, {
             kind: EventKind.VoteCast,
             id: +activeProposals,
             voter: from,
             support: BravoSupport.Against,
             votes: voteWeight.toString(),
+            reason: 'i dont like it',
           });
         }
       );
     });
 
-    it('proposal castvote for', async () => {
-      const {
-        GovernorBravo,
-        comp,
-        addresses,
-        handler,
-        provider,
-      } = await setupSubscription();
+    // it('proposal castvote for', async () => {
+    //   const {
+    //     GovernorBravo,
+    //     comp,
+    //     addresses,
+    //     handler,
+    //     provider,
+    //   } = await setupSubscription();
 
-      const from = addresses[0];
+    //   const from = addresses[0];
 
-      const activeProposals = await createActiveProposal(
-        handler,
-        GovernorBravo,
-        comp,
-        from,
-        provider
-      );
+    //   const activeProposals = await createActiveProposal(
+    //     handler,
+    //     GovernorBravo,
+    //     comp,
+    //     from,
+    //     provider
+    //   );
 
-      // VoteCast Event
-      await GovernorBravo.castVote(activeProposals, BravoSupport.For);
+    //   // VoteCast Event
+    //   await GovernorBravo.castVote(activeProposals, BravoSupport.For);
 
-      const { startBlock } = await GovernorBravo.proposals(activeProposals);
-      const voteWeight = await comp.getPriorVotes(from, startBlock);
+    //   const { startBlock } = await GovernorBravo.proposals(activeProposals);
+    //   const voteWeight = await comp.getPriorVotes(from, startBlock);
 
-      await assertEvent(
-        handler,
-        EventKind.VoteCast,
-        (evt: CWEvent<IVoteCast>) => {
-          assert.deepEqual(evt.data, {
-            kind: EventKind.VoteCast,
-            id: +activeProposals,
-            voter: from,
-            support: BravoSupport.For,
-            votes: voteWeight.toString(),
-          });
-        }
-      );
-    });
+    //   await assertEvent(
+    //     handler,
+    //     EventKind.VoteCast,
+    //     (evt: CWEvent<IVoteCast>) => {
+    //       assert.deepEqual(evt.data, {
+    //         kind: EventKind.VoteCast,
+    //         id: +activeProposals,
+    //         voter: from,
+    //         support: BravoSupport.For,
+    //         votes: voteWeight.toString(),
+    //       });
+    //     }
+    //   );
+    // });
 
-    it('proposal cancel', async () => {
-      const {
-        GovernorBravo,
-        comp,
-        addresses,
-        handler,
-        provider,
-      } = await setupSubscription();
+    // it('proposal cancel', async () => {
+    //   const {
+    //     GovernorBravo,
+    //     comp,
+    //     addresses,
+    //     handler,
+    //     provider,
+    //   } = await setupSubscription();
 
-      const from = addresses[0];
+    //   const from = addresses[0];
 
-      const activeProposals = await createActiveProposal(
-        handler,
-        GovernorBravo,
-        comp,
-        from,
-        provider
-      );
+    //   const activeProposals = await createActiveProposal(
+    //     handler,
+    //     GovernorBravo,
+    //     comp,
+    //     from,
+    //     provider
+    //   );
 
-      // Cancel Event
-      await GovernorBravo.cancel(activeProposals);
+    //   // Cancel Event
+    //   await GovernorBravo.cancel(activeProposals);
 
-      await assertEvent(
-        handler,
-        EventKind.ProposalCanceled,
-        (evt: CWEvent<IProposalCanceled>) => {
-          assert.deepEqual(evt.data, {
-            kind: EventKind.ProposalCanceled,
-            id: +activeProposals,
-          });
-        }
-      );
-    });
+    //   await assertEvent(
+    //     handler,
+    //     EventKind.ProposalCanceled,
+    //     (evt: CWEvent<IProposalCanceled>) => {
+    //       assert.deepEqual(evt.data, {
+    //         kind: EventKind.ProposalCanceled,
+    //         id: +activeProposals,
+    //       });
+    //     }
+    //   );
+    // });
 
-    it('proposal castvote abstain', async () => {
-      const {
-        GovernorBravo,
-        comp,
-        addresses,
-        handler,
-        provider,
-      } = await setupSubscription();
+    // it('proposal castvote abstain', async () => {
+    //   const {
+    //     GovernorBravo,
+    //     comp,
+    //     addresses,
+    //     handler,
+    //     provider,
+    //   } = await setupSubscription();
 
-      const from = addresses[0];
+    //   const from = addresses[0];
 
-      const activeProposals = await createActiveProposal(
-        handler,
-        GovernorBravo,
-        comp,
-        from,
-        provider
-      );
+    //   const activeProposals = await createActiveProposal(
+    //     handler,
+    //     GovernorBravo,
+    //     comp,
+    //     from,
+    //     provider
+    //   );
 
-      // VoteCast Event
-      await GovernorBravo.castVote(activeProposals, BravoSupport.Abstain);
+    //   // VoteCast Event
+    //   await GovernorBravo.castVote(activeProposals, BravoSupport.Abstain);
 
-      const { startBlock } = await GovernorBravo.proposals(activeProposals);
-      const voteWeight = await comp.getPriorVotes(from, startBlock);
+    //   const { startBlock } = await GovernorBravo.proposals(activeProposals);
+    //   const voteWeight = await comp.getPriorVotes(from, startBlock);
 
-      await assertEvent(
-        handler,
-        EventKind.VoteCast,
-        (evt: CWEvent<IVoteCast>) => {
-          assert.deepEqual(evt.data, {
-            kind: EventKind.VoteCast,
-            id: +activeProposals,
-            voter: from,
-            support: BravoSupport.Abstain,
-            votes: voteWeight.toString(),
-          });
-        }
-      );
-    });
+    //   await assertEvent(
+    //     handler,
+    //     EventKind.VoteCast,
+    //     (evt: CWEvent<IVoteCast>) => {
+    //       assert.deepEqual(evt.data, {
+    //         kind: EventKind.VoteCast,
+    //         id: +activeProposals,
+    //         voter: from,
+    //         support: BravoSupport.Abstain,
+    //         votes: voteWeight.toString(),
+    //       });
+    //     }
+    //   );
+    // });
 
-    it('proposal should succeed once voting period has expired', async () => {
-      const {
-        GovernorBravo,
-        comp,
-        addresses,
-        handler,
-        provider,
-      } = await setupSubscription();
+    // it('proposal should succeed once voting period has expired', async () => {
+    //   const {
+    //     GovernorBravo,
+    //     comp,
+    //     addresses,
+    //     handler,
+    //     provider,
+    //   } = await setupSubscription();
 
-      const from = addresses[0];
+    //   const from = addresses[0];
 
-      let activeProposals = await createActiveProposal(
-        handler,
-        GovernorBravo,
-        comp,
-        from,
-        provider
-      );
+    //   let activeProposals = await createActiveProposal(
+    //     handler,
+    //     GovernorBravo,
+    //     comp,
+    //     from,
+    //     provider
+    //   );
 
-      // Cast vote for
-      await GovernorBravo.castVote(activeProposals, BravoSupport.For);
+    //   // Cast vote for
+    //   await GovernorBravo.castVote(activeProposals, BravoSupport.For);
 
-      // Increment time
-      const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
-      await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
-      for (let i = 0; i < votingPeriodInBlocks; i++) {
-        await provider.send('evm_mine', []);
-      }
+    //   // Increment time
+    //   const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
+    //   await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
+    //   for (let i = 0; i < votingPeriodInBlocks; i++) {
+    //     await provider.send('evm_mine', []);
+    //   }
 
-      // We have voted yes, so proposal should succeed
-      activeProposals = await GovernorBravo.latestProposalIds(from);
-      const state = await GovernorBravo.state(activeProposals);
-      expect(state).to.be.equal(ProposalState.Succeeded);
-    });
+    //   // We have voted yes, so proposal should succeed
+    //   activeProposals = await GovernorBravo.latestProposalIds(from);
+    //   const state = await GovernorBravo.state(activeProposals);
+    //   expect(state).to.be.equal(ProposalState.Succeeded);
+    // });
 
-    it('proposal should be defeated once voting period has expired', async () => {
-      const {
-        GovernorBravo,
-        comp,
-        addresses,
-        handler,
-        provider,
-      } = await setupSubscription();
+    // it('proposal should be defeated once voting period has expired', async () => {
+    //   const {
+    //     GovernorBravo,
+    //     comp,
+    //     addresses,
+    //     handler,
+    //     provider,
+    //   } = await setupSubscription();
 
-      const from = addresses[0];
+    //   const from = addresses[0];
 
-      let activeProposals = await createActiveProposal(
-        handler,
-        GovernorBravo,
-        comp,
-        from,
-        provider
-      );
+    //   let activeProposals = await createActiveProposal(
+    //     handler,
+    //     GovernorBravo,
+    //     comp,
+    //     from,
+    //     provider
+    //   );
 
-      // Cast against vote
-      await GovernorBravo.castVote(activeProposals, BravoSupport.Against);
+    //   // Cast against vote
+    //   await GovernorBravo.castVote(activeProposals, BravoSupport.Against);
 
-      // Increment time
-      const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
-      await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
-      for (let i = 0; i < votingPeriodInBlocks; i++) {
-        await provider.send('evm_mine', []);
-      }
+    //   // Increment time
+    //   const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
+    //   await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
+    //   for (let i = 0; i < votingPeriodInBlocks; i++) {
+    //     await provider.send('evm_mine', []);
+    //   }
 
-      // We have voted no, so proposal should fail
-      activeProposals = await GovernorBravo.latestProposalIds(from);
-      const state = await GovernorBravo.state(activeProposals);
-      expect(state).to.be.equal(ProposalState.Defeated);
-    });
+    //   // We have voted no, so proposal should fail
+    //   activeProposals = await GovernorBravo.latestProposalIds(from);
+    //   const state = await GovernorBravo.state(activeProposals);
+    //   expect(state).to.be.equal(ProposalState.Defeated);
+    // });
 
-    it('should be queued and executed', async function () {
-      this.timeout(0);
-      const {
-        GovernorBravo,
-        comp,
-        addresses,
-        handler,
-        provider,
-      } = await setupSubscription();
+    // it('should be queued and executed', async function () {
+    //   this.timeout(0);
+    //   const {
+    //     GovernorBravo,
+    //     comp,
+    //     addresses,
+    //     handler,
+    //     provider,
+    //   } = await setupSubscription();
 
-      const from = addresses[0];
+    //   const from = addresses[0];
 
-      let activeProposals = await createActiveProposal(
-        handler,
-        GovernorBravo,
-        comp,
-        from,
-        provider
-      );
+    //   let activeProposals = await createActiveProposal(
+    //     handler,
+    //     GovernorBravo,
+    //     comp,
+    //     from,
+    //     provider
+    //   );
 
-      // VoteCast Event
-      const { startBlock } = await GovernorBravo.proposals(activeProposals);
-      const voteWeight = await comp.getPriorVotes(from, startBlock);
-      await GovernorBravo.castVote(activeProposals, BravoSupport.For);
-      await assertEvent(
-        handler,
-        EventKind.VoteCast,
-        (evt: CWEvent<IVoteCast>) => {
-          assert.deepEqual(evt.data, {
-            kind: EventKind.VoteCast,
-            id: +activeProposals,
-            voter: from,
-            support: BravoSupport.For,
-            votes: voteWeight.toString(),
-          });
-        }
-      );
+    //   // VoteCast Event
+    //   const { startBlock } = await GovernorBravo.proposals(activeProposals);
+    //   const voteWeight = await comp.getPriorVotes(from, startBlock);
+    //   await GovernorBravo.castVote(activeProposals, BravoSupport.For);
+    //   await assertEvent(
+    //     handler,
+    //     EventKind.VoteCast,
+    //     (evt: CWEvent<IVoteCast>) => {
+    //       assert.deepEqual(evt.data, {
+    //         kind: EventKind.VoteCast,
+    //         id: +activeProposals,
+    //         voter: from,
+    //         support: BravoSupport.For,
+    //         votes: voteWeight.toString(),
+    //       });
+    //     }
+    //   );
 
-      // Increase time until end of voting period
-      const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
-      await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
-      for (let i = 0; i < votingPeriodInBlocks; i++) {
-        await provider.send('evm_mine', []);
-      }
+    //   // Increase time until end of voting period
+    //   const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
+    //   await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
+    //   for (let i = 0; i < votingPeriodInBlocks; i++) {
+    //     await provider.send('evm_mine', []);
+    //   }
 
-      activeProposals = await GovernorBravo.latestProposalIds(from);
-      const state = await GovernorBravo.state(activeProposals);
-      expect(state).to.be.equal(ProposalState.Succeeded);
+    //   activeProposals = await GovernorBravo.latestProposalIds(from);
+    //   const state = await GovernorBravo.state(activeProposals);
+    //   expect(state).to.be.equal(ProposalState.Succeeded);
 
-      activeProposals = await GovernorBravo.latestProposalIds(from);
-      await GovernorBravo.queue(activeProposals);
-      await Promise.all([
-        assertEvent(
-          handler,
-          EventKind.ProposalQueued,
-          (evt: CWEvent<IProposalQueued>) => {
-            const { kind, id } = evt.data;
-            assert.deepEqual(
-              {
-                kind,
-                id,
-              },
-              {
-                kind: EventKind.ProposalQueued,
-                id: activeProposals.toNumber(),
-              }
-            );
-          }
-        ),
-      ]);
+    //   activeProposals = await GovernorBravo.latestProposalIds(from);
+    //   await GovernorBravo.queue(activeProposals);
+    //   await Promise.all([
+    //     assertEvent(
+    //       handler,
+    //       EventKind.ProposalQueued,
+    //       (evt: CWEvent<IProposalQueued>) => {
+    //         const { kind, id } = evt.data;
+    //         assert.deepEqual(
+    //           {
+    //             kind,
+    //             id,
+    //           },
+    //           {
+    //             kind: EventKind.ProposalQueued,
+    //             id: activeProposals.toNumber(),
+    //           }
+    //         );
+    //       }
+    //     ),
+    //   ]);
 
-      activeProposals = await GovernorBravo.latestProposalIds(from);
-      await GovernorBravo.execute(activeProposals);
+    //   activeProposals = await GovernorBravo.latestProposalIds(from);
+    //   await GovernorBravo.execute(activeProposals);
 
-      await Promise.all([
-        assertEvent(
-          handler,
-          EventKind.ProposalExecuted,
-          (evt: CWEvent<IProposalExecuted>) => {
-            const { kind, id } = evt.data;
-            assert.deepEqual(
-              {
-                kind,
-                id,
-              },
-              {
-                kind: EventKind.ProposalExecuted,
-                id: activeProposals.toNumber(),
-              }
-            );
-          }
-        ),
-      ]);
-    });
+    //   await Promise.all([
+    //     assertEvent(
+    //       handler,
+    //       EventKind.ProposalExecuted,
+    //       (evt: CWEvent<IProposalExecuted>) => {
+    //         const { kind, id } = evt.data;
+    //         assert.deepEqual(
+    //           {
+    //             kind,
+    //             id,
+    //           },
+    //           {
+    //             kind: EventKind.ProposalExecuted,
+    //             id: activeProposals.toNumber(),
+    //           }
+    //         );
+    //       }
+    //     ),
+    //   ]);
+    // });
   });
 
-  it('should expire in queue', async function () {
-    this.timeout(0);
-    const {
-      GovernorBravo,
-      comp,
-      timelock,
-      addresses,
-      handler,
-      provider,
-    } = await setupSubscription();
+  // it('should expire in queue', async function () {
+  //   this.timeout(0);
+  //   const {
+  //     GovernorBravo,
+  //     comp,
+  //     timelock,
+  //     addresses,
+  //     handler,
+  //     provider,
+  //   } = await setupSubscription();
 
-    const from = addresses[0];
+  //   const from = addresses[0];
 
-    let activeProposals = await createActiveProposal(
-      handler,
-      GovernorBravo,
-      comp,
-      from,
-      provider
-    );
+  //   let activeProposals = await createActiveProposal(
+  //     handler,
+  //     GovernorBravo,
+  //     comp,
+  //     from,
+  //     provider
+  //   );
 
-    // VoteCast Event
-    const { startBlock } = await GovernorBravo.proposals(activeProposals);
-    const voteWeight = await comp.getPriorVotes(from, startBlock);
-    await GovernorBravo.castVote(activeProposals, BravoSupport.For);
-    await assertEvent(
-      handler,
-      EventKind.VoteCast,
-      (evt: CWEvent<IVoteCast>) => {
-        assert.deepEqual(evt.data, {
-          kind: EventKind.VoteCast,
-          id: +activeProposals,
-          voter: from,
-          support: BravoSupport.For,
-          votes: voteWeight.toString(),
-        });
-      }
-    );
+  //   // VoteCast Event
+  //   const { startBlock } = await GovernorBravo.proposals(activeProposals);
+  //   const voteWeight = await comp.getPriorVotes(from, startBlock);
+  //   await GovernorBravo.castVote(activeProposals, BravoSupport.For);
+  //   await assertEvent(
+  //     handler,
+  //     EventKind.VoteCast,
+  //     (evt: CWEvent<IVoteCast>) => {
+  //       assert.deepEqual(evt.data, {
+  //         kind: EventKind.VoteCast,
+  //         id: +activeProposals,
+  //         voter: from,
+  //         support: BravoSupport.For,
+  //         votes: voteWeight.toString(),
+  //       });
+  //     }
+  //   );
 
-    // Increase time until end of voting period
-    const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
-    await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
-    for (let i = 0; i < votingPeriodInBlocks; i++) {
-      await provider.send('evm_mine', []);
-    }
+  //   // Increase time until end of voting period
+  //   const votingPeriodInBlocks = +(await GovernorBravo.votingPeriod());
+  //   await provider.send('evm_increaseTime', [votingPeriodInBlocks * 15]);
+  //   for (let i = 0; i < votingPeriodInBlocks; i++) {
+  //     await provider.send('evm_mine', []);
+  //   }
 
-    activeProposals = await GovernorBravo.latestProposalIds(from);
-    let state = await GovernorBravo.state(activeProposals);
-    expect(state).to.be.equal(ProposalState.Succeeded);
+  //   activeProposals = await GovernorBravo.latestProposalIds(from);
+  //   let state = await GovernorBravo.state(activeProposals);
+  //   expect(state).to.be.equal(ProposalState.Succeeded);
 
-    activeProposals = await GovernorBravo.latestProposalIds(from);
-    await GovernorBravo.queue(activeProposals);
-    await Promise.all([
-      assertEvent(
-        handler,
-        EventKind.ProposalQueued,
-        (evt: CWEvent<IProposalQueued>) => {
-          const { kind, id } = evt.data;
-          assert.deepEqual(
-            {
-              kind,
-              id,
-            },
-            {
-              kind: EventKind.ProposalQueued,
-              id: activeProposals.toNumber(),
-            }
-          );
-        }
-      ),
-    ]);
+  //   activeProposals = await GovernorBravo.latestProposalIds(from);
+  //   await GovernorBravo.queue(activeProposals);
+  //   await Promise.all([
+  //     assertEvent(
+  //       handler,
+  //       EventKind.ProposalQueued,
+  //       (evt: CWEvent<IProposalQueued>) => {
+  //         const { kind, id } = evt.data;
+  //         assert.deepEqual(
+  //           {
+  //             kind,
+  //             id,
+  //           },
+  //           {
+  //             kind: EventKind.ProposalQueued,
+  //             id: activeProposals.toNumber(),
+  //           }
+  //         );
+  //       }
+  //     ),
+  //   ]);
 
-    // advance beyond grace period so it expires despite successful votes
-    activeProposals = await GovernorBravo.latestProposalIds(addresses[0]);
-    const gracePeriod = await timelock.GRACE_PERIOD();
-    const proposal = await GovernorBravo.proposals(activeProposals);
-    const expirationTime = +gracePeriod.add(proposal.eta);
-    const currentBlock = await provider.getBlockNumber();
-    const { timestamp } = await provider.getBlock(currentBlock);
-    const timeUntilExpiration = expirationTime - timestamp;
-    const timeToAdvance = timeUntilExpiration + 15;
-    const blocksToAdvance = Math.ceil(timeToAdvance / 15);
-    await provider.send('evm_increaseTime', [timeToAdvance]);
-    for (let i = 0; i < blocksToAdvance; i++) {
-      await provider.send('evm_mine', []);
-    }
+  //   // advance beyond grace period so it expires despite successful votes
+  //   activeProposals = await GovernorBravo.latestProposalIds(addresses[0]);
+  //   const gracePeriod = await timelock.GRACE_PERIOD();
+  //   const proposal = await GovernorBravo.proposals(activeProposals);
+  //   const expirationTime = +gracePeriod.add(proposal.eta);
+  //   const currentBlock = await provider.getBlockNumber();
+  //   const { timestamp } = await provider.getBlock(currentBlock);
+  //   const timeUntilExpiration = expirationTime - timestamp;
+  //   const timeToAdvance = timeUntilExpiration + 15;
+  //   const blocksToAdvance = Math.ceil(timeToAdvance / 15);
+  //   await provider.send('evm_increaseTime', [timeToAdvance]);
+  //   for (let i = 0; i < blocksToAdvance; i++) {
+  //     await provider.send('evm_mine', []);
+  //   }
 
-    // ensure state is set to expired
-    state = await GovernorBravo.state(activeProposals);
-    expect(state).to.be.equal(ProposalState.Expired);
-  });
+  //   // ensure state is set to expired
+  //   state = await GovernorBravo.state(activeProposals);
+  //   expect(state).to.be.equal(ProposalState.Expired);
+  // });
 });

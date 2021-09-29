@@ -106,12 +106,17 @@ export interface IVoteCast extends IEvent {
   votes: Balance;
 }
 
+export interface IVoteCastBravo extends IVoteCast {
+  reason: string;
+}
+
 export type IEventData =
   // GovernorAlpha
   | IProposalCanceled
   | IProposalCreated
   | IProposalExecuted
   | IProposalQueued
-  | IVoteCast;
+  | IVoteCast
+  | IVoteCastBravo;
 
 export const EventKinds: EventKind[] = Object.values(EventKind);
