@@ -46,4 +46,7 @@ export default {
     outDir: '../src/contractTypes',
     target: 'ethers-v5',
   },
+  mocha: {
+    timeout: 40000
+  },
 };
