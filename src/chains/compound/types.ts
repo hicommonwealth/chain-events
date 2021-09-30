@@ -52,7 +52,6 @@ export enum EntityKind {
   Proposal = 'proposal',
 }
 
-// eslint-disable-next-line no-shadow
 export enum EventKind {
   ProposalExecuted = 'proposal-executed',
   ProposalCreated = 'proposal-created',
@@ -67,7 +66,6 @@ interface IEvent {
 
 type Address = string;
 type Balance = string; // queried as BigNumber
-type BravoVoteDirection = 0 | 1 | 2;
 
 export interface IProposalCanceled extends IEvent {
   kind: EventKind.ProposalCanceled;
@@ -102,21 +100,16 @@ export interface IVoteCast extends IEvent {
   kind: EventKind.VoteCast;
   voter: Address;
   id: number;
-  support: boolean | BravoVoteDirection; // handle alpha and bravo support types
+  support: number | boolean; // handle alpha and bravo support types
   votes: Balance;
-}
-
-export interface IVoteCastBravo extends IVoteCast {
-  reason: string;
+  reason?: string;
 }
 
 export type IEventData =
-  // GovernorAlpha
   | IProposalCanceled
   | IProposalCreated
   | IProposalExecuted
   | IProposalQueued
-  | IVoteCast
-  | IVoteCastBravo;
+  | IVoteCast;
 
 export const EventKinds: EventKind[] = Object.values(EventKind);
