@@ -87,12 +87,15 @@ export const subscribeEvents: SubscribeFunc<
 > = async (options) => {
   const { chain, api, handlers, verbose, enricherConfig } = options;
   // helper function that sends an event through event handlers
-  const handleEventFn = async (event: CWEvent<IEventData>): Promise<void> => {
+  const handleEventFn = async (
+    event: CWEvent<IEventData>,
+    tokenName?: string
+  ): Promise<void> => {
+    event.chain = (tokenName as never) || chain;
+    event.received = Date.now();
     let prevResult = null;
     for (const handler of handlers) {
       try {
-        event.chain = chain;
-        event.received = Date.now();
         // pass result of last handler into next one (chaining db events)
         prevResult = await handler.handle(event, prevResult);
       } catch (err) {
@@ -105,13 +108,16 @@ export const subscribeEvents: SubscribeFunc<
   // helper function that sends a block through the event processor and
   // into the event handlers
   const processor = new Processor(api, enricherConfig || {});
-  const processEventFn = async (event: RawEvent): Promise<void> => {
+  const processEventFn = async (
+    event: RawEvent,
+    tokenName?: string
+  ): Promise<void> => {
     // retrieve events from block
     const cwEvents: CWEvent<IEventData>[] = await processor.process(event);
 
     // process events in sequence
     for (const cwEvent of cwEvents) {
-      await handleEventFn(cwEvent);
+      await handleEventFn(cwEvent, tokenName);
     }
   };
 

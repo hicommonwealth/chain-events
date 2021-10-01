@@ -134,7 +134,7 @@ export class Listener extends BaseListener<
 
     // process events in sequence
     for (const e of cwEvents) {
-      // TODO: is this correct?
+      // TODO: refactor chain/tokenName code in general
       e.chain = tokenName as never;
       await this.handleEvent(e as CWEvent);
     }
