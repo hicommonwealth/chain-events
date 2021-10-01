@@ -17,7 +17,7 @@
     "c-test": "cd eth && hardhat test ../test/integration/compound.spec.ts",
     "integration-test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts",
     "integration-test-hh": "cd eth && hardhat test ../test/integration/*.spec.ts",
-    "test": "nyc ts-mocha --config ./.mocharc.json ./test/integration/*.spec.ts ./test/unit/**/*.spec.ts",
+    "test": "nyc ts-mocha --config ./.mocharc.json ./test/unit/**/*.spec.ts && cd eth && hardhat test ../test/integration/*.spec.ts",
     "lint": "eslint src/ test/",
     "listen": "ts-node -T ./scripts/listener.ts",
     "listen-archival": "ts-node -T ./scripts/listener.ts -n edgeware-local -a true",
