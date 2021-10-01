@@ -10,18 +10,19 @@ import {
   ListenerOptions as Erc20ListenerOptions,
   RawEvent,
   EventChains as erc20Chains,
-  Api,
+  IErc20Contracts,
   EventKind,
 } from './types';
 import { createApi } from './subscribeFunc';
 import { Processor } from './processor';
 import { Subscriber } from './subscriber';
+import { EnricherConfig } from './filters/enricher';
 
 const log = factory.getLogger(formatFilename(__filename));
 
 export class Listener extends BaseListener<
-  Api,
-  any,
+  IErc20Contracts,
+  never,
   Processor,
   Subscriber,
   EventKind
@@ -33,6 +34,7 @@ export class Listener extends BaseListener<
     tokenAddresses: string[],
     url?: string,
     tokenNames?: string[],
+    enricherConfig?: EnricherConfig,
     verbose?: boolean,
     ignoreChainType?: boolean
   ) {
@@ -44,6 +46,7 @@ export class Listener extends BaseListener<
       url,
       tokenAddresses,
       tokenNames,
+      enricherConfig: enricherConfig || {},
     };
 
     this._subscribed = false;
@@ -54,8 +57,8 @@ export class Listener extends BaseListener<
       this._api = await createApi(
         this._options.url,
         this._options.tokenAddresses,
-        10000,
-        this.options.tokenNames
+        this._options.tokenNames,
+        10000
       );
     } catch (error) {
       log.error(
@@ -65,7 +68,7 @@ export class Listener extends BaseListener<
     }
 
     try {
-      this._processor = new Processor(this._api);
+      this._processor = new Processor(this._api, this._options.enricherConfig);
       this._subscriber = new Subscriber(this._api, this._chain, this._verbose);
     } catch (error) {
       log.error(
@@ -98,24 +101,20 @@ export class Listener extends BaseListener<
     }
   }
 
-  public async updateTokenList(tokenAddresses: string[]): Promise<void> {
-    this._options.tokenAddresses = tokenAddresses;
-    await this.init();
-    if (this._subscribed === true) await this.subscribe();
-  }
-
   // override handleEvent to stop the chain from being added to event data
   // since the chain/token name is added to event data in the subscriber.ts
   // (since there are multiple tokens)
-  protected async handleEvent(event: CWEvent) {
+  protected async handleEvent(event: CWEvent): Promise<void> {
     let prevResult;
 
+    // eslint-disable-next-line guard-for-in
     for (const key in this.eventHandlers) {
       const eventHandler = this.eventHandlers[key];
       if (
         this.globalExcludedEvents.includes(event.data.kind as EventKind) ||
         eventHandler.excludedEvents?.includes(event.data.kind as EventKind)
       )
+        // eslint-disable-next-line no-continue
         continue;
 
       try {
@@ -134,9 +133,10 @@ export class Listener extends BaseListener<
     const cwEvents: CWEvent[] = await this._processor.process(event);
 
     // process events in sequence
-    for (const event of cwEvents) {
-      event.chain = tokenName as any;
-      await this.handleEvent(event as CWEvent);
+    for (const e of cwEvents) {
+      // TODO: refactor chain/tokenName code in general
+      e.chain = tokenName as never;
+      await this.handleEvent(e as CWEvent);
     }
   }
 

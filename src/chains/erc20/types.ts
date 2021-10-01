@@ -1,25 +1,32 @@
 import { Web3Provider } from '@ethersproject/providers';
+import BN from 'bn.js';
 
 import { TypedEvent } from '../../contractTypes/commons';
 import { ERC20 } from '../../contractTypes';
 
-// API is imported contracts classes
-interface IErc20Contracts {
-  tokens: ERC20[];
+import { EnricherConfig } from './filters/enricher';
+
+interface IErc20Contract {
+  contract: ERC20;
+  totalSupply: BN;
+  tokenName?: string;
+}
+
+export interface IErc20Contracts {
+  tokens: IErc20Contract[];
   provider: Web3Provider;
-  tokenNames?: string[];
 }
 
 export interface ListenerOptions {
   url: string;
   tokenAddresses: string[];
   tokenNames?: string[];
+  enricherConfig: EnricherConfig;
 }
-
-export type Api = IErc20Contracts;
 
 export const EventChains = ['erc20'] as const;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type RawEvent = TypedEvent<any>;
 
 // eslint-disable-next-line no-shadow
@@ -34,13 +41,14 @@ interface IEvent {
 }
 
 type Address = string;
+type Balance = string;
 
 // Erc20 Event Interfaces
 export interface IApproval extends IEvent {
   kind: EventKind.Approval;
   owner: Address;
   spender: Address;
-  value: number;
+  value: Balance;
   contractAddress: Address;
 }
 
@@ -48,25 +56,10 @@ export interface ITransfer extends IEvent {
   kind: EventKind.Transfer;
   from: Address;
   to: Address;
-  value: number;
+  value: Balance;
   contractAddress: Address;
 }
 
 export type IEventData = IApproval | ITransfer;
-// eslint-disable-next-line semi-style
-
-export class Token {
-  public name: string;
-
-  public symbol: string;
-
-  public address: string;
-
-  constructor(name: string, symbol: string, address: string) {
-    this.name = name;
-    this.symbol = symbol;
-    this.address = address;
-  }
-}
 
 export const EventKinds: EventKind[] = Object.values(EventKind);
