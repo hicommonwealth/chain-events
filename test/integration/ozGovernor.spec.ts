@@ -185,6 +185,7 @@ describe('OpenZeppelin Governance Event Integration Tests', () => {
     it('should create a proposal', async () => {
       const { api, token, addresses, handler } = await setupSubscription();
       const p = await createProposal(handler, api, token, addresses[0]);
+      const idHex = BigNumber.from(p.data.id).toHexString();
 
       // ensure hash comes out okay
       const descriptionHash = utils.keccak256(
@@ -206,10 +207,10 @@ describe('OpenZeppelin Governance Event Integration Tests', () => {
       ).toHexString();
 
       // compare contract-computed results with stored id
-      assert.deepEqual(hashedProposal.toLowerCase(), p.data.id.toLowerCase());
+      assert.deepEqual(hashedProposal.toLowerCase(), idHex.toLowerCase());
 
       // compare stored id with locally computed results
-      assert.deepEqual(p.data.id.toLowerCase(), hashedData.toLowerCase());
+      assert.deepEqual(idHex.toLowerCase(), hashedData.toLowerCase());
     });
 
     it('proposal castvote against with reason', async () => {

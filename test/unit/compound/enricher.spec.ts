@@ -170,7 +170,7 @@ describe('Compound Event Enricher Filter Tests', () => {
         id: '0x01',
         proposer: address,
         targets: [address],
-        values: ['0x03'],
+        values: ['3'],
         signatures: ['hello3'],
         calldatas: [utils.hexlify(callData)],
         startBlock: blockNumber,
@@ -231,17 +231,17 @@ describe('Compound Event Enricher Filter Tests', () => {
   it('should enrich GovAlpha VoteCast event', async () => {
     const kind = EventKind.VoteCast;
     const voter = 'i voted!';
-    const id = '0x0123';
+    const id = BigNumber.from(123);
     const support = false;
     const votes = '525600';
-    const event = constructEvent([voter, BigNumber.from(id), support, votes]);
+    const event = constructEvent([voter, id, support, votes]);
     const result = await Enrich(api, blockNumber, kind, event);
     assert.deepEqual(result, {
       blockNumber,
       excludeAddresses: [voter],
       data: {
         kind,
-        id,
+        id: id.toHexString(),
         voter,
         support: 0,
         votes,
@@ -253,24 +253,18 @@ describe('Compound Event Enricher Filter Tests', () => {
   it('should enrich GovBravo VoteCast event', async () => {
     const kind = EventKind.VoteCast;
     const voter = 'i voted!';
-    const id = '0x0123';
+    const id = BigNumber.from(123);
     const support = 2;
     const votes = '525600';
     const reason = 'for what?';
-    const event = constructEvent([
-      voter,
-      BigNumber.from(id),
-      support,
-      votes,
-      reason,
-    ]);
+    const event = constructEvent([voter, id, support, votes, reason]);
     const result = await Enrich(api, blockNumber, kind, event);
     assert.deepEqual(result, {
       blockNumber,
       excludeAddresses: [voter],
       data: {
         kind,
-        id,
+        id: id.toHexString(),
         voter,
         support,
         votes,

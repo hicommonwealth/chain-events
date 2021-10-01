@@ -116,7 +116,7 @@ describe('Compound Storage Fetcher Tests', () => {
           kind: EventKind.ProposalCreated,
           proposer: address,
           targets: [address],
-          values: ['0x03'],
+          values: ['3'],
           signatures: ['hello3'],
           calldatas: [utils.hexlify(callData)],
           startBlock: 200,

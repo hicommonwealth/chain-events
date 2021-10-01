@@ -76,7 +76,7 @@ export async function Enrich(
           id: id.toHexString(),
           proposer,
           targets,
-          values: values.map((v) => v.toHexString()),
+          values: values.map((v) => v.toString()),
           signatures,
           calldatas: calldatas.map((c) => utils.hexlify(c)),
           startBlock: +startBlock,
