@@ -100,7 +100,7 @@ export interface IVoteCast extends IEvent {
   kind: EventKind.VoteCast;
   voter: Address;
   id: number;
-  support: number | boolean; // handle alpha and bravo support types
+  support: number; // handle alpha and bravo support types
   votes: Balance;
   reason?: string;
 }

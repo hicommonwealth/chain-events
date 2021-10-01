@@ -254,7 +254,7 @@ async function proposeAndVote(
       kind: EventKind.VoteCast,
       id: +activeProposals,
       voter: from,
-      support: voteYes,
+      support: (voteYes as unknown) as number,
       votes: voteWeight.toString(),
       reason: undefined,
     });
