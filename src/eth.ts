@@ -9,19 +9,24 @@ const log = factory.getLogger(formatFilename(__filename));
 export async function createProvider(
   ethNetworkUrl: string
 ): Promise<providers.Web3Provider> {
-  if (ethNetworkUrl.includes('infura')) {
-    const networkPrefix = ethNetworkUrl.split('infura')[0];
-    if (process && process.env) {
-      const { INFURA_API_KEY } = process.env;
-      if (!INFURA_API_KEY) {
-        throw new Error('no infura key found!');
-      }
-      ethNetworkUrl = `${networkPrefix}infura.io/ws/v3/${INFURA_API_KEY}`;
+  if (!ethNetworkUrl.includes('alchemy'))
+    throw Error('Must use Alchemy Ethereum API');
+  if (process && process.env) {
+    const { ALCHEMY_API_KEY } = process.env;
+    if (!ALCHEMY_API_KEY) {
+      throw new Error('no alchemy api key found!');
+    }
 
-      let res;
-      let data;
-      try {
-        res = await fetch(`https://mainnet.infura.io/v3/${INFURA_API_KEY}`, {
+    const networkPrefix = ethNetworkUrl.split('alchemy')[0];
+
+    ethNetworkUrl = `${networkPrefix}alchemyapi.io/v2/${ALCHEMY_API_KEY}`;
+
+    let res;
+    let data;
+    try {
+      res = await fetch(
+        `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+        {
           method: 'POST',
           body: JSON.stringify({
             jsonrpc: '2.0',
@@ -30,25 +35,26 @@ export async function createProvider(
             id: 1,
           }),
           headers: { 'Content-Type': 'application/json' },
-        });
+        }
+      );
 
-        data = await res.json();
+      data = await res.json();
 
-        if (
-          !data ||
-          !Object.keys(data).includes('jsonrpc') ||
-          !Object.keys(data).includes('id') ||
-          !Object.keys(data).includes('result')
-        )
-          throw new Error('A connection to infura could not be established.');
-      } catch (error) {
-        log.error('Check your INFURA_API_KEY');
-        throw error;
-      }
-    } else {
-      throw new Error('must use nodejs to connect to infura provider!');
+      if (
+        !data ||
+        !Object.keys(data).includes('jsonrpc') ||
+        !Object.keys(data).includes('id') ||
+        !Object.keys(data).includes('result')
+      )
+        throw new Error('A connection to Alchemy could not be established.');
+    } catch (error) {
+      log.error('Check your ALCHEMY_API_KEY');
+      throw error;
     }
+  } else {
+    throw new Error('must use nodejs to connect to Alchemy provider!');
   }
+
   const web3Provider = new Web3.providers.WebsocketProvider(ethNetworkUrl, {
     reconnect: {
       auto: false,

@@ -1,5 +1,10 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-console */
+
+import * as yargs from 'yargs';
+import fetch from 'node-fetch';
+import EthDater from 'ethereum-block-by-date';
+
 import {
   chainSupportedBy,
   IEventHandler,
@@ -13,10 +18,6 @@ import {
 } from '../src/index';
 
 import { contracts, networkSpecs, networkUrls } from './listenerUtils';
-
-import * as yargs from 'yargs';
-import fetch from 'node-fetch';
-import EthDater from 'ethereum-block-by-date';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config();
