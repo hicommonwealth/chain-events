@@ -26,17 +26,21 @@ const log = factory.getLogger(formatFilename(__filename));
  * @param ethNetworkUrl
  * @param governanceAddress
  * @param retryTimeMs
- * @param retryCount
+ * @param chain
  * @returns a promise resolving to an ApiPromise once the connection has been established
  */
 export async function createApi(
   ethNetworkUrl: string,
   governanceAddress: string,
-  retryTimeMs = 10 * 1000
+  retryTimeMs = 10 * 1000,
+  chain?: string
 ): Promise<Api> {
+  const chainLog = factory.getLogger(
+    `${formatFilename(__filename)}::Aave${chain ? `::${chain}` : ''}`
+  );
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = await createProvider(ethNetworkUrl);
+      const provider = await createProvider(ethNetworkUrl, chain);
 
       // fetch governance contract
       const governanceContract = IAaveGovernanceV2Factory.connect(
@@ -75,32 +79,34 @@ export async function createApi(
         await aaveToken.DELEGATE_TYPEHASH();
         await stkAaveToken.DELEGATE_TYPEHASH();
 
-        log.info('Connection successful!');
+        chainLog.info('Connection successful!');
         return {
           governance: governanceContract,
           aaveToken,
           stkAaveToken,
         };
       } catch (err) {
-        log.warn(
+        chainLog.warn(
           'Governance connection successful but token connections failed.'
         );
-        log.warn('Delegation events will not be emitted.');
+        chainLog.warn('Delegation events will not be emitted.');
         return {
           governance: governanceContract,
         };
       }
     } catch (err) {
-      log.error(
+      chainLog.error(
         `Aave ${governanceAddress} at ${ethNetworkUrl} failure: ${err.message}`
       );
       await sleep(retryTimeMs);
-      log.error('Retrying connection...');
+      chainLog.error('Retrying connection...');
     }
   }
 
   throw new Error(
-    `Failed to start Aave listener for ${governanceAddress} at ${ethNetworkUrl}`
+    `[Aave ${
+      chain ? `::${chain}` : ''
+    }]: Failed to start Aave listener for ${governanceAddress} at ${ethNetworkUrl}`
   );
 }
 

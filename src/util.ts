@@ -94,7 +94,7 @@ export async function createListener(
       !!options.skipCatchup,
       options.enricherConfig,
       !!options.verbose,
-      !!customChainBase,
+      customChainBase,
       options.discoverReconnectRange
     );
   } else if (basePicker('moloch')) {
@@ -105,7 +105,8 @@ export async function createListener(
       options.url,
       !!options.skipCatchup,
       !!options.verbose,
-      options.discoverReconnectRange
+      options.discoverReconnectRange,
+      customChainBase
     );
   } else if (basePicker('compound')) {
     listener = new CompoundListener(
@@ -114,7 +115,8 @@ export async function createListener(
       options.url,
       !!options.skipCatchup,
       !!options.verbose,
-      options.discoverReconnectRange
+      options.discoverReconnectRange,
+      customChainBase
     );
   } else if (basePicker('erc20')) {
     listener = new Erc20Listener(
@@ -133,7 +135,7 @@ export async function createListener(
       options.url,
       !!options.skipCatchup,
       !!options.verbose,
-      !!customChainBase,
+      customChainBase,
       options.discoverReconnectRange
     );
   } else {

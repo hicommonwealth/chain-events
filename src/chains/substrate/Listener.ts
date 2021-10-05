@@ -52,12 +52,11 @@ export class Listener extends BaseListener<
     skipCatchup?: boolean,
     enricherConfig?: EnricherConfig,
     verbose?: boolean,
-    ignoreChainType?: boolean,
+    customChainBase?: string,
     discoverReconnectRange?: (c: string) => Promise<IDisconnectedRange>
   ) {
-    super(chain, verbose);
-    // if ignoreChainType = true ignore the hard-coded EventChains type
-    if (!ignoreChainType && !chainSupportedBy(this._chain, SubstrateChains))
+    super(chain, verbose, customChainBase);
+    if (!!customChainBase && !chainSupportedBy(this._chain, SubstrateChains))
       throw new Error(`${this._chain} is not a Substrate chain`);
 
     this._options = {

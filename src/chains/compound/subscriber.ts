@@ -8,16 +8,19 @@ import { factory, formatFilename } from '../../logging';
 
 import { RawEvent, Api } from './types';
 
-const log = factory.getLogger(formatFilename(__filename));
-
 export class Subscriber extends IEventSubscriber<Api, RawEvent> {
   private _name: string;
 
   private _listener: Listener | null;
 
+  protected readonly log;
+
   constructor(api: Api, name: string, verbose = false) {
     super(api, verbose);
     this._name = name;
+    this.log = factory.getLogger(
+      `${formatFilename(__filename)}::Compound${name ? `::${name}` : ''}`
+    );
   }
 
   /**
@@ -31,7 +34,7 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
         2
       )}.`;
       // eslint-disable-next-line no-unused-expressions
-      this._verbose ? log.info(logStr) : log.trace(logStr);
+      this._verbose ? this.log.info(logStr) : this.log.trace(logStr);
       cb(event);
     };
     this._api.on('*', this._listener);

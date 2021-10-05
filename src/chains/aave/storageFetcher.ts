@@ -16,11 +16,14 @@ import {
   EventChains,
 } from './types';
 
-const log = factory.getLogger(formatFilename(__filename));
-
 export class StorageFetcher extends IStorageFetcher<Api> {
-  constructor(protected readonly _api: Api) {
+  protected readonly log;
+
+  constructor(protected readonly _api: Api, chain?: string) {
     super(_api);
+    this.log = factory.getLogger(
+      `${formatFilename(__filename)}::Aave${chain ? `::${chain}` : ''}`
+    );
   }
 
   private _currentBlock: number;
@@ -123,16 +126,16 @@ export class StorageFetcher extends IStorageFetcher<Api> {
 
   public async fetchOne(id: string): Promise<CWEvent<IEventData>[]> {
     this._currentBlock = +(await this._api.governance.provider.getBlockNumber());
-    log.info(`Current block: ${this._currentBlock}.`);
+    this.log.info(`Current block: ${this._currentBlock}.`);
     if (!this._currentBlock) {
-      log.error('Failed to fetch current block! Aborting fetch.');
+      this.log.error('Failed to fetch current block! Aborting fetch.');
       return [];
     }
 
     // TODO: handle errors
     const proposal: Proposal = await this._api.governance.getProposalById(id);
     if (+proposal.id === 0) {
-      log.error(`Aave proposal ${id} not found.`);
+      this.log.error(`Aave proposal ${id} not found.`);
       return [];
     }
     const state = await this._api.governance.getProposalState(proposal.id);
@@ -168,9 +171,9 @@ export class StorageFetcher extends IStorageFetcher<Api> {
   ): Promise<CWEvent<IEventData>[]> {
     const block = await this._api.governance.provider.getBlock('latest');
     this._currentBlock = block.number;
-    log.info(`Current block: ${this._currentBlock}.`);
+    this.log.info(`Current block: ${this._currentBlock}.`);
     if (!this._currentBlock) {
-      log.error('Failed to fetch current block! Aborting fetch.');
+      this.log.error('Failed to fetch current block! Aborting fetch.');
       return [];
     }
 
@@ -180,19 +183,21 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     } else if (!range.startBlock) {
       range.startBlock = 0;
     } else if (range.startBlock >= this._currentBlock) {
-      log.error(
+      this.log.error(
         `Start block ${range.startBlock} greater than current block ${this._currentBlock}!`
       );
       return [];
     }
     if (range.endBlock && range.startBlock >= range.endBlock) {
-      log.error(`Invalid fetch range: ${range.startBlock}-${range.endBlock}.`);
+      this.log.error(
+        `Invalid fetch range: ${range.startBlock}-${range.endBlock}.`
+      );
       return [];
     }
     if (!range.endBlock) {
       range.endBlock = this._currentBlock;
     }
-    log.info(
+    this.log.info(
       `Fetching Aave entities for range: ${range.startBlock}-${range.endBlock}.`
     );
 
@@ -209,7 +214,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       const proposal: Proposal = await this._api.governance.getProposalById(
         queuePosition
       );
-      log.debug(`Fetched Aave proposal ${proposal.id} from storage.`);
+      this.log.debug(`Fetched Aave proposal ${proposal.id} from storage.`);
 
       const proposalStartBlock = +proposal.startBlock;
       if (proposalStartBlock <= range.endBlock) {
@@ -230,7 +235,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
         // we may want to run once without this, in order to fetch backlog, or else develop a pagination
         // strategy, but for now our API usage is limited.
         if (!fetchAllCompleted && isCompleted) {
-          log.debug(
+          this.log.debug(
             `Proposal ${proposal.id} is marked as completed, halting fetch.`
           );
           break;
@@ -243,17 +248,17 @@ export class StorageFetcher extends IStorageFetcher<Api> {
         nFetched += 1;
 
         if (range.maxResults && nFetched >= range.maxResults) {
-          log.debug(`Fetched ${nFetched} proposals, halting fetch.`);
+          this.log.debug(`Fetched ${nFetched} proposals, halting fetch.`);
           break;
         }
       } else if (proposalStartBlock < range.startBlock) {
-        log.debug(
+        this.log.debug(
           `Aave proposal start block (${proposalStartBlock}) is before ${range.startBlock}, ending fetch.`
         );
         break;
       } else if (proposalStartBlock > range.endBlock) {
         // keep walking backwards until within range
-        log.debug(
+        this.log.debug(
           `Aave proposal start block (${proposalStartBlock}) is after ${range.endBlock}, continuing fetch.`
         );
       }

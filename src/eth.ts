@@ -4,11 +4,14 @@ import fetch from 'node-fetch';
 
 import { factory, formatFilename } from './logging';
 
-const log = factory.getLogger(formatFilename(__filename));
-
 export async function createProvider(
-  ethNetworkUrl: string
+  ethNetworkUrl: string,
+  chain?: string
 ): Promise<providers.Web3Provider> {
+  const log = factory.getLogger(
+    `${formatFilename(__filename)}::Aave${chain ? `::${chain}` : ''}`
+  );
+
   if (ethNetworkUrl.includes('infura')) {
     const networkPrefix = ethNetworkUrl.split('infura')[0];
     if (process && process.env) {

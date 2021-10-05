@@ -13,20 +13,23 @@ import {
   IProposalExecuted,
 } from './types';
 
-const log = factory.getLogger(formatFilename(__filename));
-
 export class StorageFetcher extends IStorageFetcher<Api> {
-  constructor(protected readonly _api: Api) {
+  private readonly log;
+
+  constructor(protected readonly _api: Api, chain?: string) {
     super(_api);
+    this.log = factory.getLogger(
+      `${formatFilename(__filename)}::Compound${chain ? `::${chain}` : ''}`
+    );
   }
 
   private _currentBlock: number;
 
   public async fetchOne(id: string): Promise<CWEvent<IEventData>[]> {
     this._currentBlock = +(await this._api.provider.getBlockNumber());
-    log.info(`Current block: ${this._currentBlock}.`);
+    this.log.info(`Current block: ${this._currentBlock}.`);
     if (!this._currentBlock) {
-      log.error('Failed to fetch current block! Aborting fetch.');
+      this.log.error('Failed to fetch current block! Aborting fetch.');
       return [];
     }
 
@@ -42,15 +45,16 @@ export class StorageFetcher extends IStorageFetcher<Api> {
    * NOTE: throws on error! Make sure to wrap in try/catch!
    *
    * @param range Determines the range of blocks to query events within.
+   * @param fetchAllCompleted
    */
   public async fetch(
     range?: IDisconnectedRange,
     fetchAllCompleted = false
   ): Promise<CWEvent<IEventData>[]> {
     this._currentBlock = await this._api.provider.getBlockNumber();
-    log.info(`Current block: ${this._currentBlock}.`);
+    this.log.info(`Current block: ${this._currentBlock}.`);
     if (!this._currentBlock) {
-      log.error('Failed to fetch current block! Aborting fetch.');
+      this.log.error(`Failed to fetch current block! Aborting fetch.`);
       return [];
     }
 
@@ -60,16 +64,18 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     } else if (!range.startBlock) {
       range.startBlock = 0;
     } else if (range.startBlock >= this._currentBlock) {
-      log.error(
+      this.log.error(
         `Start block ${range.startBlock} greater than current block ${this._currentBlock}!`
       );
       return [];
     }
     if (range.endBlock && range.startBlock >= range.endBlock) {
-      log.error(`Invalid fetch range: ${range.startBlock}-${range.endBlock}.`);
+      this.log.error(
+        `Invalid fetch range: ${range.startBlock}-${range.endBlock}.`
+      );
       return [];
     }
-    log.info(
+    this.log.info(
       `Fetching Compound entities for range: ${range.startBlock}-${range.endBlock}.`
     );
 

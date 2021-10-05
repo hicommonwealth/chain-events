@@ -8,8 +8,14 @@ import {
   CWEvent,
   IStorageFetcher,
   IDisconnectedRange,
+  chainSupportedBy,
 } from './interfaces';
 import { factory, formatFilename } from './logging';
+import * as SubstrateTypes from './chains/substrate/types';
+import * as MolochTypes from './chains/moloch/types';
+import * as CompoundTypes from './chains/compound/types';
+import * as Erc20Types from './chains/erc20/types';
+import * as AaveTypes from './chains/aave/types';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -50,11 +56,31 @@ export abstract class Listener<
 
   protected readonly _verbose: boolean;
 
-  protected constructor(chain: EventSupportingChainT, verbose?: boolean) {
+  protected logPrefix: string;
+
+  protected constructor(
+    chain: EventSupportingChainT,
+    verbose?: boolean,
+    customChainBase?: string
+  ) {
     this._chain = chain;
     this.eventHandlers = {};
     this._verbose = !!verbose;
     this.globalExcludedEvents = [];
+
+    let _base;
+    // if custom base is set use that otherwise infer the base using built-in types
+    if (customChainBase) _base = customChainBase;
+    else if (chainSupportedBy(chain, AaveTypes.EventChains)) _base = 'Aave';
+    else if (chainSupportedBy(chain, CompoundTypes.EventChains))
+      _base = 'Compound';
+    else if (chainSupportedBy(chain, Erc20Types.EventChains)) _base = 'Erc20';
+    else if (chainSupportedBy(chain, MolochTypes.EventChains)) _base = 'Moloch';
+    else if (chainSupportedBy(chain, SubstrateTypes.EventChains))
+      _base = 'Substrate';
+
+    if (_base) this.logPrefix = `[${_base}::${chain}]: `;
+    else this.logPrefix = `[${chain}]: `;
   }
 
   public abstract init(): Promise<void>;
@@ -64,13 +90,13 @@ export abstract class Listener<
   public async unsubscribe(): Promise<void> {
     if (!this._subscriber) {
       log.warn(
-        `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
+        `${this.logPrefix}Subscriber isn't initialized. Please run init() first!`
       );
       return;
     }
 
     if (!this._subscribed) {
-      log.warn(`The listener for ${this._chain} is not subscribed`);
+      log.warn(`${this.logPrefix}The listener is not subscribed`);
       return;
     }
 
@@ -93,7 +119,7 @@ export abstract class Listener<
         try {
           prevResult = await eventHandler.handler.handle(event, prevResult);
         } catch (err) {
-          log.error(`Event handle failure: ${err.message}`);
+          log.error(`${this.logPrefix}Event handle failure: ${err.message}`);
           break;
         }
       }

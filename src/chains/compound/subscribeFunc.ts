@@ -23,12 +23,17 @@ const log = factory.getLogger(formatFilename(__filename));
  * @param ethNetworkUrl
  * @param governorAlphaAddress
  * @param retryTimeMs
+ * @param chain
  */
 export async function createApi(
   ethNetworkUrl: string,
   governorAlphaAddress: string,
-  retryTimeMs = 10 * 1000
+  retryTimeMs = 10 * 1000,
+  chain?: string
 ): Promise<Api> {
+  const chainLog = factory.getLogger(
+    `${formatFilename(__filename)}::Compound${chain ? `::${chain}` : ''}`
+  );
   for (let i = 0; i < 3; ++i) {
     try {
       const provider = await createProvider(ethNetworkUrl);
@@ -40,19 +45,21 @@ export async function createApi(
       );
       await governorAlphaContract.deployed();
 
-      log.info('Connection successful!');
+      chainLog.info(`${this.logPrefix}Connection successful!`);
       return governorAlphaContract;
     } catch (err) {
-      log.error(
-        `Compound ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
+      chainLog.error(
+        `${this.logPrefix}Compound ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
       );
       await sleep(retryTimeMs);
-      log.error('Retrying connection...');
+      chainLog.error(`${this.logPrefix}Retrying connection...`);
     }
   }
 
   throw new Error(
-    `Failed to start Compound listener for ${governorAlphaAddress} at ${ethNetworkUrl}`
+    `[Aave${
+      chain ? `::${chain}` : ''
+    }]: Failed to start Compound listener for ${governorAlphaAddress} at ${ethNetworkUrl}`
   );
 }
 

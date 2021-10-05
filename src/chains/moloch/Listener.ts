@@ -38,10 +38,11 @@ export class Listener extends BaseListener<
     url?: string,
     skipCatchup?: boolean,
     verbose?: boolean,
-    discoverReconnectRange?: (c: string) => Promise<IDisconnectedRange>
+    discoverReconnectRange?: (c: string) => Promise<IDisconnectedRange>,
+    customChainBase?: string
   ) {
-    super(chain, verbose);
-    if (!chainSupportedBy(this._chain, molochChains))
+    super(chain, verbose, customChainBase);
+    if (!!customChainBase && !chainSupportedBy(this._chain, molochChains))
       throw new Error(`${this._chain} is not a moloch network`);
 
     this._options = {
