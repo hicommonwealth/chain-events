@@ -1,10 +1,10 @@
+import type { RegisteredTypes } from '@polkadot/types/types';
+import { spec as EdgewareSpec } from '@edgeware/node-types';
+
 import { HydraDXSpec } from './specs/hydraDX';
 import { KulupuSpec } from './specs/kulupu';
 import { StafiSpec } from './specs/stafi';
 import { CloverSpec } from './specs/clover';
-
-import type { RegisteredTypes } from '@polkadot/types/types';
-import { spec as EdgewareSpec } from '@edgeware/node-types';
 
 export const networkUrls = {
   clover: 'wss://api.clover.finance',
@@ -17,20 +17,20 @@ export const networkUrls = {
   kulupu: 'ws://rpc.kulupu.corepaper.org/ws',
   stafi: 'wss://scan-rpc.stafi.io/ws',
 
-  moloch: 'wss://mainnet.infura.io/ws',
+  moloch: 'wss://eth-mainnet.alchemyapi.io/v2/',
   'moloch-local': 'ws://127.0.0.1:9545',
 
-  marlin: 'wss://mainnet.infura.io/ws',
+  marlin: 'wss://eth-mainnet.alchemyapi.io/v2/',
   'marlin-local': 'ws://127.0.0.1:9545',
-  uniswap: 'wss://mainnet.infura.io/ws',
-  tribe: 'wss://mainnet.infura.io/ws',
+  uniswap: 'wss://eth-mainnet.alchemyapi.io/v2/',
+  tribe: 'wss://eth-mainnet.alchemyapi.io/v2/',
 
-  aave: 'wss://mainnet.infura.io/ws',
+  aave: 'wss://eth-mainnet.alchemyapi.io/v2/',
   'aave-local': 'ws://127.0.0.1:9545',
-  'dydx-ropsten': 'wss://ropsten.infura.io/ws',
-  dydx: 'wss://mainnet.infura.io/ws',
+  'dydx-ropsten': 'wss://eth-ropsten.alchemyapi.io/v2/',
+  dydx: 'wss://eth-mainnet.alchemyapi.io/v2/',
 
-  erc20: 'wss://mainnet.infura.io/ws',
+  erc20: 'wss://eth-mainnet.alchemyapi.io/v2/',
 } as const;
 
 export const networkSpecs: { [chain: string]: RegisteredTypes } = {
