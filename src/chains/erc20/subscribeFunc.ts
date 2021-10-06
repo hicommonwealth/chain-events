@@ -34,10 +34,12 @@ export async function createApi(
   tokenNames?: string[],
   retryTimeMs = 10 * 1000
 ): Promise<IErc20Contracts> {
+  const chainLog = factory.getLogger(`${formatFilename(__filename)}::Erc20`);
+
   for (let i = 0; i < 3; ++i) {
     try {
       const provider = await createProvider(ethNetworkUrl);
-      log.info(`[erc20]: Connection to ${ethNetworkUrl} successful!`);
+      chainLog.info(`Connection to ${ethNetworkUrl} successful!`);
 
       const tokenContracts = tokenAddresses.map((o) =>
         ERC20Factory.connect(o, provider)
@@ -56,21 +58,21 @@ export async function createApi(
             tokenName,
           });
         } catch (err) {
-          log.error(
+          chainLog.error(
             `Error loading token ${contract.address} (${tokenName}): ${err.message}`
           );
         }
       }
       return deployResults;
     } catch (err) {
-      log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
+      chainLog.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
       await sleep(retryTimeMs);
-      log.error('Retrying connection...');
+      chainLog.error('Retrying connection...');
     }
   }
 
   throw new Error(
-    `Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`
+    `[Erc20]: Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`
   );
 }
 

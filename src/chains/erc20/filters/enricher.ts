@@ -32,7 +32,7 @@ export async function Enrich(
   rawData: RawEvent,
   config: EnricherConfig = {}
 ): Promise<CWEvent<IEventData>> {
-  const { totalSupply } = api.tokens.find(
+  const { totalSupply, tokenName } = api.tokens.find(
     ({ contract }) =>
       contract.address.toLowerCase() === rawData.address.toLowerCase()
   );
@@ -94,6 +94,7 @@ export async function Enrich(
       const excludeAddresses = [from.toString(), to.toString()];
 
       return {
+        chain: <never>tokenName,
         blockNumber,
         excludeAddresses,
         data: {
@@ -107,7 +108,7 @@ export async function Enrich(
     }
 
     default: {
-      throw new Error('unknown erc20 event kind!');
+      throw new Error(`[Erc20::${tokenName}]: Unknown event kind!`);
     }
   }
 }

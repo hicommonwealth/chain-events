@@ -18,6 +18,8 @@ export class Subscriber extends IEventSubscriber<IErc20Contracts, RawEvent> {
 
   private _listener: Listener | null;
 
+  private readonly log;
+
   constructor(api: IErc20Contracts, name: string, verbose = false) {
     super(api, verbose);
     this._name = name;
@@ -30,11 +32,9 @@ export class Subscriber extends IEventSubscriber<IErc20Contracts, RawEvent> {
     cb: (event: RawEvent, tokenName?: string) => void
   ): Promise<void> {
     this._listener = (tokenName: string, event: RawEvent): void => {
-      const logStr = `Received ${this._name} event: ${JSON.stringify(
-        event,
-        null,
-        2
-      )}.`;
+      const logStr = `[Erc20::${tokenName}]: Received ${
+        this._name
+      } event: ${JSON.stringify(event, null, 2)}.`;
       // eslint-disable-next-line no-unused-expressions
       this._verbose ? log.info(logStr) : log.trace(logStr);
       cb(event, tokenName);

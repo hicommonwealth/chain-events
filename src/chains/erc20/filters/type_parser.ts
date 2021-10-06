@@ -7,7 +7,7 @@ const log = factory.getLogger(formatFilename(__filename));
  * This is the Type Parser function, which takes a raw Event
  * and determines which of our local event kinds it belongs to.
  */
-export function ParseType(name: string): EventKind | null {
+export function ParseType(name: string, tokenName?: string): EventKind | null {
   switch (name) {
     // ERC20 Events
     case 'Approval':
@@ -15,7 +15,11 @@ export function ParseType(name: string): EventKind | null {
     case 'Transfer':
       return EventKind.Transfer;
     default: {
-      log.info(`Unknown Erc20 event name: ${name}!`);
+      log.info(
+        `[Erc20${
+          tokenName ? `::${tokenName}` : ''
+        }]: Unknown event name: ${name}!`
+      );
       return null;
     }
   }

@@ -126,7 +126,7 @@ export async function createListener(
       Array.isArray(options.tokenNames) ? options.tokenNames : undefined,
       options.enricherConfig,
       !!options.verbose,
-      !!customChainBase
+      customChainBase
     );
   } else if (basePicker('aave')) {
     listener = new AaveListener(

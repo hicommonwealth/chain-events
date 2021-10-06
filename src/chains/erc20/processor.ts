@@ -22,9 +22,13 @@ export class Processor extends IEventProcessor<IErc20Contracts, RawEvent> {
    * Parse events out of an ethereum block and standardizes their format
    * for processing.
    * @param event
+   * @param tokenName
    * @returns an array of processed events
    */
-  public async process(event: RawEvent): Promise<CWEvent<IEventData>[]> {
+  public async process(
+    event: RawEvent,
+    tokenName?: string
+  ): Promise<CWEvent<IEventData>[]> {
     const kind = ParseType(event.event);
     if (!kind) return [];
     try {
@@ -38,7 +42,9 @@ export class Processor extends IEventProcessor<IErc20Contracts, RawEvent> {
       return cwEvent ? [cwEvent] : [];
     } catch (e) {
       log.error(
-        `Failed to enrich event ${event.address} (${event.event}): ${e.message}`
+        `[Erc20${tokenName ? `::${tokenName}` : ''}]: Failed to enrich event ${
+          event.address
+        } (${event.event}): ${e.message}`
       );
       return [];
     }
