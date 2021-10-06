@@ -33,26 +33,14 @@ export const ChainEventKinds = [
   ...AaveTypes.EventKinds,
   ...Erc20Types.EventKinds,
 ];
-export const EventSupportingChains = [
-  ...SubstrateTypes.EventChains,
-  ...MolochTypes.EventChains,
-  ...CompoundTypes.EventChains,
-  ...AaveTypes.EventChains,
-  ...Erc20Types.EventChains,
-] as const;
-export type EventSupportingChainT = typeof EventSupportingChains[number];
 
-export function chainSupportedBy<T extends readonly string[]>(
-  c: string,
-  eventChains: T
-): c is T[number] {
-  return eventChains.some((s) => s === c);
-}
-
-export function isSupportedChain(
-  chain: string
-): chain is EventSupportingChainT {
-  return chainSupportedBy(chain, EventSupportingChains);
+// eslint-disable-next-line no-shadow
+export enum SupportedNetwork {
+  Substrate = 'substrate',
+  Aave = 'aave',
+  Compound = 'compound',
+  Moloch = 'moloch',
+  ERC20 = 'erc20',
 }
 
 // eslint-disable-next-line no-shadow
@@ -69,7 +57,7 @@ export interface CWEvent<IEventData = IChainEventData> {
   excludeAddresses?: string[];
 
   data: IEventData;
-  chain?: EventSupportingChainT;
+  chain?: string;
   received?: number;
 }
 
@@ -112,7 +100,7 @@ export interface IDisconnectedRange {
 }
 
 export interface ISubscribeOptions<Api> {
-  chain: EventSupportingChainT;
+  chain: string;
   api: Api;
   handlers: IEventHandler<IChainEventData>[];
   skipCatchup?: boolean;
@@ -176,19 +164,7 @@ export interface IEventTitle {
 
 export type TitlerFilter = (kind: IChainEventKind) => IEventTitle;
 
-export function entityToFieldName(
-  chain: EventSupportingChainT,
-  entity: IChainEntityKind
-): string | null {
-  if (MolochTypes.EventChains.find((c) => c === chain)) {
-    return 'proposalIndex';
-  }
-  if (CompoundTypes.EventChains.find((c) => c === chain)) {
-    return 'id';
-  }
-  if (AaveTypes.EventChains.find((c) => c === chain)) {
-    return 'id';
-  }
+export function entityToFieldName(entity: IChainEntityKind): string | null {
   switch (entity) {
     case SubstrateTypes.EntityKind.DemocracyProposal: {
       return 'proposalIndex';
@@ -220,78 +196,68 @@ export function entityToFieldName(
     case CompoundTypes.EntityKind.Proposal: {
       return 'id';
     }
+    case AaveTypes.EntityKind.Proposal: {
+      return 'id';
+    }
     default: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _exhaustiveMatch: never = entity;
       return null;
     }
   }
 }
 
 export function eventToEntity(
-  chain: EventSupportingChainT,
   event: IChainEventKind
 ): [IChainEntityKind, EntityEventKind] {
-  if (MolochTypes.EventChains.find((c) => c === chain)) {
-    switch (event) {
-      case MolochTypes.EventKind.SubmitProposal: {
-        return [MolochTypes.EntityKind.Proposal, EntityEventKind.Create];
-      }
-      case MolochTypes.EventKind.SubmitVote: {
-        return [MolochTypes.EntityKind.Proposal, EntityEventKind.Vote];
-      }
-      case MolochTypes.EventKind.ProcessProposal: {
-        return [MolochTypes.EntityKind.Proposal, EntityEventKind.Complete];
-      }
-      case MolochTypes.EventKind.Abort: {
-        return [MolochTypes.EntityKind.Proposal, EntityEventKind.Complete];
-      }
-      default: {
-        return null;
-      }
-    }
-  }
-  if (CompoundTypes.EventChains.find((c) => c === chain)) {
-    switch (event) {
-      case CompoundTypes.EventKind.ProposalCanceled: {
-        return [CompoundTypes.EntityKind.Proposal, EntityEventKind.Complete];
-      }
-      case CompoundTypes.EventKind.ProposalCreated: {
-        return [CompoundTypes.EntityKind.Proposal, EntityEventKind.Create];
-      }
-      case CompoundTypes.EventKind.ProposalExecuted: {
-        return [CompoundTypes.EntityKind.Proposal, EntityEventKind.Complete];
-      }
-      case CompoundTypes.EventKind.ProposalQueued: {
-        return [CompoundTypes.EntityKind.Proposal, EntityEventKind.Update];
-      }
-      case CompoundTypes.EventKind.VoteCast: {
-        return [CompoundTypes.EntityKind.Proposal, EntityEventKind.Vote];
-      }
-      default: {
-        return null;
-      }
-    }
-  }
-  if (AaveTypes.EventChains.find((c) => c === chain)) {
-    switch (event) {
-      case AaveTypes.EventKind.ProposalCreated: {
-        return [AaveTypes.EntityKind.Proposal, EntityEventKind.Create];
-      }
-      case AaveTypes.EventKind.VoteEmitted: {
-        return [AaveTypes.EntityKind.Proposal, EntityEventKind.Vote];
-      }
-      case AaveTypes.EventKind.ProposalQueued: {
-        return [AaveTypes.EntityKind.Proposal, EntityEventKind.Update];
-      }
-      case AaveTypes.EventKind.ProposalExecuted:
-      case AaveTypes.EventKind.ProposalCanceled: {
-        return [AaveTypes.EntityKind.Proposal, EntityEventKind.Complete];
-      }
-      default: {
-        return null;
-      }
-    }
-  }
   switch (event) {
+    // MOLOCH
+    case MolochTypes.EventKind.SubmitProposal: {
+      return [MolochTypes.EntityKind.Proposal, EntityEventKind.Create];
+    }
+    case MolochTypes.EventKind.SubmitVote: {
+      return [MolochTypes.EntityKind.Proposal, EntityEventKind.Vote];
+    }
+    case MolochTypes.EventKind.ProcessProposal: {
+      return [MolochTypes.EntityKind.Proposal, EntityEventKind.Complete];
+    }
+    case MolochTypes.EventKind.Abort: {
+      return [MolochTypes.EntityKind.Proposal, EntityEventKind.Complete];
+    }
+
+    // COMPOUND
+    case CompoundTypes.EventKind.ProposalCanceled: {
+      return [CompoundTypes.EntityKind.Proposal, EntityEventKind.Complete];
+    }
+    case CompoundTypes.EventKind.ProposalCreated: {
+      return [CompoundTypes.EntityKind.Proposal, EntityEventKind.Create];
+    }
+    case CompoundTypes.EventKind.ProposalExecuted: {
+      return [CompoundTypes.EntityKind.Proposal, EntityEventKind.Complete];
+    }
+    case CompoundTypes.EventKind.ProposalQueued: {
+      return [CompoundTypes.EntityKind.Proposal, EntityEventKind.Update];
+    }
+    case CompoundTypes.EventKind.VoteCast: {
+      return [CompoundTypes.EntityKind.Proposal, EntityEventKind.Vote];
+    }
+
+    // AAVE
+    case AaveTypes.EventKind.ProposalCreated: {
+      return [AaveTypes.EntityKind.Proposal, EntityEventKind.Create];
+    }
+    case AaveTypes.EventKind.VoteEmitted: {
+      return [AaveTypes.EntityKind.Proposal, EntityEventKind.Vote];
+    }
+    case AaveTypes.EventKind.ProposalQueued: {
+      return [AaveTypes.EntityKind.Proposal, EntityEventKind.Update];
+    }
+    case AaveTypes.EventKind.ProposalExecuted:
+    case AaveTypes.EventKind.ProposalCanceled: {
+      return [AaveTypes.EntityKind.Proposal, EntityEventKind.Complete];
+    }
+
+    // SUBSTRATE
     // Democracy Events
     case SubstrateTypes.EventKind.DemocracyProposed: {
       return [
@@ -463,12 +429,9 @@ export function eventToEntity(
   }
 }
 
-export function isEntityCompleted(
-  chain: EventSupportingChainT,
-  entityEvents: CWEvent<any>[]
-): boolean {
+export function isEntityCompleted(entityEvents: CWEvent[]): boolean {
   return entityEvents.some(({ data: { kind } }) => {
-    const entityData = eventToEntity(chain, kind);
+    const entityData = eventToEntity(kind);
     return entityData && entityData[1] === EntityEventKind.Complete;
   });
 }
