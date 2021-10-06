@@ -4,16 +4,77 @@ import {
   IEventSubscriber,
   IStorageFetcher,
   SupportedNetwork,
+  CWEvent,
+  IEventTitle,
+  IEventLabel,
+  IChainEventKind,
 } from './interfaces';
-import { Listener as SubstrateListener } from './chains/substrate';
-import { Listener as MolochListener } from './chains/moloch/Listener';
-import { Listener as CompoundListener } from './chains/compound/Listener';
-import { Listener as Erc20Listener } from './chains/erc20';
-import { Listener as AaveListener } from './chains/aave';
+import {
+  Listener as SubstrateListener,
+  Title as SubstrateTitle,
+  Label as SubstrateLabel,
+} from './chains/substrate';
+import {
+  Listener as MolochListener,
+  Title as MolochTitle,
+  Label as MolochLabel,
+} from './chains/moloch';
+import {
+  Listener as CompoundListener,
+  Title as CompoundTitle,
+  Label as CompoundLabel,
+} from './chains/compound';
+import {
+  Listener as Erc20Listener,
+  Title as Erc20Title,
+  Label as Erc20Label,
+} from './chains/erc20';
+import {
+  Listener as AaveListener,
+  Title as AaveTitle,
+  Label as AaveLabel,
+} from './chains/aave';
 import { Listener } from './Listener';
 import { factory, formatFilename } from './logging';
 
 const log = factory.getLogger(formatFilename(__filename));
+
+export function Title(
+  network: SupportedNetwork,
+  kind: IChainEventKind
+): IEventTitle {
+  switch (network) {
+    case SupportedNetwork.Substrate:
+      return SubstrateTitle(kind);
+    case SupportedNetwork.Aave:
+      return AaveTitle(kind);
+    case SupportedNetwork.Compound:
+      return CompoundTitle(kind);
+    case SupportedNetwork.ERC20:
+      return Erc20Title(kind);
+    case SupportedNetwork.Moloch:
+      return MolochTitle(kind);
+    default:
+      throw new Error(`Invalid network: ${network}`);
+  }
+}
+
+export function Label(chain: string, event: CWEvent): IEventLabel {
+  switch (event.network) {
+    case SupportedNetwork.Substrate:
+      return SubstrateLabel(event.blockNumber, chain, event.data);
+    case SupportedNetwork.Aave:
+      return AaveLabel(event.blockNumber, chain, event.data);
+    case SupportedNetwork.Compound:
+      return CompoundLabel(event.blockNumber, chain, event.data);
+    case SupportedNetwork.ERC20:
+      return Erc20Label(event.blockNumber, chain, event.data);
+    case SupportedNetwork.Moloch:
+      return MolochLabel(event.blockNumber, chain, event.data);
+    default:
+      throw new Error(`Invalid network: ${event.network}`);
+  }
+}
 
 /**
  * Creates a listener instance and returns it if no error occurs. This function throws on error.
