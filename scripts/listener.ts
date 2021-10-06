@@ -60,7 +60,7 @@ const { argv } = yargs
     if (!data.url && !data.chain) {
       throw new Error('Must pass either URL or chain name!');
     }
-    if (!networkUrls[data.chain] || !data.url) {
+    if (!networkUrls[data.chain] && !data.url) {
       throw new Error(`no URL found for ${data.chain}`);
     }
     if (
