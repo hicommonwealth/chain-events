@@ -37,8 +37,6 @@ import {
 import { Listener } from './Listener';
 import { factory, formatFilename } from './logging';
 
-const log = factory.getLogger(formatFilename(__filename));
-
 export function Title(
   network: SupportedNetwork,
   kind: IChainEventKind
@@ -115,6 +113,9 @@ export async function createListener(
     IEventSubscriber<any, any>,
     any
   >;
+  const log = factory.getLogger(
+    `${formatFilename(__filename)}::${network}::${chain}`
+  );
 
   if (network === SupportedNetwork.Substrate) {
     // start a substrate listener
@@ -127,7 +128,6 @@ export async function createListener(
       !!options.skipCatchup,
       options.enricherConfig,
       !!options.verbose,
-      network,
       options.discoverReconnectRange
     );
   } else if (network === SupportedNetwork.Moloch) {
@@ -138,8 +138,7 @@ export async function createListener(
       options.url,
       !!options.skipCatchup,
       !!options.verbose,
-      options.discoverReconnectRange,
-      customChainBase
+      options.discoverReconnectRange
     );
   } else if (network === SupportedNetwork.Compound) {
     listener = new CompoundListener(
@@ -148,8 +147,7 @@ export async function createListener(
       options.url,
       !!options.skipCatchup,
       !!options.verbose,
-      options.discoverReconnectRange,
-      customChainBase
+      options.discoverReconnectRange
     );
   } else if (network === SupportedNetwork.ERC20) {
     listener = new Erc20Listener(
@@ -158,8 +156,7 @@ export async function createListener(
       options.url,
       Array.isArray(options.tokenNames) ? options.tokenNames : undefined,
       options.enricherConfig,
-      !!options.verbose,
-      network
+      !!options.verbose
     );
   } else if (network === SupportedNetwork.Aave) {
     listener = new AaveListener(
@@ -168,7 +165,6 @@ export async function createListener(
       options.url,
       !!options.skipCatchup,
       !!options.verbose,
-      network,
       options.discoverReconnectRange
     );
   } else {
@@ -179,7 +175,7 @@ export async function createListener(
     if (!listener) throw new Error('Listener is still null');
     await listener.init();
   } catch (error) {
-    log.error(`[${chain}]: Failed to initialize the listener`);
+    log.error(`Failed to initialize the listener`);
     throw error;
   }
 

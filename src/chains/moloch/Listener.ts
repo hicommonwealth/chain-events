@@ -1,15 +1,19 @@
 import EthDater from 'ethereum-block-by-date';
 
-import { CWEvent, IDisconnectedRange } from '../../interfaces';
+import {
+  CWEvent,
+  IDisconnectedRange,
+  SupportedNetwork,
+} from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
 import { factory, formatFilename } from '../../logging';
 
 import {
-  EventKind,
   Api,
-  RawEvent,
-  ListenerOptions as MolochListenerOptions,
+  EventKind,
   IEventData,
+  ListenerOptions as MolochListenerOptions,
+  RawEvent,
 } from './types';
 
 import { createApi, Processor, StorageFetcher, Subscriber } from '.';
@@ -32,17 +36,18 @@ export class Listener extends BaseListener<
     url?: string,
     skipCatchup?: boolean,
     verbose?: boolean,
-    discoverReconnectRange?: (c: string) => Promise<IDisconnectedRange>,
-    customChainBase?: string
+    discoverReconnectRange?: (c: string) => Promise<IDisconnectedRange>
   ) {
-    super(chain, verbose, customChainBase);
+    super(SupportedNetwork.ERC20, chain, verbose);
 
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::Moloch::${this._chain}`
+      `${formatFilename(__filename)}::${SupportedNetwork.Moloch}::${
+        this._chain
+      }`
     );
 
     if (!this.logPrefix.includes('::'))
-      this.logPrefix = `[Moloch::${this._chain}]: `;
+      this.logPrefix = `[${SupportedNetwork.Moloch}::${this._chain}]: `;
 
     this._options = {
       url,
@@ -138,13 +143,11 @@ export class Listener extends BaseListener<
   }
 
   private async processMissedBlocks(): Promise<void> {
-    this.log.info(
-      `[Moloch::${this._chain}]: Detected offline time, polling missed blocks...`
-    );
+    this.log.info(`Detected offline time, polling missed blocks...`);
 
     if (!this.discoverReconnectRange) {
       this.log.info(
-        `[Moloch::${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
+        `Unable to determine offline range - No discoverReconnectRange function given`
       );
       return;
     }
@@ -154,14 +157,12 @@ export class Listener extends BaseListener<
       // fetch the block of the last server event from database
       offlineRange = await this.discoverReconnectRange(this._chain);
       if (!offlineRange) {
-        this.log.warn(
-          `[Moloch::${this._chain}]: No offline range found, skipping event catchup.`
-        );
+        this.log.warn(`No offline range found, skipping event catchup.`);
         return;
       }
     } catch (error) {
       this.log.error(
-        `[Moloch::${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
+        `Could not discover offline range: ${error.message}. Skipping event catchup.`
       );
       return;
     }
@@ -182,9 +183,7 @@ export class Listener extends BaseListener<
     // do nothing
     // (i.e. don't try and fetch all events from block 0 onward)
     if (!offlineRange || !offlineRange.startBlock) {
-      this.log.warn(
-        `[Moloch::${this._chain}]: Unable to determine offline time range.`
-      );
+      this.log.warn(`Unable to determine offline time range.`);
       return;
     }
 

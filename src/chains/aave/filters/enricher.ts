@@ -186,7 +186,9 @@ export async function Enrich(
     }
     default: {
       throw new Error(
-        `[Aave${chain ? `::${chain}` : ''}]: Unknown event kind!`
+        `[${SupportedNetwork.Aave}${
+          chain ? `::${chain}` : ''
+        }]: Unknown event kind!`
       );
     }
   }

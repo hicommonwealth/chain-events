@@ -1,13 +1,17 @@
 import { Listener as BaseListener } from '../../Listener';
-import { CWEvent, IDisconnectedRange } from '../../interfaces';
+import {
+  CWEvent,
+  IDisconnectedRange,
+  SupportedNetwork,
+} from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 
 import {
-  ListenerOptions as AaveListenerOptions,
+  Api,
   EventKind,
   IEventData,
+  ListenerOptions as AaveListenerOptions,
   RawEvent,
-  Api,
 } from './types';
 import { createApi } from './subscribeFunc';
 import { Subscriber } from './subscriber';
@@ -33,17 +37,16 @@ export class Listener extends BaseListener<
     url?: string,
     skipCatchup?: boolean,
     verbose?: boolean,
-    customChainBase?: string,
     discoverReconnectRange?: (c: string) => Promise<IDisconnectedRange>
   ) {
-    super(chain, verbose, customChainBase);
+    super(SupportedNetwork.Aave, chain, verbose);
 
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::Aave::${this._chain}`
+      `${formatFilename(__filename)}::${SupportedNetwork.Aave}::${this._chain}`
     );
 
     if (!this.logPrefix.includes('::'))
-      this.logPrefix = `[Aave::${this._chain}]: `;
+      this.logPrefix = `[${SupportedNetwork.Aave}::${this._chain}]: `;
 
     this._options = {
       url,

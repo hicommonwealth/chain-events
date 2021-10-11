@@ -1,5 +1,6 @@
 import { EventKind } from '../types';
 import { factory, formatFilename } from '../../../logging';
+import { SupportedNetwork } from '../../../interfaces';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -29,9 +30,9 @@ export function ParseType(
       return EventKind.SummonComplete;
     default: {
       log.warn(
-        `[Moloch${
+        `[${SupportedNetwork.Moloch}${
           chain ? `::${chain}` : ''
-        }]: Unknown Moloch event name: ${name}!`
+        }]: Unknown event name: ${name}!`
       );
       return null;
     }

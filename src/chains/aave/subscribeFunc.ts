@@ -6,6 +6,7 @@ import {
   CWEvent,
   SubscribeFunc,
   ISubscribeOptions,
+  SupportedNetwork,
 } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 import {
@@ -36,11 +37,17 @@ export async function createApi(
   chain?: string
 ): Promise<Api> {
   const chainLog = factory.getLogger(
-    `${formatFilename(__filename)}::Aave${chain ? `::${chain}` : ''}`
+    `${formatFilename(__filename)}::${SupportedNetwork.Aave}${
+      chain ? `::${chain}` : ''
+    }`
   );
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = await createProvider(ethNetworkUrl, 'Aave', chain);
+      const provider = await createProvider(
+        ethNetworkUrl,
+        SupportedNetwork.Aave,
+        chain
+      );
 
       // fetch governance contract
       const governanceContract = IAaveGovernanceV2Factory.connect(
@@ -104,7 +111,7 @@ export async function createApi(
   }
 
   throw new Error(
-    `[Aave ${
+    `[${SupportedNetwork.Aave} ${
       chain ? `::${chain}` : ''
     }]: Failed to start Aave listener for ${governanceAddress} at ${ethNetworkUrl}`
   );

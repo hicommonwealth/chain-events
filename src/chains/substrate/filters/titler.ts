@@ -1,4 +1,8 @@
-import { IEventTitle, TitlerFilter } from '../../../interfaces';
+import {
+  IEventTitle,
+  SupportedNetwork,
+  TitlerFilter,
+} from '../../../interfaces';
 import { EventKind } from '../types';
 
 /**
@@ -445,7 +449,9 @@ export const Title: TitlerFilter = (
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _exhaustiveMatch: never = kind;
       throw new Error(
-        `[Substrate${chain ? `::${chain}` : ''}]: unknown event type`
+        `[${SupportedNetwork.Substrate}${
+          chain ? `::${chain}` : ''
+        }]: unknown event type`
       );
     }
   }

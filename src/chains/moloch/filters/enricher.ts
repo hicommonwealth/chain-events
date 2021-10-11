@@ -188,7 +188,9 @@ export async function Enrich(
     }
     default: {
       throw new Error(
-        `[Moloch${chain ? `::${chain}` : ''}]: Unknown event kind!`
+        `[${SupportedNetwork.Moloch}${
+          chain ? `::${chain}` : ''
+        }]: Unknown event kind!`
       );
     }
   }

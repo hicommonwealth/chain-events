@@ -1,12 +1,12 @@
-import { CWEvent } from '../../interfaces';
+import { CWEvent, SupportedNetwork } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
 import { factory, formatFilename } from '../../logging';
 
 import {
+  EventKind,
+  IErc20Contracts,
   ListenerOptions as Erc20ListenerOptions,
   RawEvent,
-  IErc20Contracts,
-  EventKind,
 } from './types';
 import { createApi } from './subscribeFunc';
 import { Processor } from './processor';
@@ -30,14 +30,15 @@ export class Listener extends BaseListener<
     url?: string,
     tokenNames?: string[],
     enricherConfig?: EnricherConfig,
-    verbose?: boolean,
-    customChainBase?: string
+    verbose?: boolean
   ) {
-    super(chain, verbose);
+    super(SupportedNetwork.ERC20, chain, verbose);
 
-    this.log = factory.getLogger(`${formatFilename(__filename)}::Erc20`);
+    this.log = factory.getLogger(
+      `${formatFilename(__filename)}::${SupportedNetwork.ERC20}`
+    );
 
-    this.logPrefix = '[Erc20]: ';
+    this.logPrefix = `[${SupportedNetwork.ERC20}]: `;
 
     this._options = {
       url,

@@ -1,7 +1,7 @@
 /**
  * Processes Aave events.
  */
-import { IEventProcessor, CWEvent } from '../../interfaces';
+import { IEventProcessor, CWEvent, SupportedNetwork } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 
 import { ParseType } from './filters/type_parser';
@@ -22,7 +22,7 @@ export class Processor extends IEventProcessor<Api, RawEvent> {
    */
   public async process(event: RawEvent): Promise<CWEvent<IEventData>[]> {
     const log = factory.getLogger(
-      `${formatFilename(__filename)}::Aave${
+      `${formatFilename(__filename)}::${SupportedNetwork.Aave}${
         this.chain ? `::${this.chain}` : ''
       }`
     );

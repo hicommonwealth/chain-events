@@ -20,7 +20,9 @@ export class StorageFetcher extends IStorageFetcher<Api> {
   ) {
     super(_api);
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::Moloch${chain ? `::${chain}` : ''}`
+      `${formatFilename(__filename)}::${SupportedNetwork.Moloch}${
+        chain ? `::${chain}` : ''
+      }`
     );
   }
 

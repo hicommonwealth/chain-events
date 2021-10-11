@@ -3,7 +3,12 @@ import _ from 'underscore';
 import BN from 'bn.js';
 
 import { createProvider } from '../../eth';
-import { CWEvent, SubscribeFunc, ISubscribeOptions } from '../../interfaces';
+import {
+  CWEvent,
+  SubscribeFunc,
+  ISubscribeOptions,
+  SupportedNetwork,
+} from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 import { ERC20__factory as ERC20Factory, ERC20 } from '../../contractTypes';
 
@@ -34,11 +39,16 @@ export async function createApi(
   tokenNames?: string[],
   retryTimeMs = 10 * 1000
 ): Promise<IErc20Contracts> {
-  const chainLog = factory.getLogger(`${formatFilename(__filename)}::Erc20`);
+  const chainLog = factory.getLogger(
+    `${formatFilename(__filename)}::${SupportedNetwork.ERC20}`
+  );
 
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = await createProvider(ethNetworkUrl, 'Erc20');
+      const provider = await createProvider(
+        ethNetworkUrl,
+        SupportedNetwork.ERC20
+      );
       chainLog.info(`Connection to ${ethNetworkUrl} successful!`);
 
       const tokenContracts = tokenAddresses.map((o) =>
@@ -72,7 +82,7 @@ export async function createApi(
   }
 
   throw new Error(
-    `[Erc20]: Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`
+    `[${SupportedNetwork.ERC20}]: Failed to start the ERC20 listener for ${tokenAddresses} at ${ethNetworkUrl}`
   );
 }
 

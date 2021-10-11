@@ -1,7 +1,7 @@
 /**
  * Processes Moloch events.
  */
-import { IEventProcessor, CWEvent } from '../../interfaces';
+import { IEventProcessor, CWEvent, SupportedNetwork } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 
 import { ParseType } from './filters/type_parser';
@@ -43,7 +43,7 @@ export class Processor extends IEventProcessor<Api, RawEvent> {
       return [cwEvent];
     } catch (e) {
       log.error(
-        `[Moloch${
+        `[${SupportedNetwork.Moloch}${
           this.chain ? `::${this.chain}` : ''
         }]: Failed to enrich event: ${e.message}`
       );

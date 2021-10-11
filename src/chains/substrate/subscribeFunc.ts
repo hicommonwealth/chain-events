@@ -6,6 +6,7 @@ import {
   CWEvent,
   SubscribeFunc,
   ISubscribeOptions,
+  SupportedNetwork,
 } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 
@@ -35,7 +36,9 @@ export async function createApi(
   chain?: string
 ): Promise<ApiPromise> {
   const chainLog = factory.getLogger(
-    `${formatFilename(__filename)}::Substrate${chain ? `::${chain}` : ''}`
+    `${formatFilename(__filename)}::${SupportedNetwork.Substrate}${
+      chain ? `::${chain}` : ''
+    }`
   );
   for (let i = 0; i < 3; ++i) {
     const provider = new WsProvider(url, 0);
@@ -66,7 +69,7 @@ export async function createApi(
   }
 
   throw new Error(
-    `[Substrate${
+    `[${SupportedNetwork.Substrate}${
       chain ? `::${chain}` : ''
     }]: Failed to connect to API endpoint at: ${url}`
   );

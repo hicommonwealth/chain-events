@@ -143,7 +143,9 @@ export async function Enrich(
     }
     default: {
       throw new Error(
-        `[Compound${chain ? `::${chain}` : ''}]: Unknown event kind!`
+        `[${SupportedNetwork.Compound}${
+          chain ? `::${chain}` : ''
+        }]: Unknown event kind!`
       );
     }
   }

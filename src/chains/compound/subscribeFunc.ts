@@ -6,6 +6,7 @@ import {
   CWEvent,
   SubscribeFunc,
   ISubscribeOptions,
+  SupportedNetwork,
 } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 import { GovernorAlpha__factory as GovernorAlphaFactory } from '../../contractTypes';
@@ -32,24 +33,30 @@ export async function createApi(
   chain?: string
 ): Promise<Api> {
   const chainLog = factory.getLogger(
-    `${formatFilename(__filename)}::Compound${chain ? `::${chain}` : ''}`
+    `${formatFilename(__filename)}::${SupportedNetwork.Compound}${
+      chain ? `::${chain}` : ''
+    }`
   );
   if (!ethNetworkUrl)
     throw new Error(
-      `[Compound${
+      `[${SupportedNetwork.Compound}${
         chain ? `::${chain}` : ''
       }]: ethNetworkUrl cannot be undefined. Please provide a valid url.`
     );
   if (!governorAlphaAddress)
     throw new Error(
-      `[Compound${
+      `[${SupportedNetwork.Compound}${
         chain ? `::${chain}` : ''
       }]: governorAlphaAddress cannot be undefined. Please provide a valid contract address.`
     );
 
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = await createProvider(ethNetworkUrl, 'Compound', chain);
+      const provider = await createProvider(
+        ethNetworkUrl,
+        SupportedNetwork.Compound,
+        chain
+      );
 
       // init governance contract
       const governorAlphaContract = GovernorAlphaFactory.connect(
@@ -70,7 +77,7 @@ export async function createApi(
   }
 
   throw new Error(
-    `[Compound${
+    `[${SupportedNetwork.Compound}${
       chain ? `::${chain}` : ''
     }]: Failed to start Compound listener for ${governorAlphaAddress} at ${ethNetworkUrl}`
   );

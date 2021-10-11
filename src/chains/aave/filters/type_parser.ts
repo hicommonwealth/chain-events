@@ -1,5 +1,6 @@
 import { EventKind } from '../types';
 import { factory, formatFilename } from '../../../logging';
+import { SupportedNetwork } from '../../../interfaces';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -29,7 +30,9 @@ export function ParseType(name: string, chain?: string): EventKind | null {
       return EventKind.Approval;
     default: {
       log.warn(
-        `[Aave${chain ? `::${chain}` : ''}]: Unknown event name: ${name}`
+        `[${SupportedNetwork.Aave}${
+          chain ? `::${chain}` : ''
+        }]: Unknown event name: ${name}`
       );
       return null;
     }

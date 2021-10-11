@@ -3,7 +3,7 @@
  */
 import { Listener } from '@ethersproject/providers';
 
-import { IEventSubscriber } from '../../interfaces';
+import { IEventSubscriber, SupportedNetwork } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 
 import { RawEvent, Api } from './types';
@@ -19,7 +19,9 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
     super(api, verbose);
     this._name = name;
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::Compound::${this._name}`
+      `${formatFilename(__filename)}::${SupportedNetwork.Compound}::${
+        this._name
+      }`
     );
   }
 

@@ -1,13 +1,17 @@
-import { CWEvent, IDisconnectedRange } from '../../interfaces';
+import {
+  CWEvent,
+  IDisconnectedRange,
+  SupportedNetwork,
+} from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
 import { factory, formatFilename } from '../../logging';
 
 import {
+  Api,
+  EventKind,
+  IEventData,
   ListenerOptions as CompoundListenerOptions,
   RawEvent,
-  Api,
-  IEventData,
-  EventKind,
 } from './types';
 import { createApi } from './subscribeFunc';
 import { Processor } from './processor';
@@ -31,17 +35,18 @@ export class Listener extends BaseListener<
     url?: string,
     skipCatchup?: boolean,
     verbose?: boolean,
-    discoverReconnectRange?: (c: string) => Promise<IDisconnectedRange>,
-    customChainBase?: string
+    discoverReconnectRange?: (c: string) => Promise<IDisconnectedRange>
   ) {
-    super(chain, verbose, customChainBase);
+    super(SupportedNetwork.Compound, chain, verbose);
 
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::Compound::${this._chain}`
+      `${formatFilename(__filename)}::${SupportedNetwork.Compound}::${
+        this._chain
+      }`
     );
 
     if (!this.logPrefix.includes('::'))
-      this.logPrefix = `[Compound::${this._chain}]: `;
+      this.logPrefix = `[${SupportedNetwork.Compound}::${this._chain}]: `;
 
     this._options = {
       url,

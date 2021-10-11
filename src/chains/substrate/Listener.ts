@@ -1,11 +1,16 @@
 import { ApiPromise } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
 
-import { CWEvent, IDisconnectedRange, IEventPoller } from '../../interfaces';
+import {
+  CWEvent,
+  IDisconnectedRange,
+  IEventPoller,
+  SupportedNetwork,
+} from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
 import { factory, formatFilename } from '../../logging';
 
-import { EventKind, Block, ISubstrateListenerOptions } from './types';
+import { Block, EventKind, ISubstrateListenerOptions } from './types';
 
 import {
   createApi,
@@ -41,14 +46,18 @@ export class Listener extends BaseListener<
     skipCatchup?: boolean,
     enricherConfig?: EnricherConfig,
     verbose?: boolean,
-    customChainBase?: string,
     discoverReconnectRange?: (c: string) => Promise<IDisconnectedRange>
   ) {
-    super(chain, verbose, customChainBase);
+    super(SupportedNetwork.Substrate, chain, verbose);
 
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::Substrate::${this._chain}`
+      `${formatFilename(__filename)}::${SupportedNetwork.Substrate}::${
+        this._chain
+      }`
     );
+
+    if (!this.logPrefix.includes('::'))
+      this.logPrefix = `[${SupportedNetwork.Substrate}::${this._chain}]: `;
 
     this._options = {
       archival: !!archival,

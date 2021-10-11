@@ -1,5 +1,6 @@
 import { EventKind } from '../types';
 import { factory, formatFilename } from '../../../logging';
+import { SupportedNetwork } from '../../../interfaces';
 
 const log = factory.getLogger(formatFilename(__filename));
 
@@ -16,7 +17,7 @@ export function ParseType(name: string, tokenName?: string): EventKind | null {
       return EventKind.Transfer;
     default: {
       log.info(
-        `[Erc20${
+        `[${SupportedNetwork.ERC20}${
           tokenName ? `::${tokenName}` : ''
         }]: Unknown event name: ${name}!`
       );

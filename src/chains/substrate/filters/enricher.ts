@@ -83,7 +83,9 @@ export async function Enrich(
     includeAddresses?: string[];
     excludeAddresses?: string[];
   }> => {
-    const logPrefix = `[Substrate${chain ? `::${chain}` : ''}]: `;
+    const logPrefix = `[${SupportedNetwork.Substrate}${
+      chain ? `::${chain}` : ''
+    }]: `;
     switch (kind) {
       case EventKind.BalanceTransfer: {
         const [sender, dest, value] = (event.data as unknown) as [
@@ -1274,7 +1276,9 @@ export async function Enrich(
     includeAddresses?: string[];
     excludeAddresses?: string[];
   }> => {
-    const logPrefix = `[Substrate${chain ? `::${chain}` : ''}]: `;
+    const logPrefix = `[${SupportedNetwork.Substrate}${
+      chain ? `::${chain}` : ''
+    }]: `;
     switch (kind) {
       case EventKind.DemocracySeconded: {
         const voter = extrinsic.signer.toString();

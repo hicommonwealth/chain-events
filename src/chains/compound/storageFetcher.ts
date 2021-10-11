@@ -1,4 +1,9 @@
-import { CWEvent, IStorageFetcher, IDisconnectedRange } from '../../interfaces';
+import {
+  CWEvent,
+  IStorageFetcher,
+  IDisconnectedRange,
+  SupportedNetwork,
+} from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 
 import { Enrich } from './filters/enricher';
@@ -19,7 +24,9 @@ export class StorageFetcher extends IStorageFetcher<Api> {
   constructor(protected readonly _api: Api, chain?: string) {
     super(_api);
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::Compound${chain ? `::${chain}` : ''}`
+      `${formatFilename(__filename)}::${SupportedNetwork.Compound}${
+        chain ? `::${chain}` : ''
+      }`
     );
   }
 

@@ -1,4 +1,8 @@
-import { LabelerFilter, IEventLabel } from '../../../interfaces';
+import {
+  LabelerFilter,
+  IEventLabel,
+  SupportedNetwork,
+} from '../../../interfaces';
 import { IEventData, EventKind } from '../types';
 
 /**
@@ -64,7 +68,9 @@ export const Label: LabelerFilter = (
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _exhaustiveMatch: never = data;
       throw new Error(
-        `[Compound${chain ? `::${chain}` : ''}]: Unknown event type`
+        `[${SupportedNetwork.Compound}${
+          chain ? `::${chain}` : ''
+        }]: Unknown event type`
       );
     }
   }

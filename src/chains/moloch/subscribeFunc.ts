@@ -6,7 +6,12 @@ import {
   Moloch1__factory as Moloch1Factory,
   Moloch2__factory as Moloch2Factory,
 } from '../../contractTypes';
-import { IDisconnectedRange, CWEvent, SubscribeFunc } from '../../interfaces';
+import {
+  IDisconnectedRange,
+  CWEvent,
+  SubscribeFunc,
+  SupportedNetwork,
+} from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 
 import { Subscriber } from './subscriber';
@@ -33,12 +38,18 @@ export async function createApi(
   chain?: string
 ): Promise<Api> {
   const chainLog = factory.getLogger(
-    `${formatFilename(__filename)}::Moloch${chain ? `::${chain}` : ''}`
+    `${formatFilename(__filename)}::${SupportedNetwork.Moloch}${
+      chain ? `::${chain}` : ''
+    }`
   );
 
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = await createProvider(ethNetworkUrl, chain);
+      const provider = await createProvider(
+        ethNetworkUrl,
+        SupportedNetwork.Moloch,
+        chain
+      );
       const contract =
         contractVersion === 1
           ? Moloch1Factory.connect(contractAddress, provider)
@@ -59,7 +70,7 @@ export async function createApi(
   }
 
   throw new Error(
-    `[Moloch${
+    `[${SupportedNetwork.Moloch}${
       chain ? `::${chain}` : ''
     }]: Failed to start Moloch listener for ${contractAddress} at ${ethNetworkUrl}`
   );

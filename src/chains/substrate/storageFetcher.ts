@@ -65,7 +65,9 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
   constructor(protected readonly _api: ApiPromise, chain?: string) {
     super(_api);
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::Substrate${chain ? `::${chain}` : ''}`
+      `${formatFilename(__filename)}::${SupportedNetwork.Substrate}${
+        chain ? `::${chain}` : ''
+      }`
     );
   }
 
