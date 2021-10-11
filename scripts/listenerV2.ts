@@ -41,11 +41,11 @@ async function main(): Promise<any> {
   try {
     listener = await createListener(argv.chain || 'dummyChain', argv.network, {
       url: argv.url || networkUrls[argv.chain],
-      address: argv.contractAddress || contracts[argv.network],
+      address: argv.contractAddress || contracts[argv.chain],
       tokenAddresses: [argv.contractAddress],
       tokenNames: [argv.tokenName],
       verbose: false,
-      spec: <any>networkSpecs[argv.network],
+      spec: <any>networkSpecs[argv.chain],
       enricherConfig: {
         balanceTransferThreshold: 500_000,
       },
