@@ -1,22 +1,11 @@
 import { ApiPromise } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
 
-import {
-  chainSupportedBy,
-  CWEvent,
-  EventSupportingChainT,
-  IDisconnectedRange,
-  IEventPoller,
-} from '../../interfaces';
+import { CWEvent, IDisconnectedRange, IEventPoller } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
 import { factory, formatFilename } from '../../logging';
 
-import {
-  EventChains as SubstrateChains,
-  EventKind,
-  Block,
-  ISubstrateListenerOptions,
-} from './types';
+import { EventKind, Block, ISubstrateListenerOptions } from './types';
 
 import {
   createApi,
@@ -44,7 +33,7 @@ export class Listener extends BaseListener<
   protected readonly log;
 
   constructor(
-    chain: EventSupportingChainT,
+    chain: string,
     url?: string,
     spec?: RegisteredTypes,
     archival?: boolean,
@@ -60,11 +49,6 @@ export class Listener extends BaseListener<
     this.log = factory.getLogger(
       `${formatFilename(__filename)}::Substrate::${this._chain}`
     );
-
-    if (!customChainBase && !chainSupportedBy(this._chain, SubstrateChains))
-      throw new Error(
-        `[Substrate::${this._chain}]: ${this._chain} is not a Substrate chain`
-      );
 
     this._options = {
       archival: !!archival,

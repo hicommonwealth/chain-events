@@ -1,15 +1,9 @@
 import { Listener as BaseListener } from '../../Listener';
-import {
-  chainSupportedBy,
-  CWEvent,
-  EventSupportingChainT,
-  IDisconnectedRange,
-} from '../../interfaces';
+import { CWEvent, IDisconnectedRange } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
 
 import {
   ListenerOptions as AaveListenerOptions,
-  EventChains as AaveEventChains,
   EventKind,
   IEventData,
   RawEvent,
@@ -34,7 +28,7 @@ export class Listener extends BaseListener<
   protected readonly log;
 
   constructor(
-    chain: EventSupportingChainT,
+    chain: string,
     govContractAddress: string,
     url?: string,
     skipCatchup?: boolean,
@@ -47,11 +41,6 @@ export class Listener extends BaseListener<
     this.log = factory.getLogger(
       `${formatFilename(__filename)}::Aave::${this._chain}`
     );
-
-    if (!customChainBase && !chainSupportedBy(this._chain, AaveEventChains))
-      throw new Error(
-        `[Aave::${this._chain}]: ${this._chain} is not an Aave chain`
-      );
 
     if (!this.logPrefix.includes('::'))
       this.logPrefix = `[Aave::${this._chain}]: `;

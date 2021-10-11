@@ -1,9 +1,4 @@
-import {
-  chainSupportedBy,
-  CWEvent,
-  EventSupportingChainT,
-  IDisconnectedRange,
-} from '../../interfaces';
+import { CWEvent, IDisconnectedRange } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
 import { factory, formatFilename } from '../../logging';
 
@@ -11,7 +6,6 @@ import {
   ListenerOptions as CompoundListenerOptions,
   RawEvent,
   Api,
-  EventChains as CompoundChains,
   IEventData,
   EventKind,
 } from './types';
@@ -32,7 +26,7 @@ export class Listener extends BaseListener<
   protected readonly log;
 
   constructor(
-    chain: EventSupportingChainT,
+    chain: string,
     contractAddress: string,
     url?: string,
     skipCatchup?: boolean,
@@ -45,9 +39,6 @@ export class Listener extends BaseListener<
     this.log = factory.getLogger(
       `${formatFilename(__filename)}::Compound::${this._chain}`
     );
-
-    if (!customChainBase && !chainSupportedBy(this._chain, CompoundChains))
-      throw new Error(`${this._chain} is not a Compound contract`);
 
     if (!this.logPrefix.includes('::'))
       this.logPrefix = `[Compound::${this._chain}]: `;

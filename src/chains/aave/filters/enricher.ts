@@ -3,7 +3,7 @@ import { BigNumber } from 'ethers';
 
 import { TypedEventFilter } from '../../../contractTypes/commons';
 import { AaveTokenV2, IAaveGovernanceV2 } from '../../../contractTypes';
-import { CWEvent } from '../../../interfaces';
+import { CWEvent, SupportedNetwork } from '../../../interfaces';
 import { EventKind, RawEvent, IEventData, Api } from '../types';
 
 type GetEventArgs<T> = T extends TypedEventFilter<any, infer Y> ? Y : never;
@@ -27,6 +27,7 @@ export async function Enrich(
       return {
         blockNumber,
         excludeAddresses: [],
+        network: SupportedNetwork.Aave,
         data: {
           kind,
           id: +id,
@@ -54,6 +55,7 @@ export async function Enrich(
       return {
         blockNumber,
         excludeAddresses: [creator],
+        network: SupportedNetwork.Aave,
         data: {
           kind,
           id: +id,
@@ -75,6 +77,7 @@ export async function Enrich(
       return {
         blockNumber,
         excludeAddresses: [],
+        network: SupportedNetwork.Aave,
         data: {
           kind,
           id: +id,
@@ -88,6 +91,7 @@ export async function Enrich(
       return {
         blockNumber,
         excludeAddresses: [],
+        network: SupportedNetwork.Aave,
         data: {
           kind,
           id: +id,
@@ -102,6 +106,7 @@ export async function Enrich(
       return {
         blockNumber,
         excludeAddresses: [voter],
+        network: SupportedNetwork.Aave,
         data: {
           kind,
           id: +id,
@@ -120,6 +125,7 @@ export async function Enrich(
       return {
         blockNumber,
         excludeAddresses: [delegator],
+        network: SupportedNetwork.Aave,
         data: {
           kind,
           tokenAddress: rawData.address,
@@ -136,6 +142,7 @@ export async function Enrich(
       return {
         blockNumber,
         excludeAddresses: [user],
+        network: SupportedNetwork.Aave,
         data: {
           kind,
           tokenAddress: rawData.address,
@@ -150,6 +157,7 @@ export async function Enrich(
       return {
         blockNumber,
         excludeAddresses: [from],
+        network: SupportedNetwork.Aave,
         data: {
           kind,
           tokenAddress: rawData.address,
@@ -166,6 +174,7 @@ export async function Enrich(
       return {
         blockNumber,
         excludeAddresses: [owner],
+        network: SupportedNetwork.Aave,
         data: {
           kind,
           tokenAddress: rawData.address,
@@ -182,5 +191,5 @@ export async function Enrich(
     }
   }
 
-  return { blockNumber: null, data: null };
+  return { blockNumber: null, network: SupportedNetwork.Aave, data: null };
 }
