@@ -7,6 +7,7 @@ export async function createProvider(
   ethNetworkUrl: string,
   chain?: string
 ): Promise<providers.Web3Provider> {
+  // TODO determine base - use customBase?
   const log = factory.getLogger(
     `${formatFilename(__filename)}::Aave${chain ? `::${chain}` : ''}`
   );

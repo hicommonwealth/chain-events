@@ -7,7 +7,11 @@ const log = factory.getLogger(formatFilename(__filename));
  * This is the Type Parser function, which takes a raw Event
  * and determines which of our local event kinds it belongs to.
  */
-export function ParseType(version: 1 | 2, name: string): EventKind | null {
+export function ParseType(
+  version: 1 | 2,
+  name: string,
+  chain?: string
+): EventKind | null {
   switch (name) {
     case 'SubmitProposal':
       return EventKind.SubmitProposal;
@@ -24,7 +28,11 @@ export function ParseType(version: 1 | 2, name: string): EventKind | null {
     case 'SummonComplete':
       return EventKind.SummonComplete;
     default: {
-      log.warn(`Unknown Moloch event name: ${name}!`);
+      log.warn(
+        `[Moloch${
+          chain ? `::${chain}` : ''
+        }]: Unknown Moloch event name: ${name}!`
+      );
       return null;
     }
   }

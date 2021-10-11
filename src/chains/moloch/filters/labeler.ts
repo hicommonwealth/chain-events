@@ -82,7 +82,7 @@ export const Label: LabelerFilter = (
       // ensure exhaustive matching -- gives ts error if missing cases
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _exhaustiveMatch: never = data;
-      throw new Error('unknown event type');
+      throw new Error(`[Moloch::${chainId}]: Unknown event type`);
     }
   }
 };

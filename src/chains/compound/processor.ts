@@ -9,22 +9,24 @@ import { Enrich } from './filters/enricher';
 import { IEventData, RawEvent, Api } from './types';
 
 export class Processor extends IEventProcessor<Api, RawEvent> {
+  constructor(protected _api: Api, protected readonly chain?: string) {
+    super(_api);
+  }
+
   /**
    * Parse events out of an ethereum block and standardizes their format
    * for processing.
    *
    * @param event
-   * @param chain
    * @returns an array of processed events
    */
-  public async process(
-    event: RawEvent,
-    chain?: string
-  ): Promise<CWEvent<IEventData>[]> {
+  public async process(event: RawEvent): Promise<CWEvent<IEventData>[]> {
     const log = factory.getLogger(
-      `${formatFilename(__filename)}::Compound${chain ? `::${chain}` : ''}`
+      `${formatFilename(__filename)}::Compound${
+        this.chain ? `::${this.chain}` : ''
+      }`
     );
-    const kind = ParseType(event.event, chain);
+    const kind = ParseType(event.event, this.chain);
     if (!kind) return [];
     try {
       const cwEvent = await Enrich(
@@ -32,7 +34,7 @@ export class Processor extends IEventProcessor<Api, RawEvent> {
         event.blockNumber,
         kind,
         event,
-        chain
+        this.chain
       );
       return [cwEvent];
     } catch (e) {

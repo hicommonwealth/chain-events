@@ -11,12 +11,11 @@ import { Block, isEvent, IEventData } from './types';
 import { ParseType } from './filters/type_parser';
 import { Enrich, EnricherConfig } from './filters/enricher';
 
-const log = factory.getLogger(formatFilename(__filename));
-
 export class Processor extends IEventProcessor<ApiPromise, Block> {
   constructor(
     protected _api: ApiPromise,
-    private _enricherConfig: EnricherConfig = {}
+    private _enricherConfig: EnricherConfig = {},
+    protected readonly chain?: string
   ) {
     super(_api);
   }
@@ -35,6 +34,12 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
    * @returns an array of processed events
    */
   public async process(block: Block): Promise<CWEvent<IEventData>[]> {
+    const log = factory.getLogger(
+      `${formatFilename(__filename)}::Substrate${
+        this.chain ? `::${this.chain}` : ''
+      }`
+    );
+
     // cache block number if needed for disconnection purposes
     const blockNumber = +block.header.number;
     if (!this._lastBlockNumber || blockNumber > this._lastBlockNumber) {
@@ -64,7 +69,8 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
             blockNumber,
             kind,
             data,
-            this._enricherConfig
+            this._enricherConfig,
+            this.chain
           );
           return result;
         } catch (e) {

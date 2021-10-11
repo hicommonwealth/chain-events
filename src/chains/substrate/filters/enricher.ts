@@ -73,7 +73,8 @@ export async function Enrich(
   blockNumber: number,
   kind: EventKind,
   rawData: Event | Extrinsic,
-  config: EnricherConfig = {}
+  config: EnricherConfig = {},
+  chain?: string
 ): Promise<CWEvent<IEventData>> {
   const extractEventData = async (
     event: Event
@@ -82,6 +83,7 @@ export async function Enrich(
     includeAddresses?: string[];
     excludeAddresses?: string[];
   }> => {
+    const logPrefix = `[Substrate${chain ? `::${chain}` : ''}]: `;
     switch (kind) {
       case EventKind.BalanceTransfer: {
         const [sender, dest, value] = (event.data as unknown) as [
@@ -365,7 +367,9 @@ export async function Enrich(
         >(hash, stash);
         if (!controllerOpt.isSome) {
           throw new Error(
-            `could not fetch staking controller for ${stash.toString()}`
+            `[Substrate${
+              chain ? `::${chain}` : ''
+            }]: could not fetch staking controller for ${stash.toString()}`
           );
         }
         return {
@@ -421,7 +425,9 @@ export async function Enrich(
         );
         if (!prop) {
           throw new Error(
-            `could not fetch info for proposal ${+proposalIndex}`
+            `[Substrate${
+              chain ? `::${chain}` : ''
+            }]: could not fetch info for proposal ${+proposalIndex}`
           );
         }
         const [, hash, proposer] = prop;
@@ -463,7 +469,9 @@ export async function Enrich(
         >(referendumIndex);
         if (!infoOpt.isSome) {
           throw new Error(
-            `could not find info for referendum ${+referendumIndex}`
+            `[Substrate${
+              chain ? `::${chain}` : ''
+            }]: could not find info for referendum ${+referendumIndex}`
           );
         }
         if ((infoOpt.unwrap() as ReferendumInfo).isOngoing) {
@@ -471,7 +479,9 @@ export async function Enrich(
           const info = infoOpt.unwrap() as ReferendumInfo;
           if (!info.isOngoing) {
             throw new Error(
-              `kusama referendum ${+referendumIndex} not in ongoing state`
+              `[Substrate${
+                chain ? `::${chain}` : ''
+              }]: kusama referendum ${+referendumIndex} not in ongoing state`
             );
           }
           return {
@@ -554,7 +564,9 @@ export async function Enrich(
         const image = await api.derive.democracy.preimage(hash);
         if (!image || !image.proposal) {
           throw new Error(
-            `could not find info for preimage ${hash.toString()}`
+            `[Substrate${
+              chain ? `::${chain}` : ''
+            }]: could not find info for preimage ${hash.toString()}`
           );
         }
         return {
@@ -627,7 +639,11 @@ export async function Enrich(
         const [hash] = (event.data as unknown) as [Hash] & Codec;
         const tip = await api.query.tips.tips(hash);
         if (!tip.isSome) {
-          throw new Error(`Could not find tip: ${hash.toString()}`);
+          throw new Error(
+            `[Substrate${
+              chain ? `::${chain}` : ''
+            }]: Could not find tip: ${hash.toString()}`
+          );
         }
         const {
           reason: reasonHash,
@@ -639,7 +655,9 @@ export async function Enrich(
         const reasonOpt = await api.query.tips.reasons(reasonHash);
         if (!reasonOpt.isSome) {
           throw new Error(
-            `Could not find reason for tip: ${reasonHash.toString()}`
+            `[Substrate${
+              chain ? `::${chain}` : ''
+            }]: Could not find reason for tip: ${reasonHash.toString()}`
           );
         }
         return {
@@ -659,7 +677,11 @@ export async function Enrich(
         const [hash] = (event.data as unknown) as [Hash] & Codec;
         const tip = await api.query.tips.tips(hash);
         if (!tip.isSome) {
-          throw new Error(`Could not find tip: ${hash.toString()}`);
+          throw new Error(
+            `[Substrate${
+              chain ? `::${chain}` : ''
+            }]: Could not find tip: ${hash.toString()}`
+          );
         }
         return {
           data: {
@@ -723,7 +745,9 @@ export async function Enrich(
 
         if (!proposalOpt.isSome) {
           throw new Error(
-            `could not fetch treasury proposal index ${+proposalIndex}`
+            `[Substrate${
+              chain ? `::${chain}` : ''
+            }]: could not fetch treasury proposal index ${+proposalIndex}`
           );
         }
         const proposal = proposalOpt.unwrap();
@@ -776,11 +800,11 @@ export async function Enrich(
         const [bountyIndex] = (event.data as unknown) as [BountyIndex] & Codec;
         const bounties = await api.derive.bounties.bounties();
         if (!bounties) {
-          throw new Error('could not fetch bounties');
+          throw new Error(`${logPrefix}could not fetch bounties`);
         }
         const bounty = bounties.find((b) => +b.index === +bountyIndex);
         if (!bounty) {
-          throw new Error('could not find bounty');
+          throw new Error(`${logPrefix}could not find bounty`);
         }
         return {
           data: {
@@ -805,14 +829,14 @@ export async function Enrich(
 
         const bounties = await api.derive.bounties.bounties();
         if (!bounties) {
-          throw new Error('could not fetch bounties');
+          throw new Error(`${logPrefix}could not fetch bounties`);
         }
         const bounty = bounties.find((b) => +b.index === +bountyIndex);
         if (!bounty) {
-          throw new Error('could not find bounty');
+          throw new Error(`${logPrefix}could not find bounty`);
         }
         if (!bounty.bounty.status.isPendingPayout) {
-          throw new Error('invalid bounty status');
+          throw new Error(`${logPrefix}invalid bounty status`);
         }
         return {
           data: {
@@ -872,14 +896,14 @@ export async function Enrich(
 
         const bounties = await api.derive.bounties.bounties();
         if (!bounties) {
-          throw new Error('could not fetch bounties');
+          throw new Error(`${logPrefix}could not fetch bounties`);
         }
         const bounty = bounties.find((b) => +b.index === +bountyIndex);
         if (!bounty) {
-          throw new Error('could not find bounty');
+          throw new Error(`${logPrefix}could not find bounty`);
         }
         if (!bounty.bounty.status.isActive) {
-          throw new Error('invalid bounty status');
+          throw new Error(`${logPrefix}invalid bounty status`);
         }
         return {
           data: {
@@ -957,7 +981,11 @@ export async function Enrich(
           Option<Proposal>
         >(hash);
         if (!proposalOpt.isSome) {
-          throw new Error('could not fetch method for collective proposal');
+          throw new Error(
+            `[Substrate${
+              chain ? `::${chain}` : ''
+            }]: could not fetch method for collective proposal`
+          );
         }
         return {
           excludeAddresses: [proposer.toString()],
@@ -1046,14 +1074,18 @@ export async function Enrich(
           Option<any>
         >(hash);
         if (!proposalInfoOpt.isSome) {
-          throw new Error('unable to fetch signaling proposal info');
+          throw new Error(
+            `${logPrefix}unable to fetch signaling proposal info`
+          );
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const voteInfoOpt = await api.query.voting.voteRecords<Option<any>>(
           proposalInfoOpt.unwrap().vote_id
         );
         if (!voteInfoOpt.isSome) {
-          throw new Error('unable to fetch signaling proposal voting info');
+          throw new Error(
+            `${logPrefix}unable to fetch signaling proposal voting info`
+          );
         }
         return {
           excludeAddresses: [proposer.toString()],
@@ -1141,11 +1173,11 @@ export async function Enrich(
         const [who] = (event.data as unknown) as [AccountId] & Codec;
         const registrationOpt = await api.query.identity.identityOf(who);
         if (!registrationOpt.isSome) {
-          throw new Error('unable to retrieve identity info');
+          throw new Error(`${logPrefix}unable to retrieve identity info`);
         }
         const { info, judgements: judgementInfo } = registrationOpt.unwrap();
         if (!info.display || !info.display.isRaw) {
-          throw new Error('no display name set');
+          throw new Error(`${logPrefix}no display name set`);
         }
         const displayName = info.display.asRaw.toUtf8();
         const judgements: [string, IdentityJudgement][] = [];
@@ -1158,7 +1190,7 @@ export async function Enrich(
             ] => {
               const registrarOpt = registrars[+id];
               if (!registrarOpt || !registrarOpt.isSome) {
-                throw new Error('invalid judgement!');
+                throw new Error(`${logPrefix}invalid judgement!`);
               }
               return [
                 registrarOpt.unwrap().account.toString(),
@@ -1185,20 +1217,20 @@ export async function Enrich(
         const registrars = await api.query.identity.registrars();
         const registrarOpt = registrars[+registrarId];
         if (!registrarOpt || !registrarOpt.isSome) {
-          throw new Error('unable to retrieve registrar info');
+          throw new Error(`${logPrefix}unable to retrieve registrar info`);
         }
         const registrar = registrarOpt.unwrap().account;
 
         // query the actual judgement provided
         const registrationOpt = await api.query.identity.identityOf(who);
         if (!registrationOpt.isSome) {
-          throw new Error('unable to retrieve identity info');
+          throw new Error(`${logPrefix}unable to retrieve identity info`);
         }
         const judgementTuple = registrationOpt
           .unwrap()
           .judgements.find(([id]) => +id === +registrarId);
         if (!judgementTuple) {
-          throw new Error('unable to find judgement');
+          throw new Error(`${logPrefix}unable to find judgement`);
         }
         const judgement = parseJudgement(judgementTuple[1]);
         return {
@@ -1230,7 +1262,7 @@ export async function Enrich(
         };
       }
       default: {
-        throw new Error(`unknown event type: ${kind}`);
+        throw new Error(`${logPrefix}unknown event type: ${kind}`);
       }
     }
   };
@@ -1242,6 +1274,7 @@ export async function Enrich(
     includeAddresses?: string[];
     excludeAddresses?: string[];
   }> => {
+    const logPrefix = `[Substrate${chain ? `::${chain}` : ''}]: `;
     switch (kind) {
       case EventKind.DemocracySeconded: {
         const voter = extrinsic.signer.toString();
@@ -1262,7 +1295,7 @@ export async function Enrich(
           AccountVote
         ];
         if (vote.isSplit) {
-          throw new Error('split votes not supported');
+          throw new Error(`${logPrefix}split votes not supported`);
         }
         return {
           excludeAddresses: [voter],
@@ -1316,7 +1349,7 @@ export async function Enrich(
       }
 
       default: {
-        throw new Error(`unknown event type: ${kind}`);
+        throw new Error(`${logPrefix}unknown event type: ${kind}`);
       }
     }
   };

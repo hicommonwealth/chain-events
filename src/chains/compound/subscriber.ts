@@ -19,7 +19,7 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
     super(api, verbose);
     this._name = name;
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::Compound${name ? `::${name}` : ''}`
+      `${formatFilename(__filename)}::Compound::${this._name}`
     );
   }
 

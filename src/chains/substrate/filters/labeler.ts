@@ -71,7 +71,7 @@ const getDenom = (chain: typeof EventChains[number]): string => {
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _dummy: never = chain;
-      throw new Error('invalid chain');
+      throw new Error(`[Substrate::${chain}]: invalid chain`);
     }
   }
 };
@@ -93,7 +93,7 @@ const edgBalanceFormatter = (
   } else if (chain.startsWith('clover')) {
     dollar = new BN(10).pow(new BN(CLOVER_DECIMAL));
   } else {
-    throw new Error('unexpected chain');
+    throw new Error(`[Substrate::${chain}]: unexpected chain`);
   }
   const balanceDollars = new BN(balance, 10).div(dollar);
   return `${formatNumberShort(+balanceDollars)} ${denom}`;
@@ -842,7 +842,7 @@ export const Label: LabelerFilter = (
       // ensure exhaustive matching -- gives ts error if missing cases
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _exhaustiveMatch: never = data;
-      throw new Error('Unknown event type');
+      throw new Error(`[Substrate::${chainId}]: Unknown event type`);
     }
   }
 };

@@ -23,16 +23,22 @@ const log = factory.getLogger(formatFilename(__filename));
  * @param contractVersion
  * @param contractAddress
  * @param retryTimeMs
+ * @param chain
  */
 export async function createApi(
   ethNetworkUrl: string,
   contractVersion: 1 | 2,
   contractAddress: string,
-  retryTimeMs = 10 * 1000
+  retryTimeMs = 10 * 1000,
+  chain?: string
 ): Promise<Api> {
+  const chainLog = factory.getLogger(
+    `${formatFilename(__filename)}::Moloch${chain ? `::${chain}` : ''}`
+  );
+
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = await createProvider(ethNetworkUrl);
+      const provider = await createProvider(ethNetworkUrl, chain);
       const contract =
         contractVersion === 1
           ? Moloch1Factory.connect(contractAddress, provider)
@@ -41,19 +47,21 @@ export async function createApi(
 
       // fetch summoning time to guarantee connected
       await contract.summoningTime();
-      log.info('Connection successful!');
+      chainLog.info('Connection successful!');
       return contract;
     } catch (err) {
-      log.error(
+      chainLog.error(
         `Moloch ${contractAddress} at ${ethNetworkUrl} failure: ${err.message}`
       );
       await sleep(retryTimeMs);
-      log.error('Retrying connection...');
+      chainLog.error('Retrying connection...');
     }
   }
 
   throw new Error(
-    `Failed to start Moloch listener for ${contractAddress} at ${ethNetworkUrl}`
+    `[Moloch${
+      chain ? `::${chain}` : ''
+    }]: Failed to start Moloch listener for ${contractAddress} at ${ethNetworkUrl}`
   );
 }
 

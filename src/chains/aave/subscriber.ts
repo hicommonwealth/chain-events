@@ -24,7 +24,7 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
     super(api, verbose);
     this._name = name;
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::Aave${name ? `::${name}` : ''}`
+      `${formatFilename(__filename)}::Aave::${this._name}`
     );
   }
 

@@ -36,7 +36,8 @@ export async function Enrich(
   api: Api,
   blockNumber: number,
   kind: EventKind,
-  rawData: RawEvent
+  rawData: RawEvent,
+  chain?: string
 ): Promise<CWEvent<IEventData>> {
   switch (kind) {
     case EventKind.SubmitProposal: {
@@ -179,7 +180,9 @@ export async function Enrich(
       };
     }
     default: {
-      throw new Error('unknown moloch event kind!');
+      throw new Error(
+        `[Moloch${chain ? `::${chain}` : ''}]: Unknown event kind!`
+      );
     }
   }
 }

@@ -54,14 +54,21 @@ import {
   ITipClosing,
 } from './types';
 
-const log = factory.getLogger(formatFilename(__filename));
-
 export class StorageFetcher extends IStorageFetcher<ApiPromise> {
+  protected readonly log;
+
+  constructor(protected readonly _api: ApiPromise, chain?: string) {
+    super(_api);
+    this.log = factory.getLogger(
+      `${formatFilename(__filename)}::Substrate${chain ? `::${chain}` : ''}`
+    );
+  }
+
   public async fetchIdentities(
     addresses: string[]
   ): Promise<CWEvent<IIdentitySet>[]> {
     if (!this._api.query.identity) {
-      log.info('Identities module not detected.');
+      this.log.info('Identities module not detected.');
       return [];
     }
 
@@ -119,7 +126,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     moduleName?: 'council' | 'technicalCommittee'
   ): Promise<CWEvent<IEventData>[]> {
     if (!Object.values(EntityKind).find((k) => k === kind)) {
-      log.error(`Invalid entity kind: ${kind}`);
+      this.log.error(`Invalid entity kind: ${kind}`);
       return [];
     }
     const blockNumber = +(await this._api.rpc.chain.getHeader()).number;
@@ -198,7 +205,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       blockNumber
     );
 
-    log.info('Fetch complete.');
+    this.log.info('Fetch complete.');
     return [
       ...democracyProposalEvents,
       ...democracyReferendaEvents,
@@ -219,7 +226,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     if (!this._api.query.democracy) {
       return [];
     }
-    log.info('Migrating democracy proposals...');
+    this.log.info('Migrating democracy proposals...');
     const publicProps = await this._api.query.democracy.publicProps();
     const constructEvent = (
       prop: [PropIndex, Hash, AccountId] & Codec,
@@ -252,13 +259,13 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       const proposedEvents = _.zip(publicProps, deposits)
         .map(([prop, depositOpt]) => constructEvent(prop, depositOpt))
         .filter((e) => !!e);
-      log.info(`Found ${proposedEvents.length} democracy proposals!`);
+      this.log.info(`Found ${proposedEvents.length} democracy proposals!`);
       return proposedEvents.map((data) => ({ blockNumber, data }));
       // eslint-disable-next-line no-else-return
     } else {
       const publicProp = publicProps.find(([idx]) => +idx === +id);
       if (!publicProp) {
-        log.error(`Democracy proposal ${id} not found!`);
+        this.log.error(`Democracy proposal ${id} not found!`);
         return null;
       }
       const depositOpt = await this._api.query.democracy.depositOf(
@@ -279,11 +286,11 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     id?: string
   ): Promise<CWEvent<IDemocracyStarted | IDemocracyPassed>[]> {
     if (!this._api.query.democracy) {
-      log.info('Democracy module not detected.');
+      this.log.info('Democracy module not detected.');
       return [];
     }
 
-    log.info('Migrating democracy referenda...');
+    this.log.info('Migrating democracy referenda...');
     const activeReferenda = await this._api.derive.democracy.referendumsActive();
     const startEvents = activeReferenda.map((r) => {
       return {
@@ -326,12 +333,12 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         ({ data: { referendumIndex } }) => referendumIndex === +id
       );
       if (data.length === 0) {
-        log.error(`No referendum found with id ${id}!`);
+        this.log.error(`No referendum found with id ${id}!`);
         return null;
       }
       return data;
     }
-    log.info(`Found ${startEvents.length} democracy referenda!`);
+    this.log.info(`Found ${startEvents.length} democracy referenda!`);
     return results;
   }
 
@@ -342,7 +349,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     if (!this._api.query.democracy) {
       return [];
     }
-    log.info('Migrating preimages...');
+    this.log.info('Migrating preimages...');
     const hashCodecs = hashes.map((hash) => this._api.createType('Hash', hash));
     const preimages = await this._api.derive.democracy.preimages(hashCodecs);
     const notedEvents: Array<[number, IPreimageNoted]> = _.zip(
@@ -367,7 +374,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     const cwEvents = notedEvents
       .filter(([, data]) => !!data)
       .map(([blockNumber, data]) => ({ blockNumber, data }));
-    log.info(`Found ${cwEvents.length} preimages!`);
+    this.log.info(`Found ${cwEvents.length} preimages!`);
     return cwEvents;
   }
 
@@ -376,18 +383,18 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     id?: string
   ): Promise<CWEvent<ITreasuryProposed>[]> {
     if (!this._api.query.treasury) {
-      log.info('Treasury module not detected.');
+      this.log.info('Treasury module not detected.');
       return [];
     }
 
-    log.info('Migrating treasury proposals...');
+    this.log.info('Migrating treasury proposals...');
     const approvals = await this._api.query.treasury.approvals();
     const nProposals = await this._api.query.treasury.proposalCount();
 
     if (id !== undefined) {
       const proposal = await this._api.query.treasury.proposals(+id);
       if (!proposal.isSome) {
-        log.error(`No treasury proposal found with id ${id}!`);
+        this.log.error(`No treasury proposal found with id ${id}!`);
         return null;
       }
       const { proposer, value, beneficiary, bond } = proposal.unwrap();
@@ -432,7 +439,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         } as ITreasuryProposed;
       })
       .filter((e) => !!e);
-    log.info(`Found ${proposedEvents.length} treasury proposals!`);
+    this.log.info(`Found ${proposedEvents.length} treasury proposals!`);
     return proposedEvents.map((data) => ({ blockNumber, data }));
   }
 
@@ -445,11 +452,11 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       !this._api.query.treasury?.bountyCount &&
       !this._api.query.bounties?.bountyCount
     ) {
-      log.info('Bounties module not detected.');
+      this.log.info('Bounties module not detected.');
       return [];
     }
 
-    log.info('Migrating treasury bounties...');
+    this.log.info('Migrating treasury bounties...');
     const bounties = await this._api.derive.bounties.bounties();
     const events = [];
     for (const b of bounties) {
@@ -498,12 +505,12 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         ({ data: { bountyIndex } }) => bountyIndex === +id
       );
       if (data.length === 0) {
-        log.error(`No bounty found with id ${id}!`);
+        this.log.error(`No bounty found with id ${id}!`);
         return null;
       }
       return data;
     }
-    log.info(`Found ${bounties.length} bounties!`);
+    this.log.info(`Found ${bounties.length} bounties!`);
     return results;
   }
 
@@ -513,7 +520,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     id?: string
   ): Promise<CWEvent<ICollectiveProposed | ICollectiveVoted>[]> {
     if (!this._api.query[moduleName]) {
-      log.info(`${moduleName} module not detected.`);
+      this.log.info(`${moduleName} module not detected.`);
       return [];
     }
 
@@ -571,21 +578,21 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
       ];
     };
 
-    log.info(`Migrating ${moduleName} proposals...`);
+    this.log.info(`Migrating ${moduleName} proposals...`);
     const proposalHashes = await this._api.query[moduleName].proposals();
 
     // fetch one
     if (id !== undefined) {
       const hash = proposalHashes.find((h) => h.toString() === id);
       if (!hash) {
-        log.error(`No collective proposal found with hash ${id}!`);
+        this.log.error(`No collective proposal found with hash ${id}!`);
         return null;
       }
       const proposalOpt = await this._api.query[moduleName].proposalOf(hash);
       const votesOpt = await this._api.query[moduleName].voting(hash);
       const events = constructEvent(hash, proposalOpt, votesOpt);
       if (!events) {
-        log.error(`No collective proposal found with hash ${id}!`);
+        this.log.error(`No collective proposal found with hash ${id}!`);
         return null;
       }
       return events.map((data) => ({ blockNumber, data }));
@@ -598,7 +605,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
           // awaiting inside the map here to force the individual call to throw, rather than the Promise.all
           return await this._api.query[moduleName].proposalOf(h);
         } catch (e) {
-          log.error(`Failed to fetch council motion hash ${h.toString()}`);
+          this.log.error(`Failed to fetch council motion hash ${h.toString()}`);
           return Promise.resolve(null);
         }
       })
@@ -618,7 +625,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     const nProposalEvents = proposedEvents.filter(
       (e) => e.kind === EventKind.CollectiveProposed
     ).length;
-    log.info(
+    this.log.info(
       `Found ${nProposalEvents} ${moduleName} proposals and ${
         proposedEvents.length - nProposalEvents
       } votes!`
@@ -631,11 +638,11 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     hash?: string
   ): Promise<CWEvent<INewTip | ITipVoted | ITipClosing>[]> {
     if (!this._api.query.tips) {
-      log.info('Tips module not detected.');
+      this.log.info('Tips module not detected.');
       return [];
     }
 
-    log.info('Migrating tips...');
+    this.log.info('Migrating tips...');
     const openTipKeys = await this._api.query.tips.tips.keys();
     const results: CWEvent<INewTip | ITipVoted | ITipClosing>[] = [];
     for (const key of openTipKeys) {
@@ -700,13 +707,13 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
             }
           }
         } catch (e) {
-          log.error(`Unable to fetch tip "${key.args[0]}"!`);
+          this.log.error(`Unable to fetch tip "${key.args[0]}"!`);
         }
       }
     }
 
     const newTips = results.filter((v) => v.data.kind === EventKind.NewTip);
-    log.info(`Found ${newTips.length} open tips!`);
+    this.log.info(`Found ${newTips.length} open tips!`);
     return results;
   }
 
@@ -722,13 +729,13 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
     >[]
   > {
     if (!this._api.query.signaling || !this._api.query.voting) {
-      log.info('Signaling module not detected.');
+      this.log.info('Signaling module not detected.');
       return [];
     }
 
-    log.info('Migrating signaling proposals...');
+    this.log.info('Migrating signaling proposals...');
     if (!this._api.query.voting || !this._api.query.signaling) {
-      log.info('Found no signaling proposals (wrong chain)!');
+      this.log.info('Found no signaling proposals (wrong chain)!');
       return [];
     }
     // in "prevoting" phase
@@ -832,12 +839,12 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
         ({ data: { proposalHash } }) => proposalHash === id
       );
       if (data.length === 0) {
-        log.error(`No referendum found with id ${id}!`);
+        this.log.error(`No referendum found with id ${id}!`);
         return null;
       }
       return data;
     }
-    log.info(`Found ${newProposalEvents.length} signaling proposals!`);
+    this.log.info(`Found ${newProposalEvents.length} signaling proposals!`);
     return results;
   }
 }

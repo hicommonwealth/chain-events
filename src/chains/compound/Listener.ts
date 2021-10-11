@@ -74,7 +74,7 @@ export class Listener extends BaseListener<
     }
 
     try {
-      this._processor = new Processor(this._api);
+      this._processor = new Processor(this._api, this._chain);
       this._subscriber = await new Subscriber(
         this._api,
         this._chain,
@@ -88,7 +88,7 @@ export class Listener extends BaseListener<
     }
 
     try {
-      this.storageFetcher = new StorageFetcher(this._api);
+      this.storageFetcher = new StorageFetcher(this._api, this._chain);
     } catch (error) {
       this.log.error(
         `Fatal error occurred while starting the Ethereum dater and storage fetcher`

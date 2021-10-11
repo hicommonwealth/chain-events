@@ -21,6 +21,7 @@ type IEntityEventData =
 
 export class StorageFetcher extends IStorageFetcher<Api> {
   protected readonly log;
+
   protected readonly chain;
 
   constructor(protected readonly _api: Api, chain?: string) {

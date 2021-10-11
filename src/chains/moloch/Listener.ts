@@ -20,8 +20,6 @@ import {
 
 import { createApi, Processor, StorageFetcher, Subscriber } from '.';
 
-const log = factory.getLogger(formatFilename(__filename));
-
 export class Listener extends BaseListener<
   Api,
   StorageFetcher,
@@ -30,6 +28,8 @@ export class Listener extends BaseListener<
   EventKind
 > {
   private readonly _options: MolochListenerOptions;
+
+  protected readonly log;
 
   constructor(
     chain: EventSupportingChainT,
@@ -42,8 +42,16 @@ export class Listener extends BaseListener<
     customChainBase?: string
   ) {
     super(chain, verbose, customChainBase);
+
+    this.log = factory.getLogger(
+      `${formatFilename(__filename)}::Moloch::${this._chain}`
+    );
+
     if (!!customChainBase && !chainSupportedBy(this._chain, molochChains))
       throw new Error(`${this._chain} is not a moloch network`);
+
+    if (!this.logPrefix.includes('::'))
+      this.logPrefix = `[Moloch::${this._chain}]: `;
 
     this._options = {
       url,
@@ -61,22 +69,28 @@ export class Listener extends BaseListener<
       this._api = await createApi(
         this._options.url,
         this._options.contractVersion,
-        this._options.contractAddress
+        this._options.contractAddress,
+        10 * 1000,
+        this._chain
       );
     } catch (error) {
-      log.error('Fatal error occurred while starting the API');
+      this.log.error('Fatal error occurred while starting the API');
       throw error;
     }
 
     try {
-      this._processor = new Processor(this._api, this._options.contractVersion);
+      this._processor = new Processor(
+        this._api,
+        this._options.contractVersion,
+        this._chain
+      );
       this._subscriber = await new Subscriber(
         this._api,
         this._chain,
         this._verbose
       );
     } catch (error) {
-      log.error(
+      this.log.error(
         'Fatal error occurred while starting the Processor, and Subscriber'
       );
       throw error;
@@ -86,10 +100,11 @@ export class Listener extends BaseListener<
       this.storageFetcher = new StorageFetcher(
         this._api,
         this._options.contractVersion,
-        dater
+        dater,
+        this._chain
       );
     } catch (error) {
-      log.error(
+      this.log.error(
         'Fatal error occurred while starting the Ethereum dater and storage fetcher'
       );
       throw error;
@@ -98,7 +113,7 @@ export class Listener extends BaseListener<
 
   public async subscribe(): Promise<void> {
     if (!this._subscriber) {
-      log.info(
+      this.log.info(
         `Subscriber for ${this._chain} isn't initialized. Please run init() first!`
       );
       return;
@@ -106,16 +121,16 @@ export class Listener extends BaseListener<
 
     // processed blocks missed during downtime
     if (!this._options.skipCatchup) await this.processMissedBlocks();
-    else log.info('Skipping event catchup on startup!');
+    else this.log.info('Skipping event catchup on startup!');
 
     try {
-      log.info(
+      this.log.info(
         `Subscribing Moloch contract: ${this._chain}, on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
-      log.error(`Subscription error: ${error.message}`);
+      this.log.error(`Subscription error: ${error.message}`);
     }
   }
 
@@ -132,12 +147,12 @@ export class Listener extends BaseListener<
   }
 
   private async processMissedBlocks(): Promise<void> {
-    log.info(
+    this.log.info(
       `[Moloch::${this._chain}]: Detected offline time, polling missed blocks...`
     );
 
     if (!this.discoverReconnectRange) {
-      log.info(
+      this.log.info(
         `[Moloch::${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
       );
       return;
@@ -148,13 +163,13 @@ export class Listener extends BaseListener<
       // fetch the block of the last server event from database
       offlineRange = await this.discoverReconnectRange(this._chain);
       if (!offlineRange) {
-        log.warn(
+        this.log.warn(
           `[Moloch::${this._chain}]: No offline range found, skipping event catchup.`
         );
         return;
       }
     } catch (error) {
-      log.error(
+      this.log.error(
         `[Moloch::${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
       );
       return;
@@ -176,7 +191,7 @@ export class Listener extends BaseListener<
     // do nothing
     // (i.e. don't try and fetch all events from block 0 onward)
     if (!offlineRange || !offlineRange.startBlock) {
-      log.warn(
+      this.log.warn(
         `[Moloch::${this._chain}]: Unable to determine offline time range.`
       );
       return;
@@ -190,13 +205,13 @@ export class Listener extends BaseListener<
         await this.handleEvent(event as CWEvent<IEventData>);
       }
     } catch (e) {
-      log.error(`Unable to fetch events from storage: ${e.message}`);
+      this.log.error(`Unable to fetch events from storage: ${e.message}`);
     }
   }
 
   public async updateContractVersion(version: 1 | 2): Promise<void> {
     if (version === this._options.contractVersion) {
-      log.warn(`The contract version is already set to ${version}`);
+      this.log.warn(`The contract version is already set to ${version}`);
       return;
     }
 
@@ -208,7 +223,7 @@ export class Listener extends BaseListener<
 
   public async updateContractAddress(address: string): Promise<void> {
     if (address === this._options.contractAddress) {
-      log.warn(`The contract address is already set to ${address}`);
+      this.log.warn(`The contract address is already set to ${address}`);
       return;
     }
 
