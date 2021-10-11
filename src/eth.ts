@@ -5,11 +5,12 @@ import { factory, formatFilename } from './logging';
 
 export async function createProvider(
   ethNetworkUrl: string,
+  networkBase?: string,
   chain?: string
 ): Promise<providers.Web3Provider> {
   // TODO determine base - use customBase?
   const log = factory.getLogger(
-    `${formatFilename(__filename)}::Aave${chain ? `::${chain}` : ''}`
+    `${formatFilename(__filename)}::${networkBase}${chain ? `::${chain}` : ''}`
   );
 
   if (!ethNetworkUrl.includes('alchemy') && !ethNetworkUrl.includes('infura'))

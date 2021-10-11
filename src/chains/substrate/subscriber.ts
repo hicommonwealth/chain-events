@@ -19,7 +19,11 @@ export class Subscriber extends IEventSubscriber<ApiPromise, Block> {
 
   protected readonly log;
 
-  constructor(protected readonly _api: ApiPromise, chain?: string) {
+  constructor(
+    protected readonly _api: ApiPromise,
+    protected _verbose = false,
+    chain?: string
+  ) {
     super(_api);
     this.log = factory.getLogger(
       `${formatFilename(__filename)}::Substrate${chain ? `::${chain}` : ''}`

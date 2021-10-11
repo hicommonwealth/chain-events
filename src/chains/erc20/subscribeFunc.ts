@@ -38,7 +38,7 @@ export async function createApi(
 
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = await createProvider(ethNetworkUrl);
+      const provider = await createProvider(ethNetworkUrl, 'Erc20');
       chainLog.info(`Connection to ${ethNetworkUrl} successful!`);
 
       const tokenContracts = tokenAddresses.map((o) =>

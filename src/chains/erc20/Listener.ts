@@ -42,7 +42,7 @@ export class Listener extends BaseListener<
 
     this.log = factory.getLogger(`${formatFilename(__filename)}::Erc20`);
 
-    if (!!customChainBase && !chainSupportedBy(this._chain, erc20Chains))
+    if (!customChainBase && !chainSupportedBy(this._chain, erc20Chains))
       throw new Error(`${chain} is not an ERC20 token`);
 
     this.logPrefix = '[Erc20]: ';

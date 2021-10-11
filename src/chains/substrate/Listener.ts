@@ -61,8 +61,10 @@ export class Listener extends BaseListener<
       `${formatFilename(__filename)}::Substrate::${this._chain}`
     );
 
-    if (!!customChainBase && !chainSupportedBy(this._chain, SubstrateChains))
-      throw new Error(`${this._chain} is not a Substrate chain`);
+    if (!customChainBase && !chainSupportedBy(this._chain, SubstrateChains))
+      throw new Error(
+        `[Substrate::${this._chain}]: ${this._chain} is not a Substrate chain`
+      );
 
     this._options = {
       archival: !!archival,
@@ -87,24 +89,26 @@ export class Listener extends BaseListener<
 
       this._api.on('connected', this.processMissedBlocks);
     } catch (error) {
-      this.log.error(
-        `[Substrate::${this._chain}]: Fatal error occurred while starting the API`
-      );
+      this.log.error(`Fatal error occurred while starting the API`);
       throw error;
     }
 
     try {
-      this._poller = new Poller(this._api);
+      this._poller = new Poller(this._api, this._chain);
       this._processor = new Processor(
         this._api,
         this._options.enricherConfig,
         this._chain
       );
       this.storageFetcher = new StorageFetcher(this._api, this._chain);
-      this._subscriber = await new Subscriber(this._api, this._verbose);
+      this._subscriber = await new Subscriber(
+        this._api,
+        this._verbose,
+        this._chain
+      );
     } catch (error) {
       this.log.error(
-        `[Substrate::${this._chain}]: Fatal error occurred while starting the Poller, Processor, Subscriber, and Fetcher`
+        `Fatal error occurred while starting the Poller, Processor, Subscriber, and Fetcher`
       );
       throw error;
     }
@@ -112,41 +116,31 @@ export class Listener extends BaseListener<
 
   public async subscribe(): Promise<void> {
     if (!this._subscriber) {
-      this.log.warn(
-        `[Substrate::${this._chain}]: Subscriber isn't initialized. Please run init() first!`
-      );
+      this.log.warn(`Subscriber isn't initialized. Please run init() first!`);
       return;
     }
 
     // processed blocks missed during downtime
     if (!this.options.skipCatchup) await this.processMissedBlocks();
-    else
-      this.log.info(
-        `[Substrate::${this._chain}]: Skipping event catchup on startup!`
-      );
+    else this.log.info(`Skipping event catchup on startup!`);
 
     try {
       this.log.info(
-        `[Substrate::${this._chain}]: Subscribing to ${this._chain} on url ${this._options.url}`
+        `Subscribing to ${this._chain} on url ${this._options.url}`
       );
       await this._subscriber.subscribe(this.processBlock.bind(this));
       this._subscribed = true;
     } catch (error) {
-      this.log.error(
-        `[Substrate::${this._chain}]: Subscription error`,
-        error.message
-      );
+      this.log.error(`Subscription error`, error.message);
     }
   }
 
   private async processMissedBlocks(): Promise<void> {
-    this.log.info(
-      `[Substrate::${this._chain}]: Detected offline time, polling missed blocks...`
-    );
+    this.log.info(`Detected offline time, polling missed blocks...`);
 
     if (!this.discoverReconnectRange) {
       this.log.info(
-        `[Substrate::${this._chain}]: Unable to determine offline range - No discoverReconnectRange function given`
+        `Unable to determine offline range - No discoverReconnectRange function given`
       );
       return;
     }
@@ -156,14 +150,12 @@ export class Listener extends BaseListener<
       // fetch the block of the last server event from database
       offlineRange = await this.discoverReconnectRange(this._chain);
       if (!offlineRange) {
-        this.log.warn(
-          `[Substrate::${this._chain}]: No offline range found, skipping event catchup.`
-        );
+        this.log.warn(`No offline range found, skipping event catchup.`);
         return;
       }
     } catch (error) {
       this.log.error(
-        `[Substrate::${this._chain}]: Could not discover offline range: ${error.message}. Skipping event catchup.`
+        `Could not discover offline range: ${error.message}. Skipping event catchup.`
       );
       return;
     }
@@ -184,9 +176,7 @@ export class Listener extends BaseListener<
     // do nothing
     // (i.e. don't try and fetch all events from block 0 onward)
     if (!offlineRange || !offlineRange.startBlock) {
-      this.log.warn(
-        `[Substrate::${this._chain}]: Unable to determine offline time range.`
-      );
+      this.log.warn(`Unable to determine offline time range.`);
       return;
     }
 
@@ -198,7 +188,7 @@ export class Listener extends BaseListener<
       await Promise.all(blocks.map(this.processBlock, this));
     } catch (error) {
       this.log.error(
-        `[Substrate::${this._chain}]: Block polling failed after disconnect at block ${offlineRange.startBlock}`,
+        `Block polling failed after disconnect at block ${offlineRange.startBlock}`,
         error
       );
     }

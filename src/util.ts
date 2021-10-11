@@ -67,6 +67,7 @@ export async function createListener(
   // checks chain compatibility or overrides
   function basePicker(base: string): boolean {
     if (customChainBase === base) return true;
+    if (customChainBase) return false;
     switch (base) {
       case 'substrate':
         return chainSupportedBy(chain, SubstrateChains);

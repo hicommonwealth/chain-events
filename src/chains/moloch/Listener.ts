@@ -47,7 +47,7 @@ export class Listener extends BaseListener<
       `${formatFilename(__filename)}::Moloch::${this._chain}`
     );
 
-    if (!!customChainBase && !chainSupportedBy(this._chain, molochChains))
+    if (!customChainBase && !chainSupportedBy(this._chain, molochChains))
       throw new Error(`${this._chain} is not a moloch network`);
 
     if (!this.logPrefix.includes('::'))

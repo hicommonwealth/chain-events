@@ -34,9 +34,22 @@ export async function createApi(
   const chainLog = factory.getLogger(
     `${formatFilename(__filename)}::Compound${chain ? `::${chain}` : ''}`
   );
+  if (!ethNetworkUrl)
+    throw new Error(
+      `[Compound${
+        chain ? `::${chain}` : ''
+      }]: ethNetworkUrl cannot be undefined. Please provide a valid url.`
+    );
+  if (!governorAlphaAddress)
+    throw new Error(
+      `[Compound${
+        chain ? `::${chain}` : ''
+      }]: governorAlphaAddress cannot be undefined. Please provide a valid contract address.`
+    );
+
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = await createProvider(ethNetworkUrl);
+      const provider = await createProvider(ethNetworkUrl, 'Compound', chain);
 
       // init governance contract
       const governorAlphaContract = GovernorAlphaFactory.connect(
@@ -49,15 +62,15 @@ export async function createApi(
       return governorAlphaContract;
     } catch (err) {
       chainLog.error(
-        `${this.logPrefix}Compound ${governorAlphaAddress} at ${ethNetworkUrl} failure: ${err.message}`
+        `Compound contract: ${governorAlphaAddress} at url: ${ethNetworkUrl} failure: ${err.message}`
       );
       await sleep(retryTimeMs);
-      chainLog.error(`${this.logPrefix}Retrying connection...`);
+      chainLog.error(`Retrying connection...`);
     }
   }
 
   throw new Error(
-    `[Aave${
+    `[Compound${
       chain ? `::${chain}` : ''
     }]: Failed to start Compound listener for ${governorAlphaAddress} at ${ethNetworkUrl}`
   );

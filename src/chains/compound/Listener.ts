@@ -46,7 +46,7 @@ export class Listener extends BaseListener<
       `${formatFilename(__filename)}::Compound::${this._chain}`
     );
 
-    if (!!customChainBase && !chainSupportedBy(this._chain, CompoundChains))
+    if (!customChainBase && !chainSupportedBy(this._chain, CompoundChains))
       throw new Error(`${this._chain} is not a Compound contract`);
 
     if (!this.logPrefix.includes('::'))
@@ -66,7 +66,9 @@ export class Listener extends BaseListener<
     try {
       this._api = await createApi(
         this._options.url,
-        this._options.contractAddress
+        this._options.contractAddress,
+        10 * 1000,
+        this._chain
       );
     } catch (error) {
       this.log.error(`Fatal error occurred while starting the API`);

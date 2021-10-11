@@ -40,7 +40,7 @@ export async function createApi(
   );
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = await createProvider(ethNetworkUrl, chain);
+      const provider = await createProvider(ethNetworkUrl, 'Aave', chain);
 
       // fetch governance contract
       const governanceContract = IAaveGovernanceV2Factory.connect(

@@ -48,7 +48,7 @@ export class Listener extends BaseListener<
       `${formatFilename(__filename)}::Aave::${this._chain}`
     );
 
-    if (!!customChainBase && !chainSupportedBy(this._chain, AaveEventChains))
+    if (!customChainBase && !chainSupportedBy(this._chain, AaveEventChains))
       throw new Error(
         `[Aave::${this._chain}]: ${this._chain} is not an Aave chain`
       );
