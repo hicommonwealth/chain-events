@@ -1,6 +1,9 @@
 /* eslint-disable no-shadow */
 import { TypedEvent } from '../../contractTypes/commons';
-import { GovernorAlpha } from '../../contractTypes';
+import {
+  GovernorAlpha,
+  IGovernorCompatibilityBravo,
+} from '../../contractTypes';
 
 export enum ProposalState {
   Pending = 0,
@@ -19,7 +22,10 @@ export enum BravoSupport {
   Abstain = 2,
 }
 
-export type Api = GovernorAlpha;
+export type Api = GovernorAlpha | IGovernorCompatibilityBravo;
+export function isGovernorAlpha(a: Api): a is GovernorAlpha {
+  return !!a.interface.functions['guardian()'];
+}
 
 // options for the listener class
 export interface ListenerOptions {
