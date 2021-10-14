@@ -3,7 +3,7 @@ import { Contract, utils } from 'ethers';
 
 import {
   GovernorAlpha,
-  IGovernorCompatibilityBravo,
+  GovernorCompatibilityBravo,
 } from '../../../contractTypes';
 import { TypedEventFilter } from '../../../contractTypes/commons';
 import { CWEvent, SupportedNetwork } from '../../../interfaces';
@@ -24,7 +24,7 @@ export async function Enrich(
   switch (kind) {
     case EventKind.ProposalCanceled: {
       const [id] = rawData.args as GetArgType<
-        IGovernorCompatibilityBravo,
+        GovernorCompatibilityBravo,
         'ProposalCanceled'
       >;
       return {
@@ -92,7 +92,7 @@ export async function Enrich(
     }
     case EventKind.ProposalExecuted: {
       const [id] = rawData.args as GetArgType<
-        IGovernorCompatibilityBravo,
+        GovernorCompatibilityBravo,
         'ProposalExecuted'
       >;
       return {
@@ -129,7 +129,7 @@ export async function Enrich(
         support,
         votes,
         reason,
-      ] = rawData.args as GetArgType<IGovernorCompatibilityBravo, 'VoteCast'>;
+      ] = rawData.args as GetArgType<GovernorCompatibilityBravo, 'VoteCast'>;
       return {
         blockNumber,
         excludeAddresses: [voter],

@@ -11,7 +11,7 @@ import {
 import { factory, formatFilename } from '../../logging';
 import {
   GovernorAlpha__factory as GovernorAlphaFactory,
-  IGovernorCompatibilityBravo__factory as IGovernorCompatibilityBravoFactory,
+  GovernorCompatibilityBravo__factory as GovernorCompatibilityBravoFactory,
 } from '../../contractTypes';
 
 import { Subscriber } from './subscriber';
@@ -51,7 +51,7 @@ export async function createApi(
         await contract.guardian();
         log.info(`Found GovAlpha contract at ${contract.address}`);
       } catch (e) {
-        contract = IGovernorCompatibilityBravoFactory.connect(
+        contract = GovernorCompatibilityBravoFactory.connect(
           governorAddress,
           provider
         );
