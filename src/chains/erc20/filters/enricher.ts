@@ -36,6 +36,15 @@ export async function Enrich(
     ({ contract }) =>
       contract.address.toLowerCase() === rawData.address.toLowerCase()
   );
+
+  // the amount of tokens that are balanceTransferThresholdPermill percent of the total supply
+  let percentToValue;
+  if (config.balanceTransferThresholdPermill)
+    percentToValue = totalSupply.muln(
+      config.balanceTransferThresholdPermill / 100
+    );
+  else percentToValue = 0;
+
   switch (kind) {
     case EventKind.Approval: {
       const {
@@ -49,10 +58,7 @@ export async function Enrich(
       // only emit to everyone if approval value is 0 or above the configuration threshold
       const shouldEmitToAll =
         !config.balanceTransferThresholdPermill ||
-        value
-          .muln(1_000_000)
-          .divn(config.balanceTransferThresholdPermill)
-          .gte(totalSupply);
+        value.divn(1_000_000).gte(percentToValue);
 
       // skip this event if the approval value isn't above the threshold
       if (!shouldEmitToAll) return null;
@@ -83,10 +89,7 @@ export async function Enrich(
       // only emit to everyone if transfer is 0 or above the configuration threshold
       const shouldEmitToAll =
         !config.balanceTransferThresholdPermill ||
-        value
-          .muln(1_000_000)
-          .divn(config.balanceTransferThresholdPermill)
-          .gte(totalSupply);
+        value.divn(1_000_000).gte(percentToValue);
 
       // skip this event if the transfer value isn't above the threshold
       if (!shouldEmitToAll) return null;

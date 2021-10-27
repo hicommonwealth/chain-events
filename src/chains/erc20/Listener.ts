@@ -1,3 +1,5 @@
+import BN from 'bn.js';
+
 import { CWEvent } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
 import { factory, formatFilename } from '../../logging';
@@ -133,5 +135,13 @@ export class Listener extends BaseListener<
 
   public get options(): Erc20ListenerOptions {
     return this._options;
+  }
+
+  public async updateTotalSupply(): Promise<void> {
+    for (const token of this._api.tokens) {
+      token.totalSupply = new BN(
+        (await token.contract.totalSupply()).toString()
+      );
+    }
   }
 }
