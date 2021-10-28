@@ -8,7 +8,7 @@ import {
   IDisconnectedRange,
   SupportedNetwork,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import { Block } from './types';
 
@@ -18,9 +18,7 @@ export class Poller extends IEventPoller<ApiPromise, Block> {
   constructor(protected _api: ApiPromise, protected readonly chain?: string) {
     super(_api);
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Substrate}${
-        chain ? `::${chain}` : ''
-      }`
+      addPrefix(__filename, [SupportedNetwork.Substrate, chain])
     );
   }
 

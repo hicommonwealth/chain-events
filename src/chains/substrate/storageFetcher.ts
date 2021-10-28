@@ -30,7 +30,7 @@ import {
   IStorageFetcher,
   SupportedNetwork,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import {
   EventKind,
@@ -65,9 +65,7 @@ export class StorageFetcher extends IStorageFetcher<ApiPromise> {
   constructor(protected readonly _api: ApiPromise, chain?: string) {
     super(_api);
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Substrate}${
-        chain ? `::${chain}` : ''
-      }`
+      addPrefix(__filename, [SupportedNetwork.Substrate, chain])
     );
   }
 

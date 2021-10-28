@@ -35,7 +35,7 @@ import {
   Label as AaveLabel,
 } from './chains/aave';
 import { Listener } from './Listener';
-import { factory, formatFilename } from './logging';
+import { addPrefix, factory, formatFilename } from './logging';
 
 export function Title(
   network: SupportedNetwork,
@@ -113,9 +113,7 @@ export async function createListener(
     IEventSubscriber<any, any>,
     any
   >;
-  const log = factory.getLogger(
-    `${formatFilename(__filename)}::${network}::${chain}`
-  );
+  const log = factory.getLogger(addPrefix(__filename, [network, chain]));
 
   if (network === SupportedNetwork.Substrate) {
     // start a substrate listener

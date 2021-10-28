@@ -4,7 +4,7 @@
 import { Listener } from '@ethersproject/providers';
 
 import { IEventSubscriber, SupportedNetwork } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import { RawEvent, Api } from './types';
 
@@ -24,7 +24,7 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
     super(api, verbose);
     this._name = name;
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Aave}::${this._name}`
+      addPrefix(__filename, [SupportedNetwork.Aave, this._name])
     );
   }
 

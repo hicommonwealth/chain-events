@@ -1,8 +1,6 @@
 import { EventKind } from '../types';
-import { factory, formatFilename } from '../../../logging';
+import { addPrefix, factory, formatFilename } from '../../../logging';
 import { SupportedNetwork } from '../../../interfaces';
-
-const log = factory.getLogger(formatFilename(__filename));
 
 /**
  * This is the Type Parser function, which takes a raw Event
@@ -13,6 +11,9 @@ export function ParseType(
   name: string,
   chain?: string
 ): EventKind | null {
+  const log = factory.getLogger(
+    addPrefix(__filename, [SupportedNetwork.Moloch, chain])
+  );
   switch (name) {
     case 'SubmitProposal':
       return EventKind.SubmitProposal;
@@ -29,11 +30,7 @@ export function ParseType(
     case 'SummonComplete':
       return EventKind.SummonComplete;
     default: {
-      log.warn(
-        `[${SupportedNetwork.Moloch}${
-          chain ? `::${chain}` : ''
-        }]: Unknown event name: ${name}!`
-      );
+      log.warn(`Unknown event name: ${name}!`);
       return null;
     }
   }

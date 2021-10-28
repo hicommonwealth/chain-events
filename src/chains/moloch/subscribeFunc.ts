@@ -12,7 +12,7 @@ import {
   SubscribeFunc,
   SupportedNetwork,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
@@ -37,10 +37,9 @@ export async function createApi(
   retryTimeMs = 10 * 1000,
   chain?: string
 ): Promise<Api> {
-  const chainLog = factory.getLogger(
-    `${formatFilename(__filename)}::${SupportedNetwork.Moloch}${
-      chain ? `::${chain}` : ''
-    }`
+  // eslint-disable-next-line no-shadow
+  const log = factory.getLogger(
+    addPrefix(__filename, [SupportedNetwork.Moloch, chain])
   );
 
   for (let i = 0; i < 3; ++i) {
@@ -58,14 +57,14 @@ export async function createApi(
 
       // fetch summoning time to guarantee connected
       await contract.summoningTime();
-      chainLog.info('Connection successful!');
+      log.info('Connection successful!');
       return contract;
     } catch (err) {
-      chainLog.error(
+      log.error(
         `Moloch ${contractAddress} at ${ethNetworkUrl} failure: ${err.message}`
       );
       await sleep(retryTimeMs);
-      chainLog.error('Retrying connection...');
+      log.error('Retrying connection...');
     }
   }
 

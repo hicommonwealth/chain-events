@@ -6,7 +6,7 @@ import { VoidFn } from '@polkadot/api/types';
 import { Header, RuntimeVersion } from '@polkadot/types/interfaces';
 
 import { IEventSubscriber, SupportedNetwork } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import { Block } from './types';
 
@@ -26,9 +26,7 @@ export class Subscriber extends IEventSubscriber<ApiPromise, Block> {
   ) {
     super(_api);
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Substrate}${
-        chain ? `::${chain}` : ''
-      }`
+      addPrefix(__filename, [SupportedNetwork.Substrate, chain])
     );
   }
 

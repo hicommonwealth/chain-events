@@ -8,7 +8,7 @@ import {
   SupportedNetwork,
 } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import { Block, EventKind, ISubstrateListenerOptions } from './types';
 
@@ -51,13 +51,8 @@ export class Listener extends BaseListener<
     super(SupportedNetwork.Substrate, chain, verbose);
 
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Substrate}::${
-        this._chain
-      }`
+      addPrefix(__filename, [SupportedNetwork.Substrate, this._chain])
     );
-
-    if (!this.logPrefix.includes('::'))
-      this.logPrefix = `[${SupportedNetwork.Substrate}::${this._chain}]: `;
 
     this._options = {
       archival: !!archival,

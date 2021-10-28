@@ -4,7 +4,7 @@ import {
   IDisconnectedRange,
   SupportedNetwork,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory } from '../../logging';
 
 import { Enrich } from './filters/enricher';
 import {
@@ -25,9 +25,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
   constructor(protected readonly _api: Api, chain?: string) {
     super(_api);
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Compound}${
-        chain ? `::${chain}` : ''
-      }`
+      addPrefix(__filename, [SupportedNetwork.Compound, chain])
     );
   }
 
@@ -150,7 +148,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
         )
       );
     } catch (e) {
-      log.warn('Could not fetched queued events.');
+      this.log.warn('Could not fetched queued events.');
     }
     const proposalCanceledEvents = await this._api.queryFilter(
       this._api.filters.ProposalCanceled(null),

@@ -6,7 +6,7 @@ import {
   IDisconnectedRange,
   SupportedNetwork,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory } from '../../logging';
 import { Moloch1, Moloch2 } from '../../contractTypes';
 
 import { IEventData, EventKind, Api, ProposalV1, ProposalV2 } from './types';
@@ -19,10 +19,9 @@ export class StorageFetcher extends IStorageFetcher<Api> {
     chain?: string
   ) {
     super(_api);
+
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Moloch}${
-        chain ? `::${chain}` : ''
-      }`
+      addPrefix(__filename, [SupportedNetwork.Moloch, chain])
     );
   }
 

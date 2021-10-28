@@ -9,7 +9,7 @@ import {
   ISubscribeOptions,
   SupportedNetwork,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 import { ERC20__factory as ERC20Factory, ERC20 } from '../../contractTypes';
 
 import { Subscriber } from './subscriber';
@@ -39,8 +39,9 @@ export async function createApi(
   tokenNames?: string[],
   retryTimeMs = 10 * 1000
 ): Promise<IErc20Contracts> {
-  const chainLog = factory.getLogger(
-    `${formatFilename(__filename)}::${SupportedNetwork.ERC20}`
+  // eslint-disable-next-line no-shadow
+  const log = factory.getLogger(
+    addPrefix(__filename, [SupportedNetwork.ERC20])
   );
 
   for (let i = 0; i < 3; ++i) {
@@ -49,7 +50,7 @@ export async function createApi(
         ethNetworkUrl,
         SupportedNetwork.ERC20
       );
-      chainLog.info(`Connection to ${ethNetworkUrl} successful!`);
+      log.info(`Connection to ${ethNetworkUrl} successful!`);
 
       const tokenContracts = tokenAddresses.map((o) =>
         ERC20Factory.connect(o, provider)
@@ -68,16 +69,16 @@ export async function createApi(
             tokenName,
           });
         } catch (err) {
-          chainLog.error(
+          log.error(
             `Error loading token ${contract.address} (${tokenName}): ${err.message}`
           );
         }
       }
       return deployResults;
     } catch (err) {
-      chainLog.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
+      log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
       await sleep(retryTimeMs);
-      chainLog.error('Retrying connection...');
+      log.error('Retrying connection...');
     }
   }
 

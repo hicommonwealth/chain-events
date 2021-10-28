@@ -4,7 +4,7 @@ import {
   SupportedNetwork,
 } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory } from '../../logging';
 
 import {
   Api,
@@ -40,13 +40,8 @@ export class Listener extends BaseListener<
     super(SupportedNetwork.Compound, chain, verbose);
 
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Compound}::${
-        this._chain
-      }`
+      addPrefix(__filename, [SupportedNetwork.Compound, this._chain])
     );
-
-    if (!this.logPrefix.includes('::'))
-      this.logPrefix = `[${SupportedNetwork.Compound}::${this._chain}]: `;
 
     this._options = {
       url,

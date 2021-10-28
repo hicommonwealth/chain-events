@@ -5,7 +5,7 @@ import { ApiPromise } from '@polkadot/api';
 import { Extrinsic, Event } from '@polkadot/types/interfaces';
 
 import { IEventProcessor, CWEvent, SupportedNetwork } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory } from '../../logging';
 
 import { Block, isEvent, IEventData } from './types';
 import { ParseType } from './filters/type_parser';
@@ -35,9 +35,7 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
    */
   public async process(block: Block): Promise<CWEvent<IEventData>[]> {
     const log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Substrate}${
-        this.chain ? `::${this.chain}` : ''
-      }`
+      addPrefix(__filename, [SupportedNetwork.Substrate, this.chain])
     );
 
     // cache block number if needed for disconnection purposes

@@ -1,3 +1,5 @@
+import * as net from 'net';
+
 import {
   IEventHandler,
   IChainEventKind,
@@ -9,9 +11,9 @@ import {
   IDisconnectedRange,
   SupportedNetwork,
 } from './interfaces';
-import { factory, formatFilename } from './logging';
+import { addPrefix, factory, formatFilename } from './logging';
 
-const log = factory.getLogger(formatFilename(__filename));
+let log;
 
 // TODO: processBlock + processMissedBlocks can both be generalized and override in edge case listeners
 // TODO: subscribe method can be implemented here and override in edge case (or use super.subscribe() in edge cases)
@@ -50,8 +52,6 @@ export abstract class Listener<
 
   protected readonly _verbose: boolean;
 
-  protected logPrefix: string;
-
   protected constructor(
     network: SupportedNetwork,
     chain: string,
@@ -62,7 +62,7 @@ export abstract class Listener<
     this._verbose = !!verbose;
     this.globalExcludedEvents = [];
 
-    this.logPrefix = `[${network}::${chain}]: `;
+    log = factory.getLogger(addPrefix(__filename, [network, chain]));
   }
 
   public abstract init(): Promise<void>;
@@ -71,14 +71,12 @@ export abstract class Listener<
 
   public async unsubscribe(): Promise<void> {
     if (!this._subscriber) {
-      log.warn(
-        `${this.logPrefix}Subscriber isn't initialized. Please run init() first!`
-      );
+      log.warn(`Subscriber isn't initialized. Please run init() first!`);
       return;
     }
 
     if (!this._subscribed) {
-      log.warn(`${this.logPrefix}The listener is not subscribed`);
+      log.warn(`The listener is not subscribed`);
       return;
     }
 
@@ -101,7 +99,7 @@ export abstract class Listener<
         try {
           prevResult = await eventHandler.handler.handle(event, prevResult);
         } catch (err) {
-          log.error(`${this.logPrefix}Event handle failure: ${err.message}`);
+          log.error(`Event handle failure: ${err.message}`);
           break;
         }
       }

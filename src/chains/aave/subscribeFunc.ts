@@ -8,7 +8,7 @@ import {
   ISubscribeOptions,
   SupportedNetwork,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 import {
   IAaveGovernanceV2__factory as IAaveGovernanceV2Factory,
   GovernanceStrategy__factory as GovernanceStrategyFactory,
@@ -36,10 +36,9 @@ export async function createApi(
   retryTimeMs = 10 * 1000,
   chain?: string
 ): Promise<Api> {
-  const chainLog = factory.getLogger(
-    `${formatFilename(__filename)}::${SupportedNetwork.Aave}${
-      chain ? `::${chain}` : ''
-    }`
+  // eslint-disable-next-line no-shadow
+  const log = factory.getLogger(
+    addPrefix(__filename, [SupportedNetwork.Aave, chain])
   );
   for (let i = 0; i < 3; ++i) {
     try {
@@ -86,27 +85,27 @@ export async function createApi(
         await aaveToken.DELEGATE_TYPEHASH();
         await stkAaveToken.DELEGATE_TYPEHASH();
 
-        chainLog.info('Connection successful!');
+        log.info('Connection successful!');
         return {
           governance: governanceContract,
           aaveToken,
           stkAaveToken,
         };
       } catch (err) {
-        chainLog.warn(
+        log.warn(
           'Governance connection successful but token connections failed.'
         );
-        chainLog.warn('Delegation events will not be emitted.');
+        log.warn('Delegation events will not be emitted.');
         return {
           governance: governanceContract,
         };
       }
     } catch (err) {
-      chainLog.error(
+      log.error(
         `Aave ${governanceAddress} at ${ethNetworkUrl} failure: ${err.message}`
       );
       await sleep(retryTimeMs);
-      chainLog.error('Retrying connection...');
+      log.error('Retrying connection...');
     }
   }
 

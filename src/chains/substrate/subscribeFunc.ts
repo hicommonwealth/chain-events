@@ -8,7 +8,7 @@ import {
   ISubscribeOptions,
   SupportedNetwork,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import { Subscriber } from './subscriber';
 import { Poller } from './poller';
@@ -35,10 +35,9 @@ export async function createApi(
   typeOverrides: RegisteredTypes = {},
   chain?: string
 ): Promise<ApiPromise> {
-  const chainLog = factory.getLogger(
-    `${formatFilename(__filename)}::${SupportedNetwork.Substrate}${
-      chain ? `::${chain}` : ''
-    }`
+  // eslint-disable-next-line no-shadow
+  const log = factory.getLogger(
+    addPrefix(__filename, [SupportedNetwork.Substrate, chain])
   );
   for (let i = 0; i < 3; ++i) {
     const provider = new WsProvider(url, 0);
@@ -48,7 +47,7 @@ export async function createApi(
 
       provider.on('error', () => {
         if (i < 2)
-          chainLog.warn(`An error occurred connecting to ${url} - retrying...`);
+          log.warn(`An error occurred connecting to ${url} - retrying...`);
         resolve(false);
       });
 

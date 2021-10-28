@@ -4,7 +4,7 @@ import {
   IDisconnectedRange,
   SupportedNetwork,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import {
   Api,
@@ -42,11 +42,8 @@ export class Listener extends BaseListener<
     super(SupportedNetwork.Aave, chain, verbose);
 
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Aave}::${this._chain}`
+      addPrefix(__filename, [SupportedNetwork.Aave, this._chain])
     );
-
-    if (!this.logPrefix.includes('::'))
-      this.logPrefix = `[${SupportedNetwork.Aave}::${this._chain}]: `;
 
     this._options = {
       url,

@@ -25,8 +25,8 @@ const log = factory.getLogger(formatFilename(__filename));
 /**
  * Attempts to open an API connection, retrying if it cannot be opened.
  * @returns a promise resolving to an ApiPromise once the connection has been established
- * @param ethNetworkUrl
- * @param governorAlphaAddress
+ * @param ethNetworkUrlOrProvider
+ * @param governorAddress
  * @param retryTimeMs
  * @param chain
  */
@@ -50,7 +50,11 @@ export async function createApi(
     try {
       const provider =
         typeof ethNetworkUrlOrProvider === 'string'
-          ? await createProvider(ethNetworkUrlOrProvider, SupportedNetwork.Compound, chain)
+          ? await createProvider(
+              ethNetworkUrlOrProvider,
+              SupportedNetwork.Compound,
+              chain
+            )
           : ethNetworkUrlOrProvider;
 
       let contract: Api;

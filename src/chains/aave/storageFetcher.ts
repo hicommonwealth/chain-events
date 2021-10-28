@@ -4,7 +4,7 @@ import {
   IDisconnectedRange,
   SupportedNetwork,
 } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import { Enrich } from './filters/enricher';
 import {
@@ -32,9 +32,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
   constructor(protected readonly _api: Api, chain?: string) {
     super(_api);
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Aave}${
-        chain ? `::${chain}` : ''
-      }`
+      addPrefix(__filename, [SupportedNetwork.Aave, chain])
     );
     this.chain = chain;
   }

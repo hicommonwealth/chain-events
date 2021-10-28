@@ -6,7 +6,7 @@ import {
   SupportedNetwork,
 } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory } from '../../logging';
 
 import {
   Api,
@@ -41,13 +41,8 @@ export class Listener extends BaseListener<
     super(SupportedNetwork.ERC20, chain, verbose);
 
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.Moloch}::${
-        this._chain
-      }`
+      addPrefix(__filename, [SupportedNetwork.Moloch, this._chain])
     );
-
-    if (!this.logPrefix.includes('::'))
-      this.logPrefix = `[${SupportedNetwork.Moloch}::${this._chain}]: `;
 
     this._options = {
       url,

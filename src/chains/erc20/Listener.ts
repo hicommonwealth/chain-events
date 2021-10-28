@@ -1,6 +1,6 @@
 import { CWEvent, SupportedNetwork } from '../../interfaces';
 import { Listener as BaseListener } from '../../Listener';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import {
   EventKind,
@@ -35,10 +35,8 @@ export class Listener extends BaseListener<
     super(SupportedNetwork.ERC20, chain, verbose);
 
     this.log = factory.getLogger(
-      `${formatFilename(__filename)}::${SupportedNetwork.ERC20}`
+      addPrefix(__filename, [SupportedNetwork.ERC20])
     );
-
-    this.logPrefix = `[${SupportedNetwork.ERC20}]: `;
 
     this._options = {
       url,

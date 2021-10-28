@@ -2,13 +2,11 @@
  * Processes ERC20 events.
  */
 import { IEventProcessor, CWEvent, SupportedNetwork } from '../../interfaces';
-import { factory, formatFilename } from '../../logging';
+import { addPrefix, factory, formatFilename } from '../../logging';
 
 import { ParseType } from './filters/type_parser';
 import { Enrich, EnricherConfig } from './filters/enricher';
 import { IEventData, RawEvent, IErc20Contracts } from './types';
-
-const log = factory.getLogger(formatFilename(__filename));
 
 export class Processor extends IEventProcessor<IErc20Contracts, RawEvent> {
   constructor(
@@ -29,6 +27,9 @@ export class Processor extends IEventProcessor<IErc20Contracts, RawEvent> {
     event: RawEvent,
     tokenName?: string
   ): Promise<CWEvent<IEventData>[]> {
+    const log = factory.getLogger(
+      addPrefix(__filename, [SupportedNetwork.ERC20, tokenName])
+    );
     const kind = ParseType(event.event);
     if (!kind) return [];
     try {
