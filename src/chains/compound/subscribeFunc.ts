@@ -1,3 +1,4 @@
+import { providers } from 'ethers';
 import sleep from 'sleep-promise';
 
 import { createProvider } from '../../eth';
@@ -9,7 +10,10 @@ import {
   SupportedNetwork,
 } from '../../interfaces';
 import { factory, formatFilename } from '../../logging';
-import { GovernorAlpha__factory as GovernorAlphaFactory } from '../../contractTypes';
+import {
+  GovernorAlpha__factory as GovernorAlphaFactory,
+  GovernorCompatibilityBravo__factory as GovernorCompatibilityBravoFactory,
+} from '../../contractTypes';
 
 import { Subscriber } from './subscriber';
 import { Processor } from './processor';
@@ -27,49 +31,50 @@ const log = factory.getLogger(formatFilename(__filename));
  * @param chain
  */
 export async function createApi(
-  ethNetworkUrl: string,
-  governorAlphaAddress: string,
+  ethNetworkUrlOrProvider: string | providers.JsonRpcProvider,
+  governorAddress: string,
   retryTimeMs = 10 * 1000,
   chain?: string
 ): Promise<Api> {
+  const ethNetworkUrl =
+    typeof ethNetworkUrlOrProvider === 'string'
+      ? ethNetworkUrlOrProvider
+      : ethNetworkUrlOrProvider.connection.url;
   const chainLog = factory.getLogger(
     `${formatFilename(__filename)}::${SupportedNetwork.Compound}${
       chain ? `::${chain}` : ''
     }`
   );
-  if (!ethNetworkUrl)
-    throw new Error(
-      `[${SupportedNetwork.Compound}${
-        chain ? `::${chain}` : ''
-      }]: ethNetworkUrl cannot be undefined. Please provide a valid url.`
-    );
-  if (!governorAlphaAddress)
-    throw new Error(
-      `[${SupportedNetwork.Compound}${
-        chain ? `::${chain}` : ''
-      }]: governorAlphaAddress cannot be undefined. Please provide a valid contract address.`
-    );
 
   for (let i = 0; i < 3; ++i) {
     try {
-      const provider = await createProvider(
-        ethNetworkUrl,
-        SupportedNetwork.Compound,
-        chain
-      );
+      const provider =
+        typeof ethNetworkUrlOrProvider === 'string'
+          ? await createProvider(ethNetworkUrlOrProvider, SupportedNetwork.Compound, chain)
+          : ethNetworkUrlOrProvider;
 
-      // init governance contract
-      const governorAlphaContract = GovernorAlphaFactory.connect(
-        governorAlphaAddress,
-        provider
-      );
-      await governorAlphaContract.deployed();
+      let contract: Api;
+      try {
+        contract = GovernorAlphaFactory.connect(governorAddress, provider);
+        await contract.deployed();
+        await contract.guardian();
+        log.info(`Found GovAlpha contract at ${contract.address}`);
+      } catch (e) {
+        contract = GovernorCompatibilityBravoFactory.connect(
+          governorAddress,
+          provider
+        );
+        await contract.deployed();
+        log.info(
+          `Found non-GovAlpha Compound contract at ${contract.address}, using GovernorCompatibilityBravo`
+        );
+      }
 
       chainLog.info(`${this.logPrefix}Connection successful!`);
-      return governorAlphaContract;
+      return contract;
     } catch (err) {
       chainLog.error(
-        `Compound contract: ${governorAlphaAddress} at url: ${ethNetworkUrl} failure: ${err.message}`
+        `Compound contract: ${governorAddress} at url: ${ethNetworkUrl} failure: ${err.message}`
       );
       await sleep(retryTimeMs);
       chainLog.error(`Retrying connection...`);
@@ -79,7 +84,7 @@ export async function createApi(
   throw new Error(
     `[${SupportedNetwork.Compound}${
       chain ? `::${chain}` : ''
-    }]: Failed to start Compound listener for ${governorAlphaAddress} at ${ethNetworkUrl}`
+    }]: Failed to start Compound listener for ${governorAddress} at ${ethNetworkUrl}`
   );
 }
 

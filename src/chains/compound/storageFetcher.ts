@@ -16,6 +16,7 @@ import {
   IProposalCanceled,
   IProposalQueued,
   IProposalExecuted,
+  isGovernorAlpha,
 } from './types';
 
 export class StorageFetcher extends IStorageFetcher<Api> {
@@ -112,7 +113,9 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       )
     );
     const voteCastEvents = await this._api.queryFilter(
-      this._api.filters.VoteCast(null, null, null, null),
+      isGovernorAlpha(this._api)
+        ? this._api.filters.VoteCast(null, null, null, null)
+        : this._api.filters.VoteCast(null, null, null, null, null),
       range.startBlock,
       range.endBlock || 'latest'
     );
@@ -127,22 +130,28 @@ export class StorageFetcher extends IStorageFetcher<Api> {
           ) as Promise<CWEvent<IVoteCast>>
       )
     );
-    const proposalQueuedEvents = await this._api.queryFilter(
-      this._api.filters.ProposalQueued(null, null),
-      range.startBlock,
-      range.endBlock || 'latest'
-    );
-    const queuedCwEvents = await Promise.all(
-      proposalQueuedEvents.map(
-        (evt) =>
-          Enrich(
-            this._api,
-            evt.blockNumber,
-            EventKind.ProposalQueued,
-            evt
-          ) as Promise<CWEvent<IProposalQueued>>
-      )
-    );
+
+    let queuedCwEvents = [];
+    try {
+      const proposalQueuedEvents = await this._api.queryFilter(
+        this._api.filters.ProposalQueued(null, null),
+        range.startBlock,
+        range.endBlock || 'latest'
+      );
+      queuedCwEvents = await Promise.all(
+        proposalQueuedEvents.map(
+          (evt) =>
+            Enrich(
+              this._api,
+              evt.blockNumber,
+              EventKind.ProposalQueued,
+              evt
+            ) as Promise<CWEvent<IProposalQueued>>
+        )
+      );
+    } catch (e) {
+      log.warn('Could not fetched queued events.');
+    }
     const proposalCanceledEvents = await this._api.queryFilter(
       this._api.filters.ProposalCanceled(null),
       range.startBlock,

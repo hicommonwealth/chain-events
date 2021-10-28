@@ -20,15 +20,22 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface GovernorMockInterface extends ethers.utils.Interface {
+interface FeiDAOInterface extends ethers.utils.Interface {
   functions: {
+    "BACKUP_GOVERNOR()": FunctionFragment;
     "BALLOT_TYPEHASH()": FunctionFragment;
     "COUNTING_MODE()": FunctionFragment;
-    "cancel(address[],uint256[],bytes[],bytes32)": FunctionFragment;
+    "ROLLBACK_DEADLINE()": FunctionFragment;
+    "__acceptAdmin()": FunctionFragment;
+    "__executeRollback()": FunctionFragment;
+    "__rollback(uint256)": FunctionFragment;
+    "cancel(uint256)": FunctionFragment;
     "castVote(uint256,uint8)": FunctionFragment;
     "castVoteBySig(uint256,uint8,uint8,bytes32,bytes32)": FunctionFragment;
     "castVoteWithReason(uint256,uint8,string)": FunctionFragment;
     "execute(address[],uint256[],bytes[],bytes32)": FunctionFragment;
+    "getActions(uint256)": FunctionFragment;
+    "getReceipt(uint256,address)": FunctionFragment;
     "getVotes(address,uint256)": FunctionFragment;
     "hasVoted(uint256,address)": FunctionFragment;
     "hashProposal(address[],uint256[],bytes[],bytes32)": FunctionFragment;
@@ -37,23 +44,29 @@ interface GovernorMockInterface extends ethers.utils.Interface {
     "proposalEta(uint256)": FunctionFragment;
     "proposalSnapshot(uint256)": FunctionFragment;
     "proposalThreshold()": FunctionFragment;
-    "proposalVotes(uint256)": FunctionFragment;
+    "proposals(uint256)": FunctionFragment;
     "propose(address[],uint256[],bytes[],string)": FunctionFragment;
     "queue(address[],uint256[],bytes[],bytes32)": FunctionFragment;
     "quorum(uint256)": FunctionFragment;
-    "quorumDenominator()": FunctionFragment;
-    "quorumNumerator()": FunctionFragment;
+    "quorumVotes()": FunctionFragment;
+    "setProposalThreshold(uint256)": FunctionFragment;
+    "setQuorum(uint256)": FunctionFragment;
+    "setVotingDelay(uint256)": FunctionFragment;
+    "setVotingPeriod(uint256)": FunctionFragment;
     "state(uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "timelock()": FunctionFragment;
     "token()": FunctionFragment;
-    "updateQuorumNumerator(uint256)": FunctionFragment;
     "updateTimelock(address)": FunctionFragment;
     "version()": FunctionFragment;
     "votingDelay()": FunctionFragment;
     "votingPeriod()": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "BACKUP_GOVERNOR",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "BALLOT_TYPEHASH",
     values?: undefined
@@ -63,8 +76,24 @@ interface GovernorMockInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "ROLLBACK_DEADLINE",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "__acceptAdmin",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "__executeRollback",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "__rollback",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "cancel",
-    values: [string[], BigNumberish[], BytesLike[], BytesLike]
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "castVote",
@@ -81,6 +110,14 @@ interface GovernorMockInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "execute",
     values: [string[], BigNumberish[], BytesLike[], BytesLike]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getActions",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getReceipt",
+    values: [BigNumberish, string]
   ): string;
   encodeFunctionData(
     functionFragment: "getVotes",
@@ -112,7 +149,7 @@ interface GovernorMockInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "proposalVotes",
+    functionFragment: "proposals",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -128,12 +165,24 @@ interface GovernorMockInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "quorumDenominator",
+    functionFragment: "quorumVotes",
     values?: undefined
   ): string;
   encodeFunctionData(
-    functionFragment: "quorumNumerator",
-    values?: undefined
+    functionFragment: "setProposalThreshold",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setQuorum",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setVotingDelay",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setVotingPeriod",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "state", values: [BigNumberish]): string;
   encodeFunctionData(
@@ -142,10 +191,6 @@ interface GovernorMockInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "timelock", values?: undefined): string;
   encodeFunctionData(functionFragment: "token", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "updateQuorumNumerator",
-    values: [BigNumberish]
-  ): string;
   encodeFunctionData(
     functionFragment: "updateTimelock",
     values: [string]
@@ -161,6 +206,10 @@ interface GovernorMockInterface extends ethers.utils.Interface {
   ): string;
 
   decodeFunctionResult(
+    functionFragment: "BACKUP_GOVERNOR",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "BALLOT_TYPEHASH",
     data: BytesLike
   ): Result;
@@ -168,6 +217,19 @@ interface GovernorMockInterface extends ethers.utils.Interface {
     functionFragment: "COUNTING_MODE",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "ROLLBACK_DEADLINE",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "__acceptAdmin",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "__executeRollback",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "__rollback", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "cancel", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "castVote", data: BytesLike): Result;
   decodeFunctionResult(
@@ -179,6 +241,8 @@ interface GovernorMockInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "execute", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getActions", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "getReceipt", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getVotes", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "hasVoted", data: BytesLike): Result;
   decodeFunctionResult(
@@ -202,19 +266,25 @@ interface GovernorMockInterface extends ethers.utils.Interface {
     functionFragment: "proposalThreshold",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "proposalVotes",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "proposals", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "propose", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "queue", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "quorum", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "quorumDenominator",
+    functionFragment: "quorumVotes",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "quorumNumerator",
+    functionFragment: "setProposalThreshold",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "setQuorum", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "setVotingDelay",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "setVotingPeriod",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "state", data: BytesLike): Result;
@@ -224,10 +294,6 @@ interface GovernorMockInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "timelock", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "token", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "updateQuorumNumerator",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "updateTimelock",
     data: BytesLike
@@ -247,21 +313,31 @@ interface GovernorMockInterface extends ethers.utils.Interface {
     "ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)": EventFragment;
     "ProposalExecuted(uint256)": EventFragment;
     "ProposalQueued(uint256,uint256)": EventFragment;
-    "QuorumNumeratorUpdated(uint256,uint256)": EventFragment;
+    "ProposalThresholdUpdated(uint256,uint256)": EventFragment;
+    "QuorumUpdated(uint256,uint256)": EventFragment;
+    "Rollback()": EventFragment;
+    "RollbackQueued(uint256)": EventFragment;
     "TimelockChange(address,address)": EventFragment;
     "VoteCast(address,uint256,uint8,uint256,string)": EventFragment;
+    "VotingDelayUpdated(uint256,uint256)": EventFragment;
+    "VotingPeriodUpdated(uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "ProposalCanceled"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalCreated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalExecuted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ProposalQueued"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "QuorumNumeratorUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "ProposalThresholdUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "QuorumUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Rollback"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "RollbackQueued"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TimelockChange"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "VoteCast"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "VotingDelayUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "VotingPeriodUpdated"): EventFragment;
 }
 
-export class GovernorMock extends Contract {
+export class FeiDAO extends Contract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -302,9 +378,13 @@ export class GovernorMock extends Contract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: GovernorMockInterface;
+  interface: FeiDAOInterface;
 
   functions: {
+    BACKUP_GOVERNOR(overrides?: CallOverrides): Promise<[string]>;
+
+    "BACKUP_GOVERNOR()"(overrides?: CallOverrides): Promise<[string]>;
+
     BALLOT_TYPEHASH(overrides?: CallOverrides): Promise<[string]>;
 
     "BALLOT_TYPEHASH()"(overrides?: CallOverrides): Promise<[string]>;
@@ -313,19 +393,43 @@ export class GovernorMock extends Contract {
 
     "COUNTING_MODE()"(overrides?: CallOverrides): Promise<[string]>;
 
-    cancel(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+    ROLLBACK_DEADLINE(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    "ROLLBACK_DEADLINE()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    __acceptAdmin(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    "cancel(address[],uint256[],bytes[],bytes32)"(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+    "__acceptAdmin()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    __executeRollback(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "__executeRollback()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    __rollback(
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "__rollback(uint256)"(
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    cancel(
+      proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "cancel(uint256)"(
+      proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -373,14 +477,6 @@ export class GovernorMock extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    execute(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
-      overrides?: PayableOverrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     "execute(address[],uint256[],bytes[],bytes32)"(
       targets: string[],
       values: BigNumberish[],
@@ -388,6 +484,63 @@ export class GovernorMock extends Contract {
       descriptionHash: BytesLike,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    "execute(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    getActions(
+      proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [string[], BigNumber[], string[], string[]] & {
+        targets: string[];
+        values: BigNumber[];
+        signatures: string[];
+        calldatas: string[];
+      }
+    >;
+
+    "getActions(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [string[], BigNumber[], string[], string[]] & {
+        targets: string[];
+        values: BigNumber[];
+        signatures: string[];
+        calldatas: string[];
+      }
+    >;
+
+    getReceipt(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        [boolean, number, BigNumber] & {
+          hasVoted: boolean;
+          support: number;
+          votes: BigNumber;
+        }
+      ]
+    >;
+
+    "getReceipt(uint256,address)"(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        [boolean, number, BigNumber] & {
+          hasVoted: boolean;
+          support: number;
+          votes: BigNumber;
+        }
+      ]
+    >;
 
     getVotes(
       account: string,
@@ -467,35 +620,63 @@ export class GovernorMock extends Contract {
 
     "proposalThreshold()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    proposalVotes(
+    proposals(
       proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
-        againstVotes: BigNumber;
+      [
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        boolean,
+        boolean
+      ] & {
+        id: BigNumber;
+        proposer: string;
+        eta: BigNumber;
+        startBlock: BigNumber;
+        endBlock: BigNumber;
         forVotes: BigNumber;
+        againstVotes: BigNumber;
         abstainVotes: BigNumber;
+        canceled: boolean;
+        executed: boolean;
       }
     >;
 
-    "proposalVotes(uint256)"(
+    "proposals(uint256)"(
       proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
-        againstVotes: BigNumber;
+      [
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        boolean,
+        boolean
+      ] & {
+        id: BigNumber;
+        proposer: string;
+        eta: BigNumber;
+        startBlock: BigNumber;
+        endBlock: BigNumber;
         forVotes: BigNumber;
+        againstVotes: BigNumber;
         abstainVotes: BigNumber;
+        canceled: boolean;
+        executed: boolean;
       }
     >;
-
-    propose(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      description: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     "propose(address[],uint256[],bytes[],string)"(
       targets: string[],
@@ -505,11 +686,12 @@ export class GovernorMock extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    queue(
+    "propose(address[],uint256[],string[],bytes[],string)"(
       targets: string[],
       values: BigNumberish[],
+      signatures: string[],
       calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+      description: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -521,23 +703,61 @@ export class GovernorMock extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    quorum(
-      blockNumber: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
+    "queue(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    quorum(arg0: BigNumberish, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     "quorum(uint256)"(
-      blockNumber: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    quorumDenominator(overrides?: CallOverrides): Promise<[BigNumber]>;
+    quorumVotes(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    "quorumDenominator()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+    "quorumVotes()"(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    quorumNumerator(overrides?: CallOverrides): Promise<[BigNumber]>;
+    setProposalThreshold(
+      newProposalThreshold: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
-    "quorumNumerator()"(overrides?: CallOverrides): Promise<[BigNumber]>;
+    "setProposalThreshold(uint256)"(
+      newProposalThreshold: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setQuorum(
+      newQuorum: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "setQuorum(uint256)"(
+      newQuorum: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setVotingDelay(
+      newVotingDelay: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "setVotingDelay(uint256)"(
+      newVotingDelay: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setVotingPeriod(
+      newVotingPeriod: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "setVotingPeriod(uint256)"(
+      newVotingPeriod: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     state(
       proposalId: BigNumberish,
@@ -567,16 +787,6 @@ export class GovernorMock extends Contract {
 
     "token()"(overrides?: CallOverrides): Promise<[string]>;
 
-    updateQuorumNumerator(
-      newQuorumNumerator: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    "updateQuorumNumerator(uint256)"(
-      newQuorumNumerator: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     updateTimelock(
       newTimelock: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -600,6 +810,10 @@ export class GovernorMock extends Contract {
     "votingPeriod()"(overrides?: CallOverrides): Promise<[BigNumber]>;
   };
 
+  BACKUP_GOVERNOR(overrides?: CallOverrides): Promise<string>;
+
+  "BACKUP_GOVERNOR()"(overrides?: CallOverrides): Promise<string>;
+
   BALLOT_TYPEHASH(overrides?: CallOverrides): Promise<string>;
 
   "BALLOT_TYPEHASH()"(overrides?: CallOverrides): Promise<string>;
@@ -608,19 +822,43 @@ export class GovernorMock extends Contract {
 
   "COUNTING_MODE()"(overrides?: CallOverrides): Promise<string>;
 
-  cancel(
-    targets: string[],
-    values: BigNumberish[],
-    calldatas: BytesLike[],
-    descriptionHash: BytesLike,
+  ROLLBACK_DEADLINE(overrides?: CallOverrides): Promise<BigNumber>;
+
+  "ROLLBACK_DEADLINE()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+  __acceptAdmin(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  "cancel(address[],uint256[],bytes[],bytes32)"(
-    targets: string[],
-    values: BigNumberish[],
-    calldatas: BytesLike[],
-    descriptionHash: BytesLike,
+  "__acceptAdmin()"(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  __executeRollback(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "__executeRollback()"(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  __rollback(
+    eta: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "__rollback(uint256)"(
+    eta: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  cancel(
+    proposalId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "cancel(uint256)"(
+    proposalId: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -668,14 +906,6 @@ export class GovernorMock extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  execute(
-    targets: string[],
-    values: BigNumberish[],
-    calldatas: BytesLike[],
-    descriptionHash: BytesLike,
-    overrides?: PayableOverrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   "execute(address[],uint256[],bytes[],bytes32)"(
     targets: string[],
     values: BigNumberish[],
@@ -683,6 +913,59 @@ export class GovernorMock extends Contract {
     descriptionHash: BytesLike,
     overrides?: PayableOverrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  "execute(uint256)"(
+    proposalId: BigNumberish,
+    overrides?: PayableOverrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  getActions(
+    proposalId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [string[], BigNumber[], string[], string[]] & {
+      targets: string[];
+      values: BigNumber[];
+      signatures: string[];
+      calldatas: string[];
+    }
+  >;
+
+  "getActions(uint256)"(
+    proposalId: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<
+    [string[], BigNumber[], string[], string[]] & {
+      targets: string[];
+      values: BigNumber[];
+      signatures: string[];
+      calldatas: string[];
+    }
+  >;
+
+  getReceipt(
+    proposalId: BigNumberish,
+    voter: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, number, BigNumber] & {
+      hasVoted: boolean;
+      support: number;
+      votes: BigNumber;
+    }
+  >;
+
+  "getReceipt(uint256,address)"(
+    proposalId: BigNumberish,
+    voter: string,
+    overrides?: CallOverrides
+  ): Promise<
+    [boolean, number, BigNumber] & {
+      hasVoted: boolean;
+      support: number;
+      votes: BigNumber;
+    }
+  >;
 
   getVotes(
     account: string,
@@ -762,35 +1045,63 @@ export class GovernorMock extends Contract {
 
   "proposalThreshold()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  proposalVotes(
+  proposals(
     proposalId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber] & {
-      againstVotes: BigNumber;
+    [
+      BigNumber,
+      string,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      boolean,
+      boolean
+    ] & {
+      id: BigNumber;
+      proposer: string;
+      eta: BigNumber;
+      startBlock: BigNumber;
+      endBlock: BigNumber;
       forVotes: BigNumber;
+      againstVotes: BigNumber;
       abstainVotes: BigNumber;
+      canceled: boolean;
+      executed: boolean;
     }
   >;
 
-  "proposalVotes(uint256)"(
+  "proposals(uint256)"(
     proposalId: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, BigNumber, BigNumber] & {
-      againstVotes: BigNumber;
+    [
+      BigNumber,
+      string,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      BigNumber,
+      boolean,
+      boolean
+    ] & {
+      id: BigNumber;
+      proposer: string;
+      eta: BigNumber;
+      startBlock: BigNumber;
+      endBlock: BigNumber;
       forVotes: BigNumber;
+      againstVotes: BigNumber;
       abstainVotes: BigNumber;
+      canceled: boolean;
+      executed: boolean;
     }
   >;
-
-  propose(
-    targets: string[],
-    values: BigNumberish[],
-    calldatas: BytesLike[],
-    description: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   "propose(address[],uint256[],bytes[],string)"(
     targets: string[],
@@ -800,11 +1111,12 @@ export class GovernorMock extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  queue(
+  "propose(address[],uint256[],string[],bytes[],string)"(
     targets: string[],
     values: BigNumberish[],
+    signatures: string[],
     calldatas: BytesLike[],
-    descriptionHash: BytesLike,
+    description: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -816,23 +1128,61 @@ export class GovernorMock extends Contract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  quorum(
-    blockNumber: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
+  "queue(uint256)"(
+    proposalId: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  quorum(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
   "quorum(uint256)"(
-    blockNumber: BigNumberish,
+    arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  quorumDenominator(overrides?: CallOverrides): Promise<BigNumber>;
+  quorumVotes(overrides?: CallOverrides): Promise<BigNumber>;
 
-  "quorumDenominator()"(overrides?: CallOverrides): Promise<BigNumber>;
+  "quorumVotes()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-  quorumNumerator(overrides?: CallOverrides): Promise<BigNumber>;
+  setProposalThreshold(
+    newProposalThreshold: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
-  "quorumNumerator()"(overrides?: CallOverrides): Promise<BigNumber>;
+  "setProposalThreshold(uint256)"(
+    newProposalThreshold: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setQuorum(
+    newQuorum: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "setQuorum(uint256)"(
+    newQuorum: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setVotingDelay(
+    newVotingDelay: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "setVotingDelay(uint256)"(
+    newVotingDelay: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setVotingPeriod(
+    newVotingPeriod: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "setVotingPeriod(uint256)"(
+    newVotingPeriod: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   state(proposalId: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
@@ -859,16 +1209,6 @@ export class GovernorMock extends Contract {
 
   "token()"(overrides?: CallOverrides): Promise<string>;
 
-  updateQuorumNumerator(
-    newQuorumNumerator: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  "updateQuorumNumerator(uint256)"(
-    newQuorumNumerator: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   updateTimelock(
     newTimelock: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -892,6 +1232,10 @@ export class GovernorMock extends Contract {
   "votingPeriod()"(overrides?: CallOverrides): Promise<BigNumber>;
 
   callStatic: {
+    BACKUP_GOVERNOR(overrides?: CallOverrides): Promise<string>;
+
+    "BACKUP_GOVERNOR()"(overrides?: CallOverrides): Promise<string>;
+
     BALLOT_TYPEHASH(overrides?: CallOverrides): Promise<string>;
 
     "BALLOT_TYPEHASH()"(overrides?: CallOverrides): Promise<string>;
@@ -900,21 +1244,31 @@ export class GovernorMock extends Contract {
 
     "COUNTING_MODE()"(overrides?: CallOverrides): Promise<string>;
 
-    cancel(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ROLLBACK_DEADLINE(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "cancel(address[],uint256[],bytes[],bytes32)"(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+    "ROLLBACK_DEADLINE()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    __acceptAdmin(overrides?: CallOverrides): Promise<void>;
+
+    "__acceptAdmin()"(overrides?: CallOverrides): Promise<void>;
+
+    __executeRollback(overrides?: CallOverrides): Promise<void>;
+
+    "__executeRollback()"(overrides?: CallOverrides): Promise<void>;
+
+    __rollback(eta: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    "__rollback(uint256)"(
+      eta: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<void>;
+
+    cancel(proposalId: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    "cancel(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     castVote(
       proposalId: BigNumberish,
@@ -960,14 +1314,6 @@ export class GovernorMock extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    execute(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     "execute(address[],uint256[],bytes[],bytes32)"(
       targets: string[],
       values: BigNumberish[],
@@ -975,6 +1321,59 @@ export class GovernorMock extends Contract {
       descriptionHash: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    "execute(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    getActions(
+      proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [string[], BigNumber[], string[], string[]] & {
+        targets: string[];
+        values: BigNumber[];
+        signatures: string[];
+        calldatas: string[];
+      }
+    >;
+
+    "getActions(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<
+      [string[], BigNumber[], string[], string[]] & {
+        targets: string[];
+        values: BigNumber[];
+        signatures: string[];
+        calldatas: string[];
+      }
+    >;
+
+    getReceipt(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, number, BigNumber] & {
+        hasVoted: boolean;
+        support: number;
+        votes: BigNumber;
+      }
+    >;
+
+    "getReceipt(uint256,address)"(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: CallOverrides
+    ): Promise<
+      [boolean, number, BigNumber] & {
+        hasVoted: boolean;
+        support: number;
+        votes: BigNumber;
+      }
+    >;
 
     getVotes(
       account: string,
@@ -1054,35 +1453,63 @@ export class GovernorMock extends Contract {
 
     "proposalThreshold()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    proposalVotes(
+    proposals(
       proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
-        againstVotes: BigNumber;
+      [
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        boolean,
+        boolean
+      ] & {
+        id: BigNumber;
+        proposer: string;
+        eta: BigNumber;
+        startBlock: BigNumber;
+        endBlock: BigNumber;
         forVotes: BigNumber;
+        againstVotes: BigNumber;
         abstainVotes: BigNumber;
+        canceled: boolean;
+        executed: boolean;
       }
     >;
 
-    "proposalVotes(uint256)"(
+    "proposals(uint256)"(
       proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<
-      [BigNumber, BigNumber, BigNumber] & {
-        againstVotes: BigNumber;
+      [
+        BigNumber,
+        string,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        BigNumber,
+        boolean,
+        boolean
+      ] & {
+        id: BigNumber;
+        proposer: string;
+        eta: BigNumber;
+        startBlock: BigNumber;
+        endBlock: BigNumber;
         forVotes: BigNumber;
+        againstVotes: BigNumber;
         abstainVotes: BigNumber;
+        canceled: boolean;
+        executed: boolean;
       }
     >;
-
-    propose(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      description: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     "propose(address[],uint256[],bytes[],string)"(
       targets: string[],
@@ -1092,11 +1519,12 @@ export class GovernorMock extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    queue(
+    "propose(address[],uint256[],string[],bytes[],string)"(
       targets: string[],
       values: BigNumberish[],
+      signatures: string[],
       calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+      description: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1108,23 +1536,61 @@ export class GovernorMock extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    quorum(
-      blockNumber: BigNumberish,
+    "queue(uint256)"(
+      proposalId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
+    ): Promise<void>;
+
+    quorum(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "quorum(uint256)"(
-      blockNumber: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    quorumDenominator(overrides?: CallOverrides): Promise<BigNumber>;
+    quorumVotes(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "quorumDenominator()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "quorumVotes()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    quorumNumerator(overrides?: CallOverrides): Promise<BigNumber>;
+    setProposalThreshold(
+      newProposalThreshold: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
-    "quorumNumerator()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "setProposalThreshold(uint256)"(
+      newProposalThreshold: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setQuorum(
+      newQuorum: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setQuorum(uint256)"(
+      newQuorum: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setVotingDelay(
+      newVotingDelay: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setVotingDelay(uint256)"(
+      newVotingDelay: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setVotingPeriod(
+      newVotingPeriod: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setVotingPeriod(uint256)"(
+      newVotingPeriod: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     state(proposalId: BigNumberish, overrides?: CallOverrides): Promise<number>;
 
@@ -1150,16 +1616,6 @@ export class GovernorMock extends Contract {
     token(overrides?: CallOverrides): Promise<string>;
 
     "token()"(overrides?: CallOverrides): Promise<string>;
-
-    updateQuorumNumerator(
-      newQuorumNumerator: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "updateQuorumNumerator(uint256)"(
-      newQuorumNumerator: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     updateTimelock(
       newTimelock: string,
@@ -1236,13 +1692,27 @@ export class GovernorMock extends Contract {
       { proposalId: BigNumber; eta: BigNumber }
     >;
 
-    QuorumNumeratorUpdated(
-      oldQuorumNumerator: null,
-      newQuorumNumerator: null
+    ProposalThresholdUpdated(
+      oldProposalThreshold: null,
+      newProposalThreshold: null
     ): TypedEventFilter<
       [BigNumber, BigNumber],
-      { oldQuorumNumerator: BigNumber; newQuorumNumerator: BigNumber }
+      { oldProposalThreshold: BigNumber; newProposalThreshold: BigNumber }
     >;
+
+    QuorumUpdated(
+      oldQuorum: null,
+      newQuorum: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { oldQuorum: BigNumber; newQuorum: BigNumber }
+    >;
+
+    Rollback(): TypedEventFilter<[], {}>;
+
+    RollbackQueued(
+      eta: null
+    ): TypedEventFilter<[BigNumber], { eta: BigNumber }>;
 
     TimelockChange(
       oldTimelock: null,
@@ -1268,9 +1738,29 @@ export class GovernorMock extends Contract {
         reason: string;
       }
     >;
+
+    VotingDelayUpdated(
+      oldVotingDelay: null,
+      newVotingDelay: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { oldVotingDelay: BigNumber; newVotingDelay: BigNumber }
+    >;
+
+    VotingPeriodUpdated(
+      oldVotingPeriod: null,
+      newVotingPeriod: null
+    ): TypedEventFilter<
+      [BigNumber, BigNumber],
+      { oldVotingPeriod: BigNumber; newVotingPeriod: BigNumber }
+    >;
   };
 
   estimateGas: {
+    BACKUP_GOVERNOR(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "BACKUP_GOVERNOR()"(overrides?: CallOverrides): Promise<BigNumber>;
+
     BALLOT_TYPEHASH(overrides?: CallOverrides): Promise<BigNumber>;
 
     "BALLOT_TYPEHASH()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1279,19 +1769,43 @@ export class GovernorMock extends Contract {
 
     "COUNTING_MODE()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    cancel(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+    ROLLBACK_DEADLINE(overrides?: CallOverrides): Promise<BigNumber>;
+
+    "ROLLBACK_DEADLINE()"(overrides?: CallOverrides): Promise<BigNumber>;
+
+    __acceptAdmin(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "cancel(address[],uint256[],bytes[],bytes32)"(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+    "__acceptAdmin()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    __executeRollback(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "__executeRollback()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    __rollback(
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "__rollback(uint256)"(
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    cancel(
+      proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "cancel(uint256)"(
+      proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1339,7 +1853,7 @@ export class GovernorMock extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    execute(
+    "execute(address[],uint256[],bytes[],bytes32)"(
       targets: string[],
       values: BigNumberish[],
       calldatas: BytesLike[],
@@ -1347,12 +1861,31 @@ export class GovernorMock extends Contract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    "execute(address[],uint256[],bytes[],bytes32)"(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+    "execute(uint256)"(
+      proposalId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    getActions(
+      proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getActions(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getReceipt(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    "getReceipt(uint256,address)"(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getVotes(
@@ -1433,22 +1966,14 @@ export class GovernorMock extends Contract {
 
     "proposalThreshold()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    proposalVotes(
+    proposals(
       proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    "proposalVotes(uint256)"(
+    "proposals(uint256)"(
       proposalId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    propose(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      description: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     "propose(address[],uint256[],bytes[],string)"(
@@ -1459,11 +1984,12 @@ export class GovernorMock extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    queue(
+    "propose(address[],uint256[],string[],bytes[],string)"(
       targets: string[],
       values: BigNumberish[],
+      signatures: string[],
       calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+      description: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1475,23 +2001,61 @@ export class GovernorMock extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    quorum(
-      blockNumber: BigNumberish,
-      overrides?: CallOverrides
+    "queue(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    quorum(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     "quorum(uint256)"(
-      blockNumber: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    quorumDenominator(overrides?: CallOverrides): Promise<BigNumber>;
+    quorumVotes(overrides?: CallOverrides): Promise<BigNumber>;
 
-    "quorumDenominator()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "quorumVotes()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    quorumNumerator(overrides?: CallOverrides): Promise<BigNumber>;
+    setProposalThreshold(
+      newProposalThreshold: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
-    "quorumNumerator()"(overrides?: CallOverrides): Promise<BigNumber>;
+    "setProposalThreshold(uint256)"(
+      newProposalThreshold: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setQuorum(
+      newQuorum: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "setQuorum(uint256)"(
+      newQuorum: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setVotingDelay(
+      newVotingDelay: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "setVotingDelay(uint256)"(
+      newVotingDelay: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setVotingPeriod(
+      newVotingPeriod: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "setVotingPeriod(uint256)"(
+      newVotingPeriod: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     state(
       proposalId: BigNumberish,
@@ -1521,16 +2085,6 @@ export class GovernorMock extends Contract {
 
     "token()"(overrides?: CallOverrides): Promise<BigNumber>;
 
-    updateQuorumNumerator(
-      newQuorumNumerator: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    "updateQuorumNumerator(uint256)"(
-      newQuorumNumerator: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     updateTimelock(
       newTimelock: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1555,6 +2109,12 @@ export class GovernorMock extends Contract {
   };
 
   populateTransaction: {
+    BACKUP_GOVERNOR(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "BACKUP_GOVERNOR()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     BALLOT_TYPEHASH(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "BALLOT_TYPEHASH()"(
@@ -1565,19 +2125,45 @@ export class GovernorMock extends Contract {
 
     "COUNTING_MODE()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    cancel(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+    ROLLBACK_DEADLINE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    "ROLLBACK_DEADLINE()"(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    __acceptAdmin(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "cancel(address[],uint256[],bytes[],bytes32)"(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+    "__acceptAdmin()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    __executeRollback(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "__executeRollback()"(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    __rollback(
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "__rollback(uint256)"(
+      eta: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    cancel(
+      proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "cancel(uint256)"(
+      proposalId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1625,7 +2211,7 @@ export class GovernorMock extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    execute(
+    "execute(address[],uint256[],bytes[],bytes32)"(
       targets: string[],
       values: BigNumberish[],
       calldatas: BytesLike[],
@@ -1633,12 +2219,31 @@ export class GovernorMock extends Contract {
       overrides?: PayableOverrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    "execute(address[],uint256[],bytes[],bytes32)"(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+    "execute(uint256)"(
+      proposalId: BigNumberish,
       overrides?: PayableOverrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    getActions(
+      proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getActions(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getReceipt(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    "getReceipt(uint256,address)"(
+      proposalId: BigNumberish,
+      voter: string,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getVotes(
@@ -1721,22 +2326,14 @@ export class GovernorMock extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    proposalVotes(
+    proposals(
       proposalId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    "proposalVotes(uint256)"(
+    "proposals(uint256)"(
       proposalId: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    propose(
-      targets: string[],
-      values: BigNumberish[],
-      calldatas: BytesLike[],
-      description: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     "propose(address[],uint256[],bytes[],string)"(
@@ -1747,11 +2344,12 @@ export class GovernorMock extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    queue(
+    "propose(address[],uint256[],string[],bytes[],string)"(
       targets: string[],
       values: BigNumberish[],
+      signatures: string[],
       calldatas: BytesLike[],
-      descriptionHash: BytesLike,
+      description: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1763,26 +2361,63 @@ export class GovernorMock extends Contract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    "queue(uint256)"(
+      proposalId: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     quorum(
-      blockNumber: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     "quorum(uint256)"(
-      blockNumber: BigNumberish,
+      arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    quorumDenominator(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    quorumVotes(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    "quorumDenominator()"(
-      overrides?: CallOverrides
+    "quorumVotes()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    setProposalThreshold(
+      newProposalThreshold: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    quorumNumerator(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    "setProposalThreshold(uint256)"(
+      newProposalThreshold: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
 
-    "quorumNumerator()"(
-      overrides?: CallOverrides
+    setQuorum(
+      newQuorum: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "setQuorum(uint256)"(
+      newQuorum: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setVotingDelay(
+      newVotingDelay: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "setVotingDelay(uint256)"(
+      newVotingDelay: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setVotingPeriod(
+      newVotingPeriod: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "setVotingPeriod(uint256)"(
+      newVotingPeriod: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     state(
@@ -1812,16 +2447,6 @@ export class GovernorMock extends Contract {
     token(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "token()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    updateQuorumNumerator(
-      newQuorumNumerator: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "updateQuorumNumerator(uint256)"(
-      newQuorumNumerator: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
 
     updateTimelock(
       newTimelock: string,

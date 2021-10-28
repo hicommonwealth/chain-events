@@ -8,28 +8,35 @@ export async function createProvider(
   network?: string,
   chain?: string
 ): Promise<providers.Web3Provider> {
-  // TODO determine base - use customBase?
   const log = factory.getLogger(
     `${formatFilename(__filename)}::${network}${chain ? `::${chain}` : ''}`
   );
 
-  if (!ethNetworkUrl.includes('alchemy') && !ethNetworkUrl.includes('infura'))
+  if (
+    !ethNetworkUrl.includes('alchemy') &&
+    !ethNetworkUrl.includes('infura') &&
+    !ethNetworkUrl.includes('localhost') &&
+    !ethNetworkUrl.includes('127.0.0.1')
+  )
     throw new Error('Must use Alchemy or Infura Ethereum API');
   if (process && process.env) {
-    // TODO: alchemy keys are different per network, so we need to ensure we have the correct
-    //   keys for arbitrary networks
-    let ALCHEMY_API_KEY;
-    if (ethNetworkUrl.includes('ropsten')) {
-      ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY_ROPSTEN;
-      ethNetworkUrl = `wss://eth-ropsten.alchemyapi.io/v2/${ALCHEMY_API_KEY}`;
-    } else if (ethNetworkUrl.includes('mainnet')) {
-      ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
-      ethNetworkUrl = `wss://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`;
-    } else {
-      throw new Error('Must be on either ropsten or mainnet');
-    }
-    if (!ALCHEMY_API_KEY) {
-      throw new Error('Alchemy API key not found, check your .env file');
+    // only rewrite URL for alchemy/infura, preserve for localhost
+    if (ethNetworkUrl.includes('alchemy') || ethNetworkUrl.includes('infura')) {
+      // TODO: alchemy keys are different per network, so we need to ensure we have the correct
+      //   keys for arbitrary networks
+      let ALCHEMY_API_KEY;
+      if (ethNetworkUrl.includes('ropsten')) {
+        ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY_ROPSTEN;
+        ethNetworkUrl = `wss://eth-ropsten.alchemyapi.io/v2/${ALCHEMY_API_KEY}`;
+      } else if (ethNetworkUrl.includes('mainnet')) {
+        ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
+        ethNetworkUrl = `wss://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`;
+      } else {
+        throw new Error('Must be on either ropsten or mainnet');
+      }
+      if (!ALCHEMY_API_KEY) {
+        throw new Error('Alchemy API key not found, check your .env file');
+      }
     }
 
     try {
