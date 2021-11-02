@@ -27,16 +27,16 @@ export class Processor extends IEventProcessor<Api, RawEvent> {
     const kind = ParseType(event.event, this.chain);
     if (!kind) return [];
     try {
-      const cwEvent = await Enrich(
-        this._api,
-        event.blockNumber,
-        kind,
-        event,
-        this.chain
-      );
+      const cwEvent = await Enrich(this._api, event.blockNumber, kind, event);
       return [cwEvent];
     } catch (e) {
-      log.error(`Failed to enrich event: ${e.message}`);
+      log.error(
+        `Failed to enrich event: ${JSON.stringify(
+          event,
+          null,
+          2
+        )}\nError Message: ${e.message}`
+      );
       return [];
     }
   }

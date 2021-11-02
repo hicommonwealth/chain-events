@@ -67,13 +67,13 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
             blockNumber,
             kind,
             data,
-            this._enricherConfig,
-            this.chain
+            this._enricherConfig
           );
           return result;
         } catch (e) {
-          log.error(`Event enriching failed for ${kind}`);
-          log.error(`Error: ${e}`);
+          log.error(
+            `Event enriching failed for event kind: ${kind}\nError Message: ${e.message()}`
+          );
           return null;
         }
       } else {

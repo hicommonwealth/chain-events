@@ -38,15 +38,16 @@ export class Processor extends IEventProcessor<Api, RawEvent> {
         this._api,
         event.blockNumber,
         kind,
-        event,
-        this.chain
+        event
       );
       return [cwEvent];
     } catch (e) {
       log.error(
-        `[${SupportedNetwork.Moloch}${
-          this.chain ? `::${this.chain}` : ''
-        }]: Failed to enrich event: ${e.message}`
+        `Failed to enrich event: ${JSON.stringify(
+          event,
+          null,
+          2
+        )}\nError Message: ${e.message}`
       );
       return [];
     }

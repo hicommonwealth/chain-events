@@ -43,11 +43,11 @@ export class Processor extends IEventProcessor<IErc20Contracts, RawEvent> {
       return cwEvent ? [cwEvent] : [];
     } catch (e) {
       log.error(
-        `[${SupportedNetwork.ERC20}${
-          tokenName ? `::${tokenName}` : ''
-        }]: Failed to enrich event ${event.address} (${event.event}): ${
-          e.message
-        }`
+        `Failed to enrich event: ${JSON.stringify(
+          event,
+          null,
+          2
+        )}\nError Message: ${e.message}`
       );
       return [];
     }
