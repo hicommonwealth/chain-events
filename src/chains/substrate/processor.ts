@@ -47,19 +47,15 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
     const applyFilters = async (
       data: Event | Extrinsic
     ): Promise<CWEvent<IEventData>> | null => {
-      const kind = isEvent(data)
-        ? ParseType(
-            block.versionName,
-            block.versionNumber,
-            data.section,
-            data.method
-          )
-        : ParseType(
-            block.versionName,
-            block.versionNumber,
-            data.method.section,
-            data.method.method
-          );
+      const section = isEvent(data) ? data.section : data.method.section;
+      const method = isEvent(data) ? data.method : data.method.method;
+      const kind = ParseType(
+        block.versionName,
+        block.versionNumber,
+        section,
+        method
+      );
+
       if (kind !== null) {
         try {
           const result = await Enrich(
@@ -72,7 +68,11 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
           return result;
         } catch (e) {
           log.error(
-            `Event enriching failed for event kind: ${kind}\nError Message: ${e.message()}`
+            `Failed to enrich event. Block number: ${blockNumber}, Version Name: ${
+              block.versionNumber
+            }, Version Number: ${
+              block.versionNumber
+            }, Section: ${section}, Method: ${method}, Error Message: ${e.message()}`
           );
           return null;
         }

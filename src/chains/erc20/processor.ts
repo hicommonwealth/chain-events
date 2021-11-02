@@ -43,11 +43,7 @@ export class Processor extends IEventProcessor<IErc20Contracts, RawEvent> {
       return cwEvent ? [cwEvent] : [];
     } catch (e) {
       log.error(
-        `Failed to enrich event: ${JSON.stringify(
-          event,
-          null,
-          2
-        )}\nError Message: ${e.message}`
+        `Failed to enrich event. Block number: ${event.blockNumber}, Name/Kind: ${event.event}, Error Message: ${e.message}`
       );
       return [];
     }
