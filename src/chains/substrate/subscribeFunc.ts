@@ -33,7 +33,6 @@ export async function createApi(
   typeOverrides: RegisteredTypes = {},
   chain?: string
 ): Promise<ApiPromise> {
-  // eslint-disable-next-line no-shadow
   const log = factory.getLogger(
     addPrefix(__filename, [SupportedNetwork.Substrate, chain])
   );
