@@ -184,7 +184,7 @@ export async function Enrich(
       };
     }
     default: {
-      throw new Error(`Unknown event kind!`);
+      throw new Error(`Unknown event kind: ${kind}`);
     }
   }
 
