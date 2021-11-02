@@ -15,12 +15,7 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
 
   protected readonly log;
 
-  constructor(
-    api: Api,
-    name: string,
-    verbose = false,
-    protected readonly logPrefix?: string
-  ) {
+  constructor(api: Api, name: string, verbose = false) {
     super(api, verbose);
     this._name = name;
     this.log = factory.getLogger(

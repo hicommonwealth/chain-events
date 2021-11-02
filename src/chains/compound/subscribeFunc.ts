@@ -70,7 +70,7 @@ export async function createApi(
         );
       }
 
-      log.info(`${this.logPrefix}Connection successful!`);
+      log.info(`Connection successful!`);
       return contract;
     } catch (err) {
       log.error(
