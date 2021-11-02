@@ -35,7 +35,10 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
    */
   public async process(block: Block): Promise<CWEvent<IEventData>[]> {
     const log = factory.getLogger(
-      addPrefix(__filename, [SupportedNetwork.Substrate, this.chain])
+      addPrefix(__filename, [
+        SupportedNetwork.Substrate,
+        this.chain || block.versionName,
+      ])
     );
 
     // cache block number if needed for disconnection purposes
@@ -55,7 +58,6 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
         section,
         method
       );
-
       if (kind !== null) {
         try {
           const result = await Enrich(
@@ -68,11 +70,7 @@ export class Processor extends IEventProcessor<ApiPromise, Block> {
           return result;
         } catch (e) {
           log.error(
-            `Failed to enrich event. Block number: ${blockNumber}, Version Name: ${
-              block.versionNumber
-            }, Version Number: ${
-              block.versionNumber
-            }, Section: ${section}, Method: ${method}, Error Message: ${e.message()}`
+            `Failed to enrich event. Block number: ${blockNumber}, Chain/Version Name: ${block.versionName}, Version Number: ${block.versionNumber}, Section: ${section}, Method: ${method}, Error Message: ${e.message}`
           );
           return null;
         }
