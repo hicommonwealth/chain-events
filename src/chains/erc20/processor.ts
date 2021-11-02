@@ -2,7 +2,7 @@
  * Processes ERC20 events.
  */
 import { IEventProcessor, CWEvent, SupportedNetwork } from '../../interfaces';
-import { addPrefix, factory, formatFilename } from '../../logging';
+import { addPrefix, factory } from '../../logging';
 
 import { ParseType } from './filters/type_parser';
 import { Enrich, EnricherConfig } from './filters/enricher';
