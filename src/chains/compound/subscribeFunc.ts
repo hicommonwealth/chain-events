@@ -70,14 +70,14 @@ export async function createApi(
         );
       }
 
-      chainLog.info(`${this.logPrefix}Connection successful!`);
+      log.info(`${this.logPrefix}Connection successful!`);
       return contract;
     } catch (err) {
-      chainLog.error(
+      log.error(
         `Compound contract: ${governorAddress} at url: ${ethNetworkUrl} failure: ${err.message}`
       );
       await sleep(retryTimeMs);
-      chainLog.error(`Retrying connection...`);
+      log.error(`Retrying connection...`);
     }
   }
 
