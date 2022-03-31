@@ -1,5 +1,5 @@
 /**
- * Fetches events from Compound contract in real time.
+ * Fetches events from ERC20 contract in real time.
  */
 import { Listener } from '@ethersproject/providers';
 import sleep from 'sleep-promise';

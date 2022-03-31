@@ -1,12 +1,10 @@
 import { Web3Provider } from '@ethersproject/providers';
-import BN from 'bn.js';
 
 import { TypedEvent } from '../../contractTypes/commons';
 import { ERC721 } from '../../contractTypes';
 
 interface IErc721Contract {
   contract: ERC721;
-  totalSupply: BN;
   tokenName?: string;
 }
 

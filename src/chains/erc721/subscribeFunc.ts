@@ -1,6 +1,5 @@
 import sleep from 'sleep-promise';
 import _ from 'underscore';
-import BN from 'bn.js';
 
 import { createProvider } from '../../eth';
 import {
@@ -58,10 +57,8 @@ export async function createApi(
       ][]) {
         try {
           await contract.deployed();
-          const totalSupply = new BN((await contract.totalSupply()).toString());
           deployResults.tokens.push({
             contract,
-            totalSupply,
             tokenName,
           });
         } catch (err) {
@@ -72,7 +69,7 @@ export async function createApi(
       }
       return deployResults;
     } catch (err) {
-      log.error(`Erc20 at ${ethNetworkUrl} failure: ${err.message}`);
+      log.error(`Erc721 at ${ethNetworkUrl} failure: ${err.message}`);
       await sleep(retryTimeMs);
       log.error('Retrying connection...');
     }

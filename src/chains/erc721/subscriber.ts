@@ -1,9 +1,8 @@
 /**
- * Fetches events from Compound contract in real time.
+ * Fetches events from ERC721 contract in real time.
  */
 import { Listener } from '@ethersproject/providers';
 import sleep from 'sleep-promise';
-import BN from 'bn.js';
 
 import { IEventSubscriber, SupportedNetwork } from '../../interfaces';
 import { ERC721__factory as ERC721Factory } from '../../contractTypes';
@@ -71,8 +70,7 @@ export class Subscriber extends IEventSubscriber<IErc721Contracts, RawEvent> {
     try {
       const contract = ERC721Factory.connect(tokenAddress, this.api.provider);
       await contract.deployed();
-      const totalSupply = new BN((await contract.totalSupply()).toString());
-      this.api.tokens.push({ contract, totalSupply, tokenName });
+      this.api.tokens.push({ contract, tokenName });
       contract.on('*', this._listener.bind(this, tokenName));
     } catch (e) {
       await sleep(retryTimeMs);
