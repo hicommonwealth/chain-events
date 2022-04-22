@@ -1,5 +1,9 @@
 /* eslint-disable no-shadow */
-import { IProjectBaseFactory } from '../../contractTypes';
+import {
+  IProjectBaseFactory,
+  ICuratedProject,
+  IERC20,
+} from '../../contractTypes';
 import { TypedEvent } from '../../contractTypes/commons';
 
 // options for the listener class
@@ -12,7 +16,24 @@ export interface ListenerOptions {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type RawEvent = TypedEvent<any>;
 
-export type Api = IProjectBaseFactory;
+export enum ContractType {
+  Factory,
+  Project,
+  cToken,
+  bToken,
+}
+
+export type ProjectApi = {
+  project: ICuratedProject;
+  isCurated: boolean;
+  bToken: IERC20;
+  cToken?: IERC20;
+};
+
+export type Api = {
+  factory: IProjectBaseFactory;
+  projects: ProjectApi[];
+};
 
 // eslint-disable-next-line no-shadow
 export enum EntityKind {
@@ -40,6 +61,12 @@ export interface IProjectCreated extends IEvent {
   kind: EventKind.ProjectCreated;
   id: Address;
   index: string; // BN
+
+  // metadata
+  name: string;
+  ipfsHash: string;
+  cwUrl: string;
+  creator: Address;
 }
 
 export interface IProjectBacked extends IEvent {
