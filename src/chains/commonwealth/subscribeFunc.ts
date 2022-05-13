@@ -33,6 +33,7 @@ export async function createApi(
   const log = factory.getLogger(
     addPrefix(__filename, [SupportedNetwork.Commonwealth, chain])
   );
+  const api: Api = { factory: null, projects: [] };
   for (let i = 0; i < 3; ++i) {
     try {
       const provider = await createProvider(
@@ -41,21 +42,18 @@ export async function createApi(
         chain
       );
 
-      const factoryContract = IProjectBaseFactoryFactory.connect(
+      api.factory = IProjectBaseFactoryFactory.connect(
         factoryAddress,
         provider
       );
-      await factoryContract.deployed();
+      await api.factory.deployed();
 
       // create subscriptions for all existing projects
-      const nProjects = await this._api.factory.numProjects();
+      const nProjects = await api.factory.numProjects();
       for (let projectN = 0; projectN < nProjects.toNumber(); projectN++) {
-        const projectAddress = await this._api.factory.projects(projectN);
-        const project = await constructProjectApi(
-          this._api.factory,
-          projectAddress
-        );
-        this._api.projects.push(project);
+        const projectAddress = await api.factory.projects(projectN);
+        const project = await constructProjectApi(api.factory, projectAddress);
+        api.projects.push(project);
         /*
           Do not subscribe to tokens for time being
 
@@ -73,10 +71,7 @@ export async function createApi(
       }
 
       log.info('Connection successful!');
-      return {
-        factory: factoryContract,
-        projects: [],
-      };
+      return api;
     } catch (err) {
       log.error(
         `Commonwealth ${factoryAddress} at ${ethNetworkUrl} failure: ${err.message}`

@@ -71,6 +71,12 @@ const shortcuts = {
     url: networkUrls.moloch,
     address: contracts.moloch,
   },
+  commonwealth: {
+    chain: 'commonwealth',
+    network: SupportedNetwork.Commonwealth,
+    url: networkUrls['eth-local'],
+    address: contracts['commonwealth-local'],
+  },
 };
 
 async function main(): Promise<any> {
