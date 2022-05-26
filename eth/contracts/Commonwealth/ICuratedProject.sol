@@ -26,4 +26,6 @@ interface ICuratedProject is IProjectBase {
     function curate(uint256 _amount) external returns (bool);
 
     function curatorsWithdraw() external returns (bool);
+
+    function withdrawRemaining() external view returns (uint256);
 }

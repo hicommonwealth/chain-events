@@ -81,9 +81,12 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
         2
       )}.`;
       // eslint-disable-next-line no-unused-expressions
-      this._verbose ? log.info(logStr) : log.trace(logStr);
+      this._verbose || true ? log.info(logStr) : log.trace(logStr);
 
-      if (contractType === ContractType.Factory) {
+      if (
+        contractType === ContractType.Factory &&
+        event.event === 'ProjectCreated'
+      ) {
         // factories only emit create events, which require us to produce a new subscription
         const newProjectAddress: string = event.args[1];
         constructProjectApi(this._api.factory, newProjectAddress).then(
@@ -127,16 +130,14 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
     };
 
     // create subscription for factory
-    this._api.factory.on(
-      'ProjectCreated',
-      this._listener.bind(this, this._api.factory.address, ContractType.Factory)
+    this._api.factory.on('*', (args) =>
+      this._listener(this._api.factory.address, ContractType.Factory, args)
     );
 
     // create subscriptions for all projects
     for (const project of this._api.projects) {
-      project.project.on(
-        '*',
-        this._listener.bind(this, project.project.address, ContractType.Project)
+      project.project.on('*', (args) =>
+        this._listener(project.project.address, ContractType.Project, args)
       );
     }
   }

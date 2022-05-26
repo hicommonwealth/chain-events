@@ -1,10 +1,10 @@
+import type { RegisteredTypes } from '@polkadot/types/types';
+
 import { HydraDXSpec } from './specs/hydraDX';
 import { KulupuSpec } from './specs/kulupu';
 import { StafiSpec } from './specs/stafi';
 import { CloverSpec } from './specs/clover';
 import { EdgewareSpec } from './specs/edgeware';
-
-import type { RegisteredTypes } from '@polkadot/types/types';
 
 export const networkUrls = {
   clover: 'wss://api.clover.finance',
@@ -59,5 +59,5 @@ export const contracts = {
   dydx: '0x7E9B1672616FF6D6629Ef2879419aaE79A9018D2',
   uniswap: '0xc4e172459f1e7939d522503b81afaac1014ce6f6',
   frax: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
-  'commonwealth-local': '0x3D7CD28EfD08FfE9Ce8cA329EC2e67822C756526',
+  'commonwealth-local': '0xB21C6Ba5fE6dC56DDF86B3979bE5A45004813033',
 };

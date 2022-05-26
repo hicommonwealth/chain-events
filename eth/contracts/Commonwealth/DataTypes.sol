@@ -11,7 +11,7 @@ library DataTypes {
         uint256 id;
         bytes32 name;
         bytes32 ipfsHash;
-        bytes32 cwUrl;
+        bytes32 url;
         address creator;
     }
 
