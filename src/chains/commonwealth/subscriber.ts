@@ -81,7 +81,7 @@ export class Subscriber extends IEventSubscriber<Api, RawEvent> {
         2
       )}.`;
       // eslint-disable-next-line no-unused-expressions
-      this._verbose || true ? log.info(logStr) : log.trace(logStr);
+      this._verbose ? log.info(logStr) : log.trace(logStr);
 
       if (
         contractType === ContractType.Factory &&

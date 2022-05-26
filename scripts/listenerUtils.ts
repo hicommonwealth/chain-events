@@ -59,5 +59,5 @@ export const contracts = {
   dydx: '0x7E9B1672616FF6D6629Ef2879419aaE79A9018D2',
   uniswap: '0xc4e172459f1e7939d522503b81afaac1014ce6f6',
   frax: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
-  'commonwealth-local': '0xB21C6Ba5fE6dC56DDF86B3979bE5A45004813033',
+  'commonwealth-local': '0x7914a8b73E11432953d9cCda060018EA1d9DCde9',
 };

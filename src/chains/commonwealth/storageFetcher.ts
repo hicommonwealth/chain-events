@@ -35,7 +35,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
   constructor(protected readonly _api: Api, chain?: string) {
     super(_api);
     this.log = factory.getLogger(
-      addPrefix(__filename, [SupportedNetwork.Aave, chain])
+      addPrefix(__filename, [SupportedNetwork.Commonwealth, chain])
     );
     this.chain = chain;
   }
@@ -94,7 +94,7 @@ export class StorageFetcher extends IStorageFetcher<Api> {
       return [];
     }
     this.log.info(
-      `Fetching Aave entities for range: ${range.startBlock}-${range.endBlock}.`
+      `Fetching Commonwealth entities for range: ${range.startBlock}-${range.endBlock}.`
     );
 
     const fetchEvents = async <T extends IEntityEventData>(

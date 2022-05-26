@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { hexToAscii } from 'web3-utils';
+
 import { TypedEventFilter } from '../../../contractTypes/commons';
 import {
   ICuratedProjectFactory,
@@ -47,9 +49,9 @@ export async function Enrich(
           kind,
           id: newProject,
           index: projectIndex.toString(),
-          name,
-          ipfsHash,
-          cwUrl,
+          name: hexToAscii(name).replace(/\0/g, ''),
+          ipfsHash: hexToAscii(ipfsHash).replace(/\0/g, ''),
+          cwUrl: hexToAscii(cwUrl).replace(/\0/g, ''),
           creator,
         },
       };
@@ -127,14 +129,14 @@ export async function Enrich(
       return {
         blockNumber,
         excludeAddresses: [sender],
-        network: SupportedNetwork.Aave,
+        network: SupportedNetwork.Commonwealth,
         data: {
           kind,
           id: rawData.address,
           sender,
           token,
           amount: amount.toString(),
-          withdrawalType,
+          withdrawalType: hexToAscii(withdrawalType).replace(/\0/g, ''),
         },
       };
     }

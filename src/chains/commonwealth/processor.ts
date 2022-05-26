@@ -1,5 +1,5 @@
 /**
- * Processes Aave events.
+ * Processes Commonwealth events.
  */
 import { IEventProcessor, CWEvent, SupportedNetwork } from '../../interfaces';
 import { addPrefix, factory } from '../../logging';

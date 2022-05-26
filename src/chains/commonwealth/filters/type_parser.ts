@@ -8,7 +8,7 @@ import { SupportedNetwork } from '../../../interfaces';
  */
 export function ParseType(name: string, chain?: string): EventKind | null {
   const log = factory.getLogger(
-    addPrefix(__filename, [SupportedNetwork.Aave, chain])
+    addPrefix(__filename, [SupportedNetwork.Commonwealth, chain])
   );
   switch (name) {
     case 'ProjectCreated':
