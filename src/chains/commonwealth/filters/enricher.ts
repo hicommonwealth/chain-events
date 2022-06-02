@@ -6,7 +6,7 @@ import {
   ICuratedProjectFactory,
   ICuratedProject,
   // eslint-disable-next-line camelcase
-  IProjectBase__factory,
+  ICuratedProject__factory,
 } from '../../../contractTypes';
 import { CWEvent, SupportedNetwork } from '../../../interfaces';
 import { EventKind, RawEvent, IEventData, Api } from '../types';
@@ -32,7 +32,7 @@ export async function Enrich(
       const { projectIndex, newProject } = rawData.args as GetArgType<
         'ProjectCreated'
       >;
-      const projectContract = IProjectBase__factory.connect(
+      const projectContract = ICuratedProject__factory.connect(
         newProject,
         api.factory.provider
       );
