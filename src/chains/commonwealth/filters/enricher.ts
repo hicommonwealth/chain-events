@@ -5,6 +5,7 @@ import { TypedEventFilter } from '../../../contractTypes/commons';
 import {
   ICuratedProjectFactory,
   ICuratedProject,
+  // eslint-disable-next-line camelcase
   IProjectBase__factory,
 } from '../../../contractTypes';
 import { CWEvent, SupportedNetwork } from '../../../interfaces';
@@ -41,6 +42,12 @@ export async function Enrich(
         cwUrl,
         creator,
       } = await projectContract.metaData();
+      const beneficiary = await projectContract.beneficiary();
+      const token = await projectContract.acceptedToken();
+      const curatorFee = await projectContract.curatorFee();
+      const threshold = await projectContract.threshold();
+      const deadline = await projectContract.deadline();
+      const fundingAmount = await projectContract.totalFunding();
       return {
         blockNumber,
         excludeAddresses: [],
@@ -53,6 +60,12 @@ export async function Enrich(
           ipfsHash: hexToAscii(ipfsHash).replace(/\0/g, ''),
           cwUrl: hexToAscii(cwUrl).replace(/\0/g, ''),
           creator,
+          beneficiary,
+          acceptedToken: token,
+          curatorFee,
+          threshold: threshold.toString(),
+          deadline: +deadline,
+          fundingAmount: fundingAmount.toString(),
         },
       };
     }
