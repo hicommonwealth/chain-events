@@ -10,7 +10,7 @@ interface ICuratedProjectFactory is IProjectBaseFactory {
         bytes32 _name,
         bytes32 _ipfsHash,
         bytes32 _url,
-        address payable _beneficiary,
+        address _beneficiary,
         address _acceptedToken,
         uint256 _threshold,
         uint256 _deadline,

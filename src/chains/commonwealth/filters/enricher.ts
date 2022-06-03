@@ -37,17 +37,23 @@ export async function Enrich(
         api.factory.provider
       );
       const {
+        id,
         name,
         ipfsHash,
-        cwUrl,
+        url,
         creator,
       } = await projectContract.metaData();
-      const beneficiary = await projectContract.beneficiary();
-      const token = await projectContract.acceptedToken();
+      const {
+        threshold,
+        deadline,
+        beneficiary,
+        acceptedToken,
+      } = await projectContract.projectData();
+      console.log("swag got past meta data call" + hexToAscii(name).replace(/\0/g, ''));
+      console.log(beneficiary);
       const curatorFee = await projectContract.curatorFee();
-      const threshold = await projectContract.threshold();
-      const deadline = await projectContract.deadline();
       const fundingAmount = await projectContract.totalFunding();
+      console.log("got past contract calls");
       return {
         blockNumber,
         excludeAddresses: [],
@@ -58,11 +64,11 @@ export async function Enrich(
           index: projectIndex.toString(),
           name: hexToAscii(name).replace(/\0/g, ''),
           ipfsHash: hexToAscii(ipfsHash).replace(/\0/g, ''),
-          cwUrl: hexToAscii(cwUrl).replace(/\0/g, ''),
+          cwUrl: hexToAscii(url).replace(/\0/g, ''),
           creator,
           beneficiary,
-          acceptedToken: token,
-          curatorFee,
+          acceptedToken,
+          curatorFee: curatorFee.toString(),
           threshold: threshold.toString(),
           deadline: +deadline,
           fundingAmount: fundingAmount.toString(),
