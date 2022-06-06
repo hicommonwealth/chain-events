@@ -29,11 +29,11 @@ export async function Enrich(
 ): Promise<CWEvent<IEventData>> {
   switch (kind) {
     case EventKind.ProjectCreated: {
-      const { projectIndex, newProject } = rawData.args as GetArgType<
+      const { projectIndex, projectAddress } = rawData.args as GetArgType<
         'ProjectCreated'
       >;
       const projectContract = ICuratedProject__factory.connect(
-        newProject,
+        projectAddress,
         api.factory.provider
       );
       const {
@@ -49,18 +49,15 @@ export async function Enrich(
         beneficiary,
         acceptedToken,
       } = await projectContract.projectData();
-      console.log("swag got past meta data call" + hexToAscii(name).replace(/\0/g, ''));
-      console.log(beneficiary);
       const curatorFee = await projectContract.curatorFee();
       const fundingAmount = await projectContract.totalFunding();
-      console.log("got past contract calls");
       return {
         blockNumber,
         excludeAddresses: [],
         network: SupportedNetwork.Commonwealth,
         data: {
           kind,
-          id: newProject,
+          id: projectAddress,
           index: projectIndex.toString(),
           name: hexToAscii(name).replace(/\0/g, ''),
           ipfsHash: hexToAscii(ipfsHash).replace(/\0/g, ''),

@@ -289,11 +289,11 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_feeTo",
+        name: "_cmnProjTokenImpl",
         type: "address",
       },
     ],
-    name: "setFeeTo",
+    name: "setCmnProjTokenImpl",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -302,11 +302,11 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_pToken",
+        name: "_feeTo",
         type: "address",
       },
     ],
-    name: "setPTokenImpl",
+    name: "setFeeTo",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

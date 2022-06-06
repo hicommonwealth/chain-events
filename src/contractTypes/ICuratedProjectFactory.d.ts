@@ -29,8 +29,8 @@ interface ICuratedProjectFactoryInterface extends ethers.utils.Interface {
     "projectImp()": FunctionFragment;
     "projects(uint32)": FunctionFragment;
     "protocolData()": FunctionFragment;
+    "setCmnProjTokenImpl(address)": FunctionFragment;
     "setFeeTo(address)": FunctionFragment;
-    "setPTokenImpl(address)": FunctionFragment;
     "setProjectImpl(address)": FunctionFragment;
     "setProtocolFee(uint8)": FunctionFragment;
   };
@@ -73,11 +73,11 @@ interface ICuratedProjectFactoryInterface extends ethers.utils.Interface {
     functionFragment: "protocolData",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "setFeeTo", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "setPTokenImpl",
+    functionFragment: "setCmnProjTokenImpl",
     values: [string]
   ): string;
+  encodeFunctionData(functionFragment: "setFeeTo", values: [string]): string;
   encodeFunctionData(
     functionFragment: "setProjectImpl",
     values: [string]
@@ -110,11 +110,11 @@ interface ICuratedProjectFactoryInterface extends ethers.utils.Interface {
     functionFragment: "protocolData",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "setFeeTo", data: BytesLike): Result;
   decodeFunctionResult(
-    functionFragment: "setPTokenImpl",
+    functionFragment: "setCmnProjTokenImpl",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "setFeeTo", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "setProjectImpl",
     data: BytesLike
@@ -257,6 +257,16 @@ export class ICuratedProjectFactory extends Contract {
       overrides?: CallOverrides
     ): Promise<[[number, string] & { fee: number; feeTo: string }]>;
 
+    setCmnProjTokenImpl(
+      _cmnProjTokenImpl: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    "setCmnProjTokenImpl(address)"(
+      _cmnProjTokenImpl: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     setFeeTo(
       _feeTo: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -264,16 +274,6 @@ export class ICuratedProjectFactory extends Contract {
 
     "setFeeTo(address)"(
       _feeTo: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    setPTokenImpl(
-      _pToken: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    "setPTokenImpl(address)"(
-      _pToken: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -369,6 +369,16 @@ export class ICuratedProjectFactory extends Contract {
     overrides?: CallOverrides
   ): Promise<[number, string] & { fee: number; feeTo: string }>;
 
+  setCmnProjTokenImpl(
+    _cmnProjTokenImpl: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  "setCmnProjTokenImpl(address)"(
+    _cmnProjTokenImpl: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   setFeeTo(
     _feeTo: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -376,16 +386,6 @@ export class ICuratedProjectFactory extends Contract {
 
   "setFeeTo(address)"(
     _feeTo: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  setPTokenImpl(
-    _pToken: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  "setPTokenImpl(address)"(
-    _pToken: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -481,17 +481,20 @@ export class ICuratedProjectFactory extends Contract {
       overrides?: CallOverrides
     ): Promise<[number, string] & { fee: number; feeTo: string }>;
 
+    setCmnProjTokenImpl(
+      _cmnProjTokenImpl: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "setCmnProjTokenImpl(address)"(
+      _cmnProjTokenImpl: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     setFeeTo(_feeTo: string, overrides?: CallOverrides): Promise<void>;
 
     "setFeeTo(address)"(
       _feeTo: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    setPTokenImpl(_pToken: string, overrides?: CallOverrides): Promise<void>;
-
-    "setPTokenImpl(address)"(
-      _pToken: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -617,6 +620,16 @@ export class ICuratedProjectFactory extends Contract {
 
     "protocolData()"(overrides?: CallOverrides): Promise<BigNumber>;
 
+    setCmnProjTokenImpl(
+      _cmnProjTokenImpl: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    "setCmnProjTokenImpl(address)"(
+      _cmnProjTokenImpl: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     setFeeTo(
       _feeTo: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -624,16 +637,6 @@ export class ICuratedProjectFactory extends Contract {
 
     "setFeeTo(address)"(
       _feeTo: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    setPTokenImpl(
-      _pToken: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    "setPTokenImpl(address)"(
-      _pToken: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -729,6 +732,16 @@ export class ICuratedProjectFactory extends Contract {
 
     "protocolData()"(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    setCmnProjTokenImpl(
+      _cmnProjTokenImpl: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    "setCmnProjTokenImpl(address)"(
+      _cmnProjTokenImpl: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     setFeeTo(
       _feeTo: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -736,16 +749,6 @@ export class ICuratedProjectFactory extends Contract {
 
     "setFeeTo(address)"(
       _feeTo: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    setPTokenImpl(
-      _pToken: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    "setPTokenImpl(address)"(
-      _pToken: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
