@@ -1,5 +1,7 @@
 # @commonwealth/chain-events
 
+**NOTE: THIS REPO IS NOW ARCHIVED. Please see [the commonwealth monorepo](https://github.com/hicommonwealth/commonwealth) instead.**
+
 "@commonwealth/chain-events" is a library for subscribing and processing synthetic blockchain events.
 
 ## Installation
